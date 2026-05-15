@@ -1,0 +1,15 @@
+http:
+  middlewares:
+    gateway-cors:
+      headers:
+        accessControlAllowOriginList:
+          - "http://app.localhost"
+        accessControlAllowMethods:
+          - "GET"
+          - "OPTIONS"
+          - "PUT"
+          - "POST"
+          - "DELETE"
+        accessControlAllowHeaders:
+          - "*"
+        accessControlAllowCredentials: true

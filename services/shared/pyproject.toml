@@ -1,0 +1,15 @@
+[project]
+name = "shared"
+version = "0.1.0"
+description = "Shared abstractions for posexei"
+requires-python = ">=3.12"
+dependencies = [
+    "redis>=5.2.1",
+    "pydantic>=2.10.6",
+    "opentelemetry-sdk>=1.29.0",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.29.0",
+    "opentelemetry-instrumentation-redis>=0.50b0",
+    "opentelemetry-instrumentation-httpx>=0.50b0",
+    "structlog>=24.1.0",
+    "psycopg2-binary>=2.9.9",
+]

@@ -1,15 +1,16 @@
 [project]
-name = "identity"
+name = "social-publish-service"
 version = "0.1.0"
-description = "posexei identity service"
-readme = "README.md"
+description = "Social publish service"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi[standard]>=0.136.0",
+    "httpx>=0.28.1",
     "shared",
     "opentelemetry-distro>=0.50b0",
     "opentelemetry-exporter-otlp>=1.29.0",
     "opentelemetry-instrumentation-fastapi>=0.50b0",
+    "opentelemetry-instrumentation-httpx>=0.50b0",
     "prometheus-fastapi-instrumentator>=7.1.0",
 ]
 

@@ -1,0 +1,71 @@
+server:
+  http_listen_port: 9080
+  log_level: warn
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: docker-containers
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 15s
+        filters:
+          - name: label
+            values: ["logging=promtail"]
+    relabel_configs:
+      - source_labels: [__meta_docker_container_name]
+        regex: "/(.*)"
+        target_label: container
+      - source_labels: [__meta_docker_container_label_com_docker_compose_service]
+        target_label: service
+      - source_labels: [__meta_docker_container_label_com_docker_compose_project]
+        target_label: project
+      - replacement: docker
+        target_label: job
+    pipeline_stages:
+      # Parse JSON logs (uvicorn + structlog output JSON by default with OTel)
+      - json:
+          expressions:
+            trace_id: traceId
+            span_id: spanId
+            level: level
+            message: event
+            timestamp: timestamp
+      # If trace_id is present, promote as a label for Grafana correlation
+      - labels:
+          trace_id:
+          level:
+      - timestamp:
+          source: timestamp
+          format: RFC3339
+      # Drop empty trace_id label to keep cardinality low
+      - label_drop:
+          - trace_id
+
+  # Fallback: scrape all containers by log path (catches containers without the label)
+  - job_name: docker-fallback
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: docker
+          __path__: /var/lib/docker/containers/*/*-json.log
+    pipeline_stages:
+      - json:
+          expressions:
+            output: log
+            stream: stream
+            time: time
+      - json:
+          expressions:
+            trace_id: traceId
+          source: output
+      - labels:
+          stream:
+          trace_id:
+      - output:
+          source: output
