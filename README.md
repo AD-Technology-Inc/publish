@@ -1,4 +1,4 @@
-# Async Workflow Engine
+# Distributed Publishing Platform
 
 A distributed asynchronous job processing system built with FastAPI and Redis Streams, designed to explore reliability engineering patterns in real-world backend systems: retries, idempotency, worker leasing, and failure recovery under distributed execution.
 
