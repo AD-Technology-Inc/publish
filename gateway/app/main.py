@@ -89,7 +89,7 @@ def read_root():
 
 @app.get("/health")
 def read_health():
-    raise HTTPException(status_code=500, detail="server unavailable")
+    # raise HTTPException(status_code=500, detail="server unavailable")
     return {"status": "ok"}
 
 
