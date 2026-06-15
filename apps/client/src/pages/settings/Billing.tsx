@@ -69,7 +69,7 @@ export const Billing: React.FC = () => {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <SettingsLayout>
+            <SettingsLayout size="md">
                 <div className="space-y-10 text-left pb-20">
                     <Heading 
                         title="Billing & Subscription" 

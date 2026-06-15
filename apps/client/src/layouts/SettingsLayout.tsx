@@ -1,8 +1,8 @@
-import * as React from 'react';
-import { useLocation, Link } from 'react-router-dom';
-import { Heading } from '@/components/Heading';
-import { Button, Separator } from '@/components/ui/core';
-import { cn } from '@/lib/utils';
+import * as React from "react";
+import { useLocation, Link } from "react-router-dom";
+import { Heading } from "@/components/Heading";
+import { Button, Separator } from "@/components/ui/core";
+import { cn } from "@/lib/utils";
 
 interface NavItem {
     title: string;
@@ -10,19 +10,25 @@ interface NavItem {
 }
 
 const sidebarNavItems: NavItem[] = [
-    { title: 'Profile', href: '/settings/profile' },
-    { title: 'Password', href: '/settings/password' },
-    { title: 'Appearance', href: '/settings/appearance' },
-    { title: 'Connections', href: '/settings/connections' },
-    { title: 'Billing', href: '/settings/billing' },
+    { title: "Profile", href: "/settings/profile" },
+    { title: "Password", href: "/settings/password" },
+    { title: "Appearance", href: "/settings/appearance" },
+    { title: "Connections", href: "/settings/connections" },
+    { title: "Billing", href: "/settings/billing" },
 ];
 
-export const SettingsLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const SettingsLayout: React.FC<{
+    children: React.ReactNode;
+    size?: "sm" | "md";
+}> = ({ size = "sm", children }) => {
     const location = useLocation();
 
     return (
         <div className="px-4 py-6">
-            <Heading title="Settings" description="Manage your profile and account settings" />
+            <Heading
+                title="Settings"
+                description="Manage your profile and account settings"
+            />
 
             <div className="flex flex-col lg:flex-row lg:space-x-12">
                 <aside className="w-full max-w-xl lg:w-48">
@@ -32,8 +38,10 @@ export const SettingsLayout: React.FC<{ children: React.ReactNode }> = ({ childr
                                 <Button
                                     variant="ghost"
                                     className={cn(
-                                        'w-full justify-start rounded-xl',
-                                        location.pathname === item.href ? 'bg-muted' : ''
+                                        "w-full justify-start rounded-xl",
+                                        location.pathname === item.href
+                                            ? "bg-muted"
+                                            : "",
                                     )}
                                 >
                                     {item.title}
@@ -45,10 +53,10 @@ export const SettingsLayout: React.FC<{ children: React.ReactNode }> = ({ childr
 
                 <Separator className="my-6 lg:hidden" />
 
-                <div className="flex-1 md:max-w-2xl text-left">
-                    <section className="max-w-xl space-y-12">
-                        {children}
-                    </section>
+                <div
+                    className={`flex-1 ${size == "md" ? "max-w-4xl" : "md:max-w-2xl"} text-left`}
+                >
+                    <section className=" space-y-12">{children}</section>
                 </div>
             </div>
         </div>
