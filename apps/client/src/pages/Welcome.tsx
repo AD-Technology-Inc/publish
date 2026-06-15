@@ -57,7 +57,7 @@ const features = [
 ];
 
 export const Welcome: React.FC = () => {
-    useTitle('Posexei - Master Your Social Presence');
+    useTitle('Master Your Social Presence');
 
     return (
         <div className="min-h-screen bg-[#FDFDFC] dark:bg-[#0a0a0a] text-foreground font-sans selection:bg-primary/20">
