@@ -37,7 +37,7 @@ jobs:
       - run: npm ci
         working-directory: apps/client
 
-      - run: npm run build -- --base=/posexei/
+      - run: npm run build -- --base=/${{ github.event.repository.name }}/
         working-directory: apps/client
 
       - uses: actions/configure-pages@v5
