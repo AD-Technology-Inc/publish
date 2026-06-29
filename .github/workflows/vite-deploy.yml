@@ -37,7 +37,7 @@ jobs:
       - run: npm ci
         working-directory: apps/client
 
-      - run: npm run build
+      - run: npm run build -- --base=/posexei/
         working-directory: apps/client
 
       - uses: actions/configure-pages@v5
