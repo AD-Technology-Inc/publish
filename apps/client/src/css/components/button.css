@@ -79,6 +79,45 @@
     background-color: color-mix(in srgb, var(--destructive) 80%, black);
 }
 
+.button-success {
+    background-color: var(--success);
+    color: var(--success-foreground);
+}
+
+.button-success:hover {
+    background-color: color-mix(in srgb, var(--success) 90%, black);
+}
+
+.button-success:active {
+    background-color: color-mix(in srgb, var(--success) 80%, black);
+}
+
+.button-warning {
+    background-color: var(--warning);
+    color: var(--warning-foreground);
+}
+
+.button-warning:hover {
+    background-color: color-mix(in srgb, var(--warning) 90%, black);
+}
+
+.button-warning:active {
+    background-color: color-mix(in srgb, var(--warning) 80%, black);
+}
+
+.button-info {
+    background-color: var(--info);
+    color: var(--info-foreground);
+}
+
+.button-info:hover {
+    background-color: color-mix(in srgb, var(--info) 90%, black);
+}
+
+.button-info:active {
+    background-color: color-mix(in srgb, var(--info) 80%, black);
+}
+
 .button-link {
     background-color: transparent;
     color: var(--primary);

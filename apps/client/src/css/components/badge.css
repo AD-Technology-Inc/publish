@@ -19,39 +19,28 @@
 
 /* Success / Active Badge */
 .badge-success {
-    background-color: hsl(142.1 76.2% 96.3%);
-    color: hsl(142.1 76.2% 36.3%);
-    border-color: hsl(142.1 76.2% 90%);
-}
-
-.dark .badge-success {
-    background-color: hsl(142.1 70% 12%);
-    color: hsl(142.1 70% 70%);
-    border-color: hsl(142.1 70% 20%);
+    background-color: color-mix(in srgb, var(--success) 12%, transparent);
+    color: var(--success);
+    border-color: color-mix(in srgb, var(--success) 20%, transparent);
 }
 
 /* Warning / Pending Badge */
 .badge-warning {
-    background-color: hsl(47.9 95.8% 94.1%);
-    color: hsl(38 92% 35%);
-    border-color: hsl(47.9 95.8% 90%);
-}
-
-.dark .badge-warning {
-    background-color: hsl(47.9 70% 10%);
-    color: hsl(47.9 70% 70%);
-    border-color: hsl(47.9 70% 20%);
+    background-color: color-mix(in srgb, var(--warning) 12%, transparent);
+    color: var(--warning);
+    border-color: color-mix(in srgb, var(--warning) 20%, transparent);
 }
 
 /* Danger / Blocked Badge */
 .badge-danger {
-    background-color: hsl(0 84.2% 96%);
-    color: hsl(0 84.2% 40%);
-    border-color: hsl(0 84.2% 90%);
+    background-color: color-mix(in srgb, var(--destructive) 12%, transparent);
+    color: var(--destructive);
+    border-color: color-mix(in srgb, var(--destructive) 20%, transparent);
 }
 
-.dark .badge-danger {
-    background-color: hsl(0 70% 12%);
-    color: hsl(0 70% 70%);
-    border-color: hsl(0 70% 20%);
+/* Info / Helper Badge */
+.badge-info {
+    background-color: color-mix(in srgb, var(--info) 12%, transparent);
+    color: var(--info);
+    border-color: color-mix(in srgb, var(--info) 20%, transparent);
 }

@@ -1,0 +1,54 @@
+.alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    border-radius: var(--radius, 0.5rem);
+    border: 1px solid var(--border);
+    background-color: var(--muted);
+    color: var(--foreground);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+
+.alert-content {
+    flex: 1;
+}
+
+.alert-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.alert-description {
+    font-size: 0.825rem;
+    opacity: 0.9;
+}
+
+/* Success Alert */
+.alert-success {
+    background-color: color-mix(in srgb, var(--success) 8%, var(--background));
+    border-color: color-mix(in srgb, var(--success) 20%, transparent);
+    color: var(--success);
+}
+
+/* Warning Alert */
+.alert-warning {
+    background-color: color-mix(in srgb, var(--warning) 8%, var(--background));
+    border-color: color-mix(in srgb, var(--warning) 20%, transparent);
+    color: var(--warning);
+}
+
+/* Danger Alert */
+.alert-danger {
+    background-color: color-mix(in srgb, var(--destructive) 8%, var(--background));
+    border-color: color-mix(in srgb, var(--destructive) 20%, transparent);
+    color: var(--destructive);
+}
+
+/* Info Alert */
+.alert-info {
+    background-color: color-mix(in srgb, var(--info) 8%, var(--background));
+    border-color: color-mix(in srgb, var(--info) 20%, transparent);
+    color: var(--info);
+}
