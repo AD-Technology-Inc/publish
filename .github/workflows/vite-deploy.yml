@@ -37,7 +37,15 @@ jobs:
       - run: npm ci
         working-directory: apps/client
 
+      - name: Configure Router Basename
+        run: |
+          node -e "const fs = require('fs'); const file = 'apps/client/src/routes/index.tsx'; fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(']);', '], { basename: \'/${{ github.event.repository.name }}\' });'));"
+
       - run: npm run build -- --base=/${{ github.event.repository.name }}/
+        working-directory: apps/client
+
+      - name: Create 404.html SPA fallback
+        run: cp dist/index.html dist/404.html
         working-directory: apps/client
 
       - uses: actions/configure-pages@v5
