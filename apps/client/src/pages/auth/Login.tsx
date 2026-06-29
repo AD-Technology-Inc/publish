@@ -81,7 +81,7 @@ export const Login: React.FC = () => {
                 </Card>
 
                 <p className="text-center text-xs text-muted-foreground font-medium">
-                    New to Posexei?{' '}
+                    New to AD. Publish?{' '}
                     <Link to="/register" className="font-black text-primary hover:underline">
                         Create an account
                     </Link>

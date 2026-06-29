@@ -43,8 +43,8 @@ export const Dashboard: React.FC = () => {
     
     // Mimicking the original connections structure
     const connections = [
-        { id: 1, provider: 'instagram' as const, name: '@posexei' },
-        { id: 2, provider: 'facebook' as const, name: 'Posexei Page' },
+        { id: 1, provider: 'instagram' as const, name: '@adpublish' },
+        { id: 2, provider: 'facebook' as const, name: 'AD. Publish Page' },
     ];
 
     const breadcrumbs = [{ title: 'Dashboard', href: '/dashboard' }];

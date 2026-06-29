@@ -251,7 +251,7 @@ export const CreatePost: React.FC = () => {
                                                         </div>
                                                         <div className="space-y-1">
                                                             <p className="text-[13px] leading-relaxed">
-                                                                <span className="font-bold mr-2 text-foreground">posexei</span> {content || 'Write your post...'}
+                                                                <span className="font-bold mr-2 text-foreground">adpublish</span> {content || 'Write your post...'}
                                                             </p>
                                                             <div className="flex flex-wrap gap-1 mt-1">
                                                                 {tags.map(t => <span key={t} className="text-[13px] text-blue-600 dark:text-blue-400 font-medium whitespace-nowrap">#{t}</span>)}
@@ -299,7 +299,7 @@ export const CreatePost: React.FC = () => {
                                                         <div className="flex-1 min-w-0">
                                                             <div className="flex items-center gap-1.5">
                                                                 <span className="font-black text-[15px] truncate text-foreground">{activePreviewAccount}</span>
-                                                                <span className="text-muted-foreground text-[14px]">@posexei</span>
+                                                                <span className="text-muted-foreground text-[14px]">@adpublish</span>
                                                                 <span className="text-muted-foreground text-[14px] shrink-0">· 1m</span>
                                                             </div>
                                                             <p className="text-[15px] mt-1.5 whitespace-pre-wrap text-foreground leading-relaxed font-medium">{content || 'What’s happening?'}</p>
@@ -356,8 +356,8 @@ export const CreatePost: React.FC = () => {
                                                                     <Link2 className="w-14 h-14 text-muted-foreground/10" />
                                                                 </div>
                                                                 <div className="p-4 bg-muted/30">
-                                                                    <p className="font-bold text-sm text-foreground">Content Distribution Excellence - Posexei</p>
-                                                                    <p className="text-[11px] text-muted-foreground font-medium">posexei.app</p>
+                                                                    <p className="font-bold text-sm text-foreground">Content Distribution Excellence - AD. Publish</p>
+                                                                    <p className="text-[11px] text-muted-foreground font-medium">adpublish.app</p>
                                                                 </div>
                                                             </div>
                                                         )}
