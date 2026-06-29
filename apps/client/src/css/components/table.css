@@ -1,0 +1,47 @@
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: var(--radius, 0.5rem);
+    border: 1px solid var(--border);
+    background-color: var(--card);
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    text-align: left;
+}
+
+.table th {
+    background-color: var(--muted);
+    color: var(--muted-foreground);
+    font-weight: 500;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    user-select: none;
+}
+
+.table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--foreground);
+}
+
+.table tr:last-child td {
+    border-bottom: none;
+}
+
+.table-striped tbody tr:nth-child(odd) {
+    background-color: var(--muted);
+}
+
+.table-hover tbody tr:hover {
+    background-color: var(--accent);
+    cursor: pointer;
+}
+
+.table-compact th,
+.table-compact td {
+    padding: 0.5rem 0.75rem;
+}

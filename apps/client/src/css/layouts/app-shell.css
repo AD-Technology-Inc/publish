@@ -1,0 +1,40 @@
+.app-shell {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+.app-shell-sidebar {
+    display: none;
+    flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+    .app-shell-sidebar {
+        display: flex;
+    }
+}
+
+.app-shell-main {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
+    overflow: hidden;
+}
+
+.app-shell-header {
+    display: flex;
+    height: 4rem;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    padding: 0 1.5rem;
+}
+
+.app-shell-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+    background-color: var(--background);
+}

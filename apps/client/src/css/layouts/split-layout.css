@@ -1,0 +1,23 @@
+.split-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+    .split-layout {
+        grid-template-columns: 240px 1fr;
+    }
+}
+
+.split-layout-aside {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.split-layout-main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
