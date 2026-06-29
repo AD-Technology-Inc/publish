@@ -37,10 +37,6 @@ jobs:
       - run: npm ci
         working-directory: apps/client
 
-      - name: Configure Router Basename
-        run: |
-          node -e "const fs = require('fs'); const file = 'apps/client/src/routes/index.tsx'; fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(']);', '], { basename: \'/${{ github.event.repository.name }}\' });'));"
-
       - run: npm run build -- --base=/${{ github.event.repository.name }}/
         working-directory: apps/client
 
