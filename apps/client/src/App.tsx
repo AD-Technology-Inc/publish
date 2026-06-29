@@ -13,7 +13,7 @@ function App() {
     //     });
     // }, []);
 
-    return <RouterProvider router={router}  fallbackElement={<div>Loading...</div>} />;
+    return <RouterProvider router={router} />;
 }
 
 export default App;

@@ -180,7 +180,7 @@ const DropdownMenuContext = React.createContext<{
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   triggerRect: DOMRect | null;
   setTriggerRect: React.Dispatch<React.SetStateAction<DOMRect | null>>;
-  contentRef: React.RefObject<HTMLDivElement>;
+  contentRef: React.RefObject<HTMLDivElement | null>;
 } | null>(null);
 
 const DropdownMenu = ({ children }: { children: React.ReactNode }) => {

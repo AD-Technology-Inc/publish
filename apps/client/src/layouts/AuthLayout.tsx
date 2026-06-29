@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
-import { AppLogoIcon } from '@/components/AppLogo';
+import { AppLogo } from '@/components/AppLogo';
 
 interface Props {
     title?: string;
@@ -14,11 +14,8 @@ export const AuthLayout: React.FC<Props> = ({ title, description, children }) =>
             <div className="w-full max-w-sm">
                 <div className="flex flex-col gap-8">
                     <div className="flex flex-col items-center gap-4">
-                        <Link to="/" className="flex flex-col items-center gap-2 font-medium">
-                            <div className="mb-1 flex h-9 w-9 items-center justify-center rounded-md p-2">
-                                <AppLogoIcon className="size-9 fill-current text-foreground dark:text-white" />
-                            </div>
-                            <span className="sr-only">Posexei</span>
+                        <Link to="/" className="flex items-center gap-2 font-medium">
+                            <AppLogo />
                         </Link>
                         <div className="space-y-2 text-center">
                             <h1 className="text-xl font-medium">{title}</h1>
