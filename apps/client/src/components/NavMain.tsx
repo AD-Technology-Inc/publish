@@ -1,14 +1,14 @@
-import * as React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import * as React from "react";
+import { Link, useLocation } from "react-router-dom";
 import {
     SidebarGroup,
     SidebarGroupLabel,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
-} from '@/components/ui/sidebar';
-import type { NavItem } from '@/types';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/sidebar";
+import type { NavItem } from "@/types";
+import { cn } from "@/lib/utils";
 
 interface Props {
     items: NavItem[];
@@ -36,7 +36,9 @@ export const NavMain: React.FC<Props> = ({ items, label }) => {
                                     isActive={active}
                                     className={cn(
                                         "h-10 rounded-xl px-3 transition-all group-data-[state=collapsed]:px-0",
-                                        active ? "hover:bg-accent-hover" : "hover:bg-muted"
+                                        active
+                                            ? "hover:bg-accent-hover"
+                                            : "hover:bg-accent-hover",
                                     )}
                                 >
                                     <div className="flex items-center gap-3 w-full">
@@ -44,14 +46,18 @@ export const NavMain: React.FC<Props> = ({ items, label }) => {
                                             <Icon
                                                 className={cn(
                                                     "size-4.5 stroke-[2.5px] transition-colors",
-                                                    active ? 'text-sidebar-accent-foreground' : 'text-muted-foreground/60 group-hover:text-foreground'
+                                                    active
+                                                        ? "text-sidebar-accent-foreground"
+                                                        : "text-muted-foreground/60 group-hover:text-foreground",
                                                 )}
                                             />
                                         )}
                                         <span
                                             className={cn(
                                                 "text-[11px] font-black uppercase tracking-widest transition-colors",
-                                                active ? 'text-sidebar-accent-foreground' : 'text-muted-foreground/70 group-hover:text-foreground'
+                                                active
+                                                    ? "text-sidebar-accent-foreground"
+                                                    : "text-muted-foreground/70 group-hover:text-foreground",
                                             )}
                                         >
                                             {item.title}
