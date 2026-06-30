@@ -35,19 +35,19 @@ export const Login: React.FC = () => {
                                         type="email" 
                                         placeholder="name@example.com" 
                                         required 
-                                        className="h-11 rounded-xl border-border bg-muted/20 focus-visible:ring-primary/10 px-4"
+                                        className="h-11 rounded-xl border-border bg-muted/20 focus-visible:ring-accent/20 px-4"
                                     />
                                 </div>
                                 <div className="space-y-2 text-left">
                                     <div className="flex items-center justify-between px-1">
                                         <Label htmlFor="password" title="Password" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Password</Label>
-                                        <Link to="#" className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline">Forgot?</Link>
+                                        <Link to="#" className="text-[10px] font-black uppercase tracking-widest text-accent hover:underline">Forgot?</Link>
                                     </div>
                                     <Input 
                                         id="password" 
                                         type="password" 
                                         required 
-                                        className="h-11 rounded-xl border-border bg-muted/20 focus-visible:ring-primary/10 px-4"
+                                        className="h-11 rounded-xl border-border bg-muted/20 focus-visible:ring-accent/20 px-4"
                                     />
                                 </div>
                                 <div className="flex items-center space-x-2 px-1">
@@ -57,13 +57,14 @@ export const Login: React.FC = () => {
                             </div>
                             <Button 
                                 type="submit" 
-                                className="w-full h-12 rounded-xl font-bold shadow-lg shadow-primary/10 transition-all hover:scale-[1.02] active:scale-95 border-0 mt-2"
+                                variant="accent"
+                                className="w-full h-12 rounded-xl font-bold shadow-lg shadow-accent/15 transition-all hover:scale-[1.02] active:scale-95 border-0 mt-2"
                                 disabled={isLoading}
                             >
                                 {isLoading ? 'Authenticating...' : 'Sign In'}
                             </Button>
                         </form>
-
+ 
                         <div className="relative">
                             <div className="absolute inset-0 flex items-center">
                                 <span className="w-full border-t border-border" />
@@ -72,17 +73,17 @@ export const Login: React.FC = () => {
                                 <span className="bg-card px-4 text-[10px] font-black text-muted-foreground/40 tracking-widest">Or continue with</span>
                             </div>
                         </div>
-
+ 
                         <Button variant="outline" className="w-full h-12 rounded-xl font-bold border-border bg-background shadow-xs hover:bg-muted transition-all">
                             {/* <Chrome className="mr-2 h-4 w-4" />  */}
                             Google
                         </Button>
                     </CardContent>
                 </Card>
-
+ 
                 <p className="text-center text-xs text-muted-foreground font-medium">
                     New to AD. Publish?{' '}
-                    <Link to="/register" className="font-black text-primary hover:underline">
+                    <Link to="/register" className="font-black text-accent hover:underline">
                         Create an account
                     </Link>
                 </p>

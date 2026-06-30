@@ -7,7 +7,7 @@ import { X } from "lucide-react"
  * Button Component
  */
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link"
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "accent"
   size?: "default" | "sm" | "lg" | "icon"
 }
 
@@ -22,6 +22,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
       ghost: "hover:bg-accent hover:text-accent-foreground",
       link: "text-primary underline-offset-4 hover:underline",
+      accent: "bg-accent text-accent-foreground shadow hover:bg-accent-hover",
     }
 
     const sizes = {

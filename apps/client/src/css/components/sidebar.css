@@ -41,7 +41,9 @@
     border-radius: var(--radius, 0.5rem);
     color: var(--sidebar-foreground, var(--muted-foreground));
     text-decoration: none;
-    transition: background-color 0.2s, color 0.2s;
+    transition:
+        background-color 0.2s,
+        color 0.2s;
 }
 
 .sidebar-item:hover {
@@ -50,8 +52,13 @@
 }
 
 .sidebar-item.active {
-    background-color: var(--sidebar-primary, var(--primary));
-    color: var(--sidebar-primary-foreground, var(--primary-foreground));
+    background-color: var(--sidebar-accent, var(--accent));
+    color: var(--sidebar-accent-foreground, var(--accent-foreground));
+}
+
+.sidebar-item.active:hover {
+    background-color: var(--sidebar-accent-hover, var(--accent-hover));
+    color: var(--sidebar-accent-foreground, var(--accent-foreground));
 }
 
 .sidebar-footer {

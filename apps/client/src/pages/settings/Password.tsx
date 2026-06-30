@@ -40,7 +40,7 @@ export const Password: React.FC = () => {
                     </div>
 
                     <div className="pt-4">
-                        <Button className="rounded-xl px-8 h-11 font-bold">Save Changes</Button>
+                        <Button variant="accent" className="rounded-xl px-8 h-11 font-bold">Save Changes</Button>
                     </div>
                 </div>
             </SettingsLayout>

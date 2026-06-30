@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { Link } from 'react-router-dom';
 import { LayoutGrid, Send, BarChart2, Folder, BookOpen } from 'lucide-react';
 
 import {
@@ -7,9 +6,6 @@ import {
     SidebarContent,
     SidebarFooter,
     SidebarHeader,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { AppLogo } from '@/components/AppLogo';
 import { NavMain } from '@/components/NavMain';
@@ -53,15 +49,9 @@ export const AppSidebar: React.FC = () => {
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <Link to="/dashboard">
-                            <SidebarMenuButton size="lg" className="hover:bg-muted transition-all rounded-xl">
-                                <AppLogo />
-                            </SidebarMenuButton>
-                        </Link>
-                    </SidebarMenuItem>
-                </SidebarMenu>
+                <div className="flex h-12 items-center px-3">
+                    <AppLogo />
+                </div>
             </SidebarHeader>
 
             <SidebarContent>

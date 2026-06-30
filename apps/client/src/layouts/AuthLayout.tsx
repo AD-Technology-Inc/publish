@@ -1,5 +1,4 @@
 import * as React from "react";
-import { Link } from "react-router-dom";
 import { AppLogo } from "@/components/AppLogo";
 import { Badge } from "@/components/ui/core";
 
@@ -19,10 +18,7 @@ export const AuthLayout: React.FC<Props> = ({
             <div className="w-full max-w-sm">
                 <div className="flex flex-col gap-8">
                     <div className="flex flex-col items-center gap-4">
-                        <Link
-                            to="/"
-                            className="flex items-center gap-2 font-medium"
-                        >
+                        <div className="flex items-center gap-2 font-medium">
                             <AppLogo />
 
                             <Badge
@@ -31,7 +27,7 @@ export const AuthLayout: React.FC<Props> = ({
                             >
                                 v0.1.0 - PRE-ALPHA
                             </Badge>
-                        </Link>
+                        </div>
                         <div className="space-y-2 text-center">
                             <h1 className="text-xl font-medium">{title}</h1>
                             <p className="text-center text-sm text-muted-foreground">

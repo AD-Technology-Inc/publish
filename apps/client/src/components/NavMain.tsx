@@ -34,21 +34,24 @@ export const NavMain: React.FC<Props> = ({ items, label }) => {
                             <Link to={item.href}>
                                 <SidebarMenuButton
                                     isActive={active}
-                                    className="h-10 rounded-xl px-3 transition-all hover:bg-muted group-data-[state=collapsed]:px-0"
+                                    className={cn(
+                                        "h-10 rounded-xl px-3 transition-all group-data-[state=collapsed]:px-0",
+                                        active ? "hover:bg-accent-hover" : "hover:bg-muted"
+                                    )}
                                 >
                                     <div className="flex items-center gap-3 w-full">
                                         {Icon && (
                                             <Icon
                                                 className={cn(
                                                     "size-4.5 stroke-[2.5px] transition-colors",
-                                                    active ? 'text-primary' : 'text-muted-foreground/60 group-hover:text-foreground'
+                                                    active ? 'text-sidebar-accent-foreground' : 'text-muted-foreground/60 group-hover:text-foreground'
                                                 )}
                                             />
                                         )}
                                         <span
                                             className={cn(
                                                 "text-[11px] font-black uppercase tracking-widest transition-colors",
-                                                active ? 'text-foreground' : 'text-muted-foreground/70 group-hover:text-foreground'
+                                                active ? 'text-sidebar-accent-foreground' : 'text-muted-foreground/70 group-hover:text-foreground'
                                             )}
                                         >
                                             {item.title}

@@ -57,7 +57,7 @@ export const Dashboard: React.FC = () => {
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div className="space-y-1 text-left">
                         <h1 className="text-3xl font-black tracking-tight text-foreground">
-                            Welcome back, <span className="bg-linear-to-r from-primary to-primary/60 bg-clip-text text-transparent">{user.name.split(' ')[0]}</span>!
+                            Welcome back, <span className="bg-linear-to-r from-accent to-accent-hover bg-clip-text text-transparent">{user.name.split(' ')[0]}</span>!
                         </h1>
                         <div className="flex items-center gap-3 mt-2">
                             <div className="flex -space-x-2">
@@ -78,7 +78,7 @@ export const Dashboard: React.FC = () => {
                     </div>
                     <div className="flex items-center gap-3">
                         <Link to="/posts/create">
-                            <Button className="rounded-2xl px-6 h-12 gap-2 font-bold shadow-[0_20px_40px_-12px_rgba(var(--primary),0.3)] border-0 transition-transform active:scale-95">
+                            <Button variant="accent" className="rounded-2xl px-6 h-12 gap-2 font-bold shadow-lg shadow-accent/25 border-0 transition-transform active:scale-95">
                                 <Plus className="w-4 h-4 stroke-[3px]" /> Compose New Post
                             </Button>
                         </Link>
@@ -92,7 +92,7 @@ export const Dashboard: React.FC = () => {
                     <div className="lg:col-span-8 space-y-8">
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                             {mockDashboardStats.map((stat) => (
-                                <Card key={stat.label} className="group border-border/50 bg-card hover:border-primary/20 transition-all duration-300 rounded-[2.5rem] overflow-hidden text-left shadow-sm hover:shadow-xl hover:shadow-primary/[0.02]">
+                                <Card key={stat.label} className="group border-border/50 bg-card hover:border-accent/30 transition-all duration-300 rounded-[2.5rem] overflow-hidden text-left shadow-sm hover:shadow-xl hover:shadow-accent/[0.02]">
                                     <div className="p-7 space-y-4">
                                         <div className="flex items-center justify-between">
                                             <div className={cn('p-3 rounded-2xl transition-all group-hover:scale-110 duration-500', stat.bg)}>
@@ -128,8 +128,8 @@ export const Dashboard: React.FC = () => {
                                         <div key={i} className="flex-1 group relative">
                                             <div 
                                                 className={cn(
-                                                    'w-full bg-primary/5 rounded-t-xl transition-all duration-700 group-hover:bg-primary/20 cursor-pointer',
-                                                    i === 13 ? 'bg-primary/20' : ''
+                                                    'w-full bg-accent/10 rounded-t-xl transition-all duration-700 group-hover:bg-accent/30 cursor-pointer',
+                                                    i === 13 ? 'bg-accent/25' : ''
                                                 )} 
                                                 style={{ height: `${height}%` }} 
                                             />
@@ -150,20 +150,20 @@ export const Dashboard: React.FC = () => {
                         <div className="space-y-4">
                             <div className="flex items-center justify-between px-2">
                                 <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">Real-time Activity Feed</h2>
-                                <Link to="/posts" className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-primary transition-opacity hover:opacity-80">View history</Link>
+                                <Link to="/posts" className="text-[10px] font-black uppercase tracking-widest text-accent hover:text-accent transition-opacity hover:opacity-80">View history</Link>
                             </div>
                             <div className="grid gap-3">
                                 {mockRecentActivities.map((activity) => {
                                     const brand = getPlatformBrand(activity.platform.toLowerCase());
                                     const Icon = getPlatformIcon(activity.platform.toLowerCase());
                                     return (
-                                        <div key={activity.id} className="flex items-center justify-between p-4 rounded-3xl bg-card border border-border/40 hover:bg-muted/30 hover:border-primary/5 transition-all group cursor-default shadow-xs text-left">
+                                        <div key={activity.id} className="flex items-center justify-between p-4 rounded-3xl bg-card border border-border/40 hover:bg-muted/30 hover:border-accent/10 transition-all group cursor-default shadow-xs text-left">
                                             <div className="flex items-center gap-5 min-w-0">
                                                 <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center shadow-inner shrink-0 group-hover:scale-105 transition-transform', brand.bg)}>
                                                     <Icon className={cn('w-4.5 h-4.5', brand.color)} />
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <p className="text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors leading-tight">{activity.title}</p>
+                                                    <p className="text-sm font-bold text-foreground truncate group-hover:text-accent transition-colors leading-tight">{activity.title}</p>
                                                     <div className="flex items-center gap-2.5 mt-1">
                                                         <span className="text-[10px] font-black text-muted-foreground uppercase opacity-30 tracking-wider tabular-nums">{activity.time}</span>
                                                         <div className="w-1 h-1 rounded-full bg-border" />
@@ -192,7 +192,7 @@ export const Dashboard: React.FC = () => {
                     {/* Right Side: Goals & Queue */}
                     <div className="lg:col-span-4 space-y-8">
                         {/* Monthly Goal Card */}
-                        <Card className="rounded-[2.5rem] border-0 bg-linear-to-br from-primary to-primary/80 text-primary-foreground shadow-2xl shadow-primary/20 overflow-hidden text-left border border-white/10">
+                        <Card className="rounded-[2.5rem] border-0 bg-linear-to-br from-accent to-accent-hover text-accent-foreground shadow-2xl shadow-accent/25 overflow-hidden text-left border border-white/10">
                             <CardHeader className="p-8 pb-4">
                                 <CardTitle className="text-sm font-black uppercase tracking-widest opacity-80 flex items-center gap-2.5">
                                     <Target className="w-4 h-4" /> Content Milestone
@@ -235,7 +235,7 @@ export const Dashboard: React.FC = () => {
                                         return (
                                             <div key={i} className="p-6 hover:bg-muted/20 transition-all flex items-center justify-between gap-4 cursor-pointer group">
                                                 <div className="min-w-0 space-y-1">
-                                                    <p className="text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors">{item.title}</p>
+                                                    <p className="text-sm font-bold text-foreground truncate group-hover:text-accent transition-colors">{item.title}</p>
                                                     <p className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-wider">{item.date}</p>
                                                 </div>
                                                 <div className={cn('w-9 h-9 rounded-2xl flex items-center justify-center shadow-sm shrink-0 border border-transparent transition-transform group-hover:scale-110', brand.bg)}>

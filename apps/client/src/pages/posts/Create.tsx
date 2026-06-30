@@ -224,7 +224,7 @@ export const CreatePost: React.FC = () => {
                                                         onClick={() => setActivePreviewTab(pId)}
                                                         className={cn(
                                                             'px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all whitespace-nowrap',
-                                                            (activePreviewTab || selectedPlatforms[0]) === pId ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-muted'
+                                                            (activePreviewTab || selectedPlatforms[0]) === pId ? 'bg-accent text-accent-foreground shadow-sm' : 'text-muted-foreground hover:bg-muted'
                                                         )}
                                                     >
                                                         {platforms.find(p => p.id === pId)?.provider}
@@ -401,7 +401,7 @@ export const CreatePost: React.FC = () => {
                         <Dialog>
                             <DialogTrigger asChild>
                                 <Button variant="outline" size="icon" className="bg-card border-border h-10 w-10 rounded-xl shadow-xs" disabled={selectedPlatforms.length === 0}>
-                                    <Clock className={cn('w-4 h-4 text-foreground', (scheduleDate || scheduleTime) ? 'text-primary' : '')} />
+                                    <Clock className={cn('w-4 h-4 text-foreground', (scheduleDate || scheduleTime) ? 'text-accent' : '')} />
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="sm:max-w-[350px] rounded-[2rem] border border-border bg-card p-8 shadow-2xl">
@@ -432,14 +432,15 @@ export const CreatePost: React.FC = () => {
                                     </div>
                                 </div>
                                 <DialogFooter>
-                                    <Button className="w-full rounded-2xl font-bold h-12 shadow-lg shadow-primary/20" onClick={() => {}}>Set Publication Time</Button>
+                                    <Button variant="accent" className="w-full rounded-2xl font-bold h-12 shadow-lg shadow-accent/15" onClick={() => {}}>Set Publication Time</Button>
                                 </DialogFooter>
                             </DialogContent>
                         </Dialog>
 
                         <Button 
                             disabled={selectedPlatforms.length === 0 || !content || isPending} 
-                            className="rounded-xl px-8 h-10 font-bold shadow-md shadow-primary/20 transition-all active:scale-95"
+                            variant="accent"
+                            className="rounded-xl px-8 h-10 font-bold shadow-md shadow-accent/15 transition-all active:scale-95"
                             onClick={handlePublish}
                         >
                             {isPending ? 'Publishing...' : 'Publish Content'}
@@ -486,7 +487,7 @@ export const CreatePost: React.FC = () => {
                                         value={title}
                                         onChange={(e) => setTitle(e.target.value)}
                                         placeholder="Enter a title for your reference..." 
-                                        className="text-xl font-bold py-7 rounded-2xl border-0 bg-muted/20 focus-visible:ring-2 focus-visible:ring-primary/20 px-6 placeholder:text-muted-foreground/30"
+                                        className="text-xl font-bold py-7 rounded-2xl border-0 bg-muted/20 focus-visible:ring-2 focus-visible:ring-accent/20 px-6 placeholder:text-muted-foreground/30"
                                     />
                                 </div>
 
@@ -510,12 +511,12 @@ export const CreatePost: React.FC = () => {
                                                 </button>
                                             ))}
                                         </div>
-                                        <Button variant="ghost" size="sm" className="text-[10px] text-primary font-black uppercase tracking-widest bg-primary/5 hover:bg-primary/10 rounded-full h-8 px-4 transition-all">
+                                        <Button variant="ghost" size="sm" className="text-[10px] text-accent font-black uppercase tracking-widest bg-accent/5 hover:bg-accent/10 rounded-full h-8 px-4 transition-all">
                                             ✨ AI Assistant
                                         </Button>
                                     </div>
 
-                                    <div className="border border-border/60 rounded-[2rem] overflow-hidden bg-muted/10 focus-within:ring-2 focus-within:ring-primary/10 transition-all flex flex-col min-h-[300px] border">
+                                    <div className="border border-border/60 rounded-[2rem] overflow-hidden bg-muted/10 focus-within:ring-2 focus-within:ring-accent/20 transition-all flex flex-col min-h-[300px] border">
                                         <div className="bg-card/40 border-b border-border/40 px-6 py-3 flex items-center gap-4 shrink-0 overflow-x-auto no-scrollbar">
                                             <Button variant="ghost" size="icon" className="h-8 w-8 text-foreground hover:bg-background rounded-lg"><span className="font-extrabold text-base">B</span></Button>
                                             <Button variant="ghost" size="icon" className="h-8 w-8 text-foreground hover:bg-background rounded-lg"><span className="italic font-bold">I</span></Button>
@@ -532,9 +533,9 @@ export const CreatePost: React.FC = () => {
                                         />
                                         {postType !== 'text' && (
                                             <div className="p-6 border-t border-border/20 bg-card/10 shrink-0">
-                                                <div className="border-2 border-dashed border-border/60 rounded-2xl p-10 flex flex-col items-center justify-center text-center gap-3 hover:bg-primary/5 hover:border-primary/20 transition-all cursor-pointer group shadow-inner">
-                                                    <div className="p-3 bg-muted rounded-full group-hover:bg-primary/10 transition-colors">
-                                                        <Plus className="w-8 h-8 text-muted-foreground/20 group-hover:text-primary transition-colors" />
+                                                <div className="border-2 border-dashed border-border/60 rounded-2xl p-10 flex flex-col items-center justify-center text-center gap-3 hover:bg-accent/5 hover:border-accent/20 transition-all cursor-pointer group shadow-inner">
+                                                    <div className="p-3 bg-muted rounded-full group-hover:bg-accent/10 transition-colors">
+                                                        <Plus className="w-8 h-8 text-muted-foreground/20 group-hover:text-accent transition-colors" />
                                                     </div>
                                                     <div className="space-y-0.5">
                                                         <span className="text-xs font-black uppercase tracking-widest text-foreground block">Upload {postType} Content</span>
@@ -569,7 +570,7 @@ export const CreatePost: React.FC = () => {
                                                 #{tag} <X className="w-3.5 h-3.5 cursor-pointer hover:text-rose-500 transition-colors" onClick={() => removeTag(tag)} />
                                             </Badge>
                                         ))}
-                                        <div className="flex items-center bg-muted/20 rounded-2xl px-4 border border-border/60 h-10 focus-within:ring-2 focus-within:ring-primary/10 transition-all shadow-inner">
+                                        <div className="flex items-center bg-muted/20 rounded-2xl px-4 border border-border/60 h-10 focus-within:ring-2 focus-within:ring-accent/20 transition-all shadow-inner">
                                             <Input 
                                                 value={newTag} 
                                                 onChange={(e) => setNewTag(e.target.value)} 
@@ -594,7 +595,7 @@ export const CreatePost: React.FC = () => {
                                     <CardDescription className="text-[10px] uppercase font-black text-muted-foreground tracking-widest opacity-40">Choose accounts</CardDescription>
                                 </div>
                                 <div className="flex flex-col items-end">
-                                    <Badge variant="outline" className="rounded-full text-[10px] font-black uppercase bg-primary text-primary-foreground border-0 h-6 px-3 shadow-md">
+                                    <Badge variant="outline" className="rounded-full text-[10px] font-black uppercase bg-accent text-accent-foreground border-0 h-6 px-3 shadow-md">
                                         {selectedPlatforms.length} Active
                                     </Badge>
                                 </div>
@@ -687,7 +688,7 @@ export const CreatePost: React.FC = () => {
                             </div>
                             <div className="space-y-3 pt-4">
                                 <Link to="/posts" className="block">
-                                    <Button className="w-full h-14 rounded-2xl font-extrabold transition-all hover:scale-[1.02] active:scale-95 shadow-2xl shadow-primary/30 border-0 text-md">Return to Posts</Button>
+                                    <Button variant="accent" className="w-full h-14 rounded-2xl font-extrabold transition-all hover:scale-[1.02] active:scale-95 shadow-2xl shadow-accent/20 border-0 text-md">Return to Posts</Button>
                                 </Link>
                                 <Button variant="ghost" className="w-full h-12 rounded-2xl font-bold text-xs text-muted-foreground/40" onClick={() => setShowSuccessModal(false)}>Close</Button>
                             </div>

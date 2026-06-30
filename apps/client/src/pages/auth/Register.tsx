@@ -34,7 +34,7 @@ export const Register: React.FC = () => {
                                         type="text" 
                                         placeholder="John Doe" 
                                         required 
-                                        className="h-11 rounded-xl border-border bg-muted/20 focus-visible:ring-primary/10 px-4"
+                                        className="h-11 rounded-xl border-border bg-muted/20 focus-visible:ring-accent/20 px-4"
                                     />
                                 </div>
                                 <div className="space-y-2 text-left">
@@ -44,7 +44,7 @@ export const Register: React.FC = () => {
                                         type="email" 
                                         placeholder="name@example.com" 
                                         required 
-                                        className="h-11 rounded-xl border-border bg-muted/20 focus-visible:ring-primary/10 px-4"
+                                        className="h-11 rounded-xl border-border bg-muted/20 focus-visible:ring-accent/20 px-4"
                                     />
                                 </div>
                                 <div className="space-y-2 text-left">
@@ -53,13 +53,14 @@ export const Register: React.FC = () => {
                                         id="password" 
                                         type="password" 
                                         required 
-                                        className="h-11 rounded-xl border-border bg-muted/20 focus-visible:ring-primary/10 px-4"
+                                        className="h-11 rounded-xl border-border bg-muted/20 focus-visible:ring-accent/20 px-4"
                                     />
                                 </div>
                             </div>
                             <Button 
                                 type="submit" 
-                                className="w-full h-12 rounded-xl font-bold shadow-lg shadow-primary/10 transition-all hover:scale-[1.02] active:scale-95 border-0 mt-4"
+                                variant="accent"
+                                className="w-full h-12 rounded-xl font-bold shadow-lg shadow-accent/15 transition-all hover:scale-[1.02] active:scale-95 border-0 mt-4"
                                 disabled={isLoading}
                             >
                                 {isLoading ? 'Creating Account...' : 'Continue'}
@@ -67,17 +68,17 @@ export const Register: React.FC = () => {
                         </form>
                     </CardContent>
                 </Card>
-
+ 
                 <p className="px-8 text-center text-xs text-muted-foreground font-medium leading-relaxed">
                     By clicking continue, you agree to our{' '}
-                    <Link to="#" className="font-black text-primary hover:underline">Terms of Service</Link>{' '}
+                    <Link to="#" className="font-black text-accent hover:underline">Terms of Service</Link>{' '}
                     and{' '}
-                    <Link to="#" className="font-black text-primary hover:underline">Privacy Policy</Link>.
+                    <Link to="#" className="font-black text-accent hover:underline">Privacy Policy</Link>.
                 </p>
-
+ 
                 <p className="text-center text-xs text-muted-foreground font-medium">
                     Already have an account?{' '}
-                    <Link to="/login" className="font-black text-primary hover:underline">
+                    <Link to="/login" className="font-black text-accent hover:underline">
                         Sign in
                     </Link>
                 </p>

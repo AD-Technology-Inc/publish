@@ -42,7 +42,7 @@ import { useTitle } from '@/hooks/use-title';
 const getStatusConfig = (status: string) => {
     switch (status) {
         case 'published': return { color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', icon: Check, label: 'Published' };
-        case 'scheduled': return { color: 'bg-blue-500/10 text-blue-600 border-blue-500/20', icon: Clock, label: 'Scheduled' };
+        case 'scheduled': return { color: 'bg-accent/10 text-accent border-accent/20', icon: Clock, label: 'Scheduled' };
         case 'draft': return { color: 'bg-muted/50 text-muted-foreground border-border', icon: Type, label: 'Draft' };
         case 'failed': return { color: 'bg-rose-500/10 text-rose-600 border-rose-500/20', icon: XCircle, label: 'Failed' };
         default: return { color: 'bg-muted text-foreground border-border', icon: Zap, label: status };
@@ -125,7 +125,7 @@ export const PostsIndex: React.FC = () => {
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder="Search by title or content..." 
-                                    className="pl-11 h-12 rounded-2xl bg-card border-border shadow-none focus-visible:ring-primary/10 transition-all text-foreground" 
+                                    className="pl-11 h-12 rounded-2xl bg-card border-border shadow-none focus-visible:ring-accent/20 transition-all text-foreground" 
                                 />
                             </div>
                             <DropdownMenu>
@@ -137,7 +137,7 @@ export const PostsIndex: React.FC = () => {
                                 <DropdownMenuContent align="end" className="w-56 rounded-2xl border-border bg-card p-2 shadow-2xl">
                                     <DropdownMenuItem className="rounded-xl font-bold text-[10px] uppercase tracking-widest py-3">All Content</DropdownMenuItem>
                                     <DropdownMenuItem className="rounded-xl font-bold text-[10px] uppercase tracking-widest py-3 hover:bg-emerald-500/10 hover:text-emerald-600 transition-colors">Published Only</DropdownMenuItem>
-                                    <DropdownMenuItem className="rounded-xl font-bold text-[10px] uppercase tracking-widest py-3 hover:bg-blue-500/10 hover:text-blue-600 transition-colors">Scheduled Posts</DropdownMenuItem>
+                                    <DropdownMenuItem className="rounded-xl font-bold text-[10px] uppercase tracking-widest py-3 hover:bg-accent/10 hover:text-accent transition-colors">Scheduled Posts</DropdownMenuItem>
                                     <DropdownMenuSeparator className="bg-border/50" />
                                     <DropdownMenuItem className="rounded-xl font-bold text-[10px] uppercase tracking-widest py-3 text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer" onClick={() => {setSearchQuery(''); setActivePlatformFilter(null);}}>Reset Filters</DropdownMenuItem>
                                 </DropdownMenuContent>
