@@ -1,9 +1,11 @@
-import * as React from 'react';
-import { Link } from 'react-router-dom';
-import type { BreadcrumbItemType } from '@/types';
-import { ChevronRight } from 'lucide-react';
+import * as React from "react";
+import { Link } from "react-router-dom";
+import type { BreadcrumbItemType } from "@/types";
+import { ChevronRight } from "lucide-react";
 
-export const Breadcrumbs: React.FC<{ breadcrumbs: BreadcrumbItemType[] }> = ({ breadcrumbs }) => {
+export const Breadcrumbs: React.FC<{ breadcrumbs: BreadcrumbItemType[] }> = ({
+    breadcrumbs,
+}) => {
     return (
         <nav aria-label="Breadcrumb" className="flex">
             <ol className="flex items-center space-x-2">
@@ -14,9 +16,14 @@ export const Breadcrumbs: React.FC<{ breadcrumbs: BreadcrumbItemType[] }> = ({ b
                         )}
                         <span className="text-[10px] font-black uppercase tracking-[0.2em]">
                             {index === breadcrumbs.length - 1 ? (
-                                <span className="text-foreground">{item.title}</span>
+                                <span className="text-foreground">
+                                    {item.title}
+                                </span>
                             ) : (
-                                <Link to={item.href} className="text-muted-foreground/60 hover:text-primary transition-colors">
+                                <Link
+                                    to={item.href}
+                                    className="text-muted-foreground/60 hover:text-primary transition-colors"
+                                >
                                     {item.title}
                                 </Link>
                             )}
