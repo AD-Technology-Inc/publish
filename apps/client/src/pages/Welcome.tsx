@@ -19,6 +19,9 @@ import {
     ShieldCheck,
     Terminal,
     ChevronRight,
+    Star,
+    Check,
+    Copy,
 } from "lucide-react";
 import { useTitle } from "@/hooks/use-title";
 import { AppLogo } from "@/components/AppLogo";
@@ -187,6 +190,12 @@ export const Welcome: React.FC = () => {
     >("normal");
     const [simLogs, setSimLogs] = React.useState<string[]>([]);
     const [isSimulating, setIsSimulating] = React.useState<boolean>(false);
+    const [copied, setCopied] = React.useState<boolean>(false);
+    const handleCopy = () => {
+        navigator.clipboard.writeText("docker compose up --build -d");
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
 
     // Virtual architecture variables
     const [gatewayState, setGatewayState] = React.useState<
@@ -580,7 +589,10 @@ export const Welcome: React.FC = () => {
                             </Button>
                         </Link>
                         <Link to="/register">
-                            <Button className="font-black rounded-lg text-[11px] uppercase tracking-widest px-5 h-9">
+                            <Button
+                                variant="accent"
+                                className="font-black rounded-lg text-[11px] uppercase tracking-widest px-5 h-9 shadow-sm shadow-accent/15"
+                            >
                                 Launch App
                             </Button>
                         </Link>
@@ -597,14 +609,14 @@ export const Welcome: React.FC = () => {
                     <div className="space-y-8 max-w-4xl mx-auto">
                         <Badge
                             variant="outline"
-                            className="rounded-full py-1 px-4 text-[10px] font-mono uppercase tracking-[0.2em] border-border text-muted-foreground bg-muted/40"
+                            className="rounded-full py-1 px-4 text-[10px] font-mono uppercase tracking-[0.2em] border-accent/25 text-accent bg-accent/5"
                         >
                             Distributed Publishing Engine
                         </Badge>
 
                         <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.08] text-foreground">
                             Reliable async publishing <br />
-                            <span className="text-muted-foreground">
+                            <span className="text-accent">
                                 engineered for failure safety.
                             </span>
                         </h1>
@@ -622,7 +634,8 @@ export const Welcome: React.FC = () => {
                             <Link to="/register" className="w-full sm:w-auto">
                                 <Button
                                     size="lg"
-                                    className="w-full sm:w-auto rounded-lg h-12 px-8 text-xs font-black uppercase tracking-widest gap-2"
+                                    variant="accent"
+                                    className="w-full sm:w-auto rounded-lg h-12 px-8 text-xs font-black uppercase tracking-widest gap-2 shadow-lg shadow-accent/15"
                                 >
                                     Start Live Demo{" "}
                                     <ArrowRight className="w-4 h-4" />
@@ -703,7 +716,7 @@ export const Welcome: React.FC = () => {
                         <div className="text-left max-w-3xl space-y-4">
                             <Badge
                                 variant="outline"
-                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-border/60 text-muted-foreground bg-card"
+                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-accent/25 text-accent bg-accent/5"
                             >
                                 The Distributed Inconsistency Challenge
                             </Badge>
@@ -784,7 +797,7 @@ export const Welcome: React.FC = () => {
                             <div className="lg:col-span-5 space-y-6 text-left">
                                 <Badge
                                     variant="outline"
-                                    className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-border/60 text-muted-foreground bg-card"
+                                    className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-accent/25 text-accent bg-accent/5"
                                 >
                                     Defensive Architecture
                                 </Badge>
@@ -870,7 +883,7 @@ export const Welcome: React.FC = () => {
                         <div className="text-center max-w-2xl mx-auto space-y-4">
                             <Badge
                                 variant="outline"
-                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-border/60 text-muted-foreground bg-card"
+                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-accent/25 text-accent bg-accent/5"
                             >
                                 Core Capabilities
                             </Badge>
@@ -925,7 +938,7 @@ export const Welcome: React.FC = () => {
                         <div className="text-left max-w-3xl space-y-4 mb-16">
                             <Badge
                                 variant="outline"
-                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-border/60 text-muted-foreground bg-card"
+                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-accent/25 text-accent bg-accent/5"
                             >
                                 Operational Lifecycle
                             </Badge>
@@ -1010,7 +1023,7 @@ export const Welcome: React.FC = () => {
                         <div className="text-center max-w-2xl mx-auto space-y-4">
                             <Badge
                                 variant="outline"
-                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-border/60 text-muted-foreground bg-card"
+                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-accent/25 text-accent bg-accent/5"
                             >
                                 Simulation Sandbox
                             </Badge>
@@ -1066,7 +1079,7 @@ export const Welcome: React.FC = () => {
                                                 className={cn(
                                                     "p-4 rounded-xl border text-left transition-all duration-300 relative overflow-hidden disabled:opacity-60",
                                                     simType === sc.id
-                                                        ? "border-white bg-muted text-foreground shadow-lg shadow-white/5"
+                                                        ? "border-accent bg-accent/5 text-foreground shadow-lg shadow-accent/5"
                                                         : "border-border bg-zinc-950/60 text-muted-foreground hover:border-border/60 hover:text-foreground",
                                                 )}
                                             >
@@ -1084,7 +1097,8 @@ export const Welcome: React.FC = () => {
                                 <Button
                                     onClick={() => runSimulation(simType)}
                                     disabled={isSimulating}
-                                    className="w-full h-11 bg-white hover:bg-zinc-200 text-black font-extrabold text-xs uppercase tracking-widest rounded-lg flex items-center justify-center gap-2"
+                                    variant="accent"
+                                    className="w-full h-11 rounded-lg flex items-center justify-center gap-2 font-extrabold text-xs uppercase tracking-widest shadow-lg shadow-accent/15"
                                 >
                                     {isSimulating ? (
                                         <>
@@ -1315,7 +1329,7 @@ export const Welcome: React.FC = () => {
                         <div className="max-w-3xl space-y-4 mb-16">
                             <Badge
                                 variant="outline"
-                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-border/60 text-muted-foreground bg-card"
+                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-accent/25 text-accent bg-accent/5"
                             >
                                 System Guarantees
                             </Badge>
@@ -1392,7 +1406,7 @@ export const Welcome: React.FC = () => {
                         <div className="max-w-3xl space-y-4 mb-16 text-left mx-auto md:text-center">
                             <Badge
                                 variant="outline"
-                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-border/60 text-muted-foreground bg-card"
+                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-accent/25 text-accent bg-accent/5"
                             >
                                 Architecture Blueprint
                             </Badge>
@@ -1407,104 +1421,107 @@ export const Welcome: React.FC = () => {
                         </div>
 
                         {/* Visual architecture diagram */}
-                        <div className="max-w-5xl mx-auto p-6 md:p-8 rounded-[2rem] border border-border bg-muted/40 space-y-12">
-                            {/* Diagram Rows */}
-                            <div className="flex flex-col gap-12 items-center text-xs font-mono font-extrabold relative">
-                                {/* Row 1: Clients */}
-                                <div className="flex gap-4">
-                                    <div className="px-4 py-2 bg-muted border border-zinc-850 rounded-lg text-muted-foreground">
-                                        Web App Client
-                                    </div>
-                                    <div className="px-4 py-2 bg-muted border border-zinc-850 rounded-lg text-muted-foreground">
-                                        API/CLI Client
-                                    </div>
-                                </div>
-
-                                <div className="h-6 w-px bg-border"></div>
-
-                                {/* Row 2: Ingestion layer */}
-                                <div className="p-5 rounded-2xl border border-border/60 bg-zinc-950/80 w-full max-w-xl space-y-3">
-                                    <span className="text-[10px] text-muted-foreground uppercase tracking-widest block text-center">
-                                        API Gateway Ingestion Layer
-                                    </span>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="p-3 bg-muted border border-zinc-850 rounded-xl">
-                                            <h4>Traefik Reverse Proxy</h4>
-                                            <span className="text-[9px] text-muted-foreground block mt-1">
-                                                Routes & Path Mapping
-                                            </span>
+                        <div className="max-w-5xl mx-auto relative z-10">
+                            {/* 3 Column Modular Cards */}
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-xs font-mono font-extrabold text-left">
+                                
+                                {/* Card 1: Ingestion */}
+                                <div className="rounded-[2rem] border border-border bg-card/30 backdrop-blur-sm p-6 md:p-8 space-y-6 hover:border-accent/30 hover:-translate-y-1 transition-all duration-500 relative group overflow-hidden flex flex-col justify-between">
+                                    <div className="absolute top-0 right-0 w-24 h-24 bg-accent/5 rounded-full blur-2xl pointer-events-none group-hover:bg-accent/10 transition-colors"></div>
+                                    <div className="space-y-6">
+                                        <div className="flex items-center justify-between pb-3 border-b border-border/50">
+                                            <span className="text-[10px] text-accent uppercase tracking-[0.2em]">01. Ingestion</span>
+                                            <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></div>
                                         </div>
-                                        <div className="p-3 bg-muted border border-zinc-850 rounded-xl">
-                                            <h4>FastAPI Gateway</h4>
-                                            <span className="text-[9px] text-muted-foreground block mt-1">
-                                                Ingestion & Validation
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="h-6 w-px bg-border"></div>
-
-                                {/* Row 3: Redis Stream queue transport */}
-                                <div className="p-4 rounded-xl border border-border/60 bg-zinc-950 w-full max-w-sm space-y-2 text-center">
-                                    <span className="text-[9px] text-muted-foreground uppercase tracking-widest">
-                                        Queue Transport (Redis Streams)
-                                    </span>
-                                    <div className="p-2 bg-muted border border-zinc-850 rounded-lg text-blue-400 flex items-center justify-center gap-2">
-                                        <GitBranch className="w-4 h-4" />
-                                        <span>
-                                            stream:social-post •
-                                            stream:social-publish
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div className="h-6 w-px bg-border"></div>
-
-                                {/* Row 4: Distributed worker domains */}
-                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 w-full">
-                                    {[
-                                        {
-                                            service: "identity-service",
-                                            desc: "Auth, users & tokens",
-                                            db: "identity-db",
-                                        },
-                                        {
-                                            service: "social-post-service",
-                                            desc: "Post content metadata",
-                                            db: "social-post-db",
-                                        },
-                                        {
-                                            service: "social-account-service",
-                                            desc: "Account integrations",
-                                            db: "social-account-db",
-                                        },
-                                        {
-                                            service: "social-publish-service",
-                                            desc: "Step execution & dispatch",
-                                            db: "social-publish-db",
-                                        },
-                                    ].map((srv, idx) => (
-                                        <div
-                                            key={idx}
-                                            className="p-4 rounded-2xl border border-border/60 bg-zinc-950/60 text-left space-y-3"
-                                        >
-                                            <span className="text-[9px] text-muted-foreground uppercase tracking-wider block">
-                                                Domain {idx + 1}
-                                            </span>
-                                            <div className="p-2.5 bg-muted border border-border/40 rounded-xl text-purple-400 text-[10px]">
-                                                {srv.service}
+                                        <div className="space-y-4">
+                                            <div>
+                                                <h4 className="text-[11px] text-foreground uppercase tracking-wide mb-2">Ingress Clients</h4>
+                                                <div className="grid grid-cols-2 gap-2 text-center text-[10px]">
+                                                    <div className="py-2.5 px-3 bg-zinc-950/60 border border-border/40 rounded-xl text-muted-foreground">Web App</div>
+                                                    <div className="py-2.5 px-3 bg-zinc-950/60 border border-border/40 rounded-xl text-muted-foreground">API / CLI</div>
+                                                </div>
                                             </div>
-                                            <div className="p-2 bg-muted/60 border border-border rounded-lg text-[9px] text-muted-foreground">
-                                                {srv.desc}
-                                            </div>
-                                            <div className="p-2 bg-zinc-950 border border-border/40 rounded-lg text-[9px] text-orange-400 flex items-center gap-1">
-                                                <Database className="w-3.5 h-3.5" />
-                                                <span>{srv.db}</span>
+                                            <div className="space-y-2">
+                                                <h4 className="text-[11px] text-foreground uppercase tracking-wide">Gateway Stack</h4>
+                                                <div className="p-3.5 bg-zinc-950/80 border border-border/60 rounded-2xl space-y-2">
+                                                    <div>
+                                                        <h5 className="text-[10px] text-foreground">Traefik Proxy</h5>
+                                                        <span className="text-[9px] text-muted-foreground font-medium block mt-0.5">Edge routing & path mapping</span>
+                                                    </div>
+                                                    <div className="h-px bg-border/40" />
+                                                    <div>
+                                                        <h5 className="text-[10px] text-foreground">FastAPI Gateway</h5>
+                                                        <span className="text-[9px] text-muted-foreground font-medium block mt-0.5">Ingestion, auth & validation</span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                    ))}
+                                    </div>
                                 </div>
+
+                                {/* Card 2: Transport */}
+                                <div className="rounded-[2rem] border border-border bg-card/30 backdrop-blur-sm p-6 md:p-8 space-y-6 hover:border-blue-500/30 hover:-translate-y-1 transition-all duration-500 relative group overflow-hidden flex flex-col justify-between">
+                                    <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl pointer-events-none group-hover:bg-blue-500/10 transition-colors"></div>
+                                    <div className="space-y-6">
+                                        <div className="flex items-center justify-between pb-3 border-b border-border/50">
+                                            <span className="text-[10px] text-blue-400 uppercase tracking-[0.2em]">02. Transport</span>
+                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                                        </div>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <h4 className="text-[11px] text-foreground uppercase tracking-wide mb-2">Message Queue</h4>
+                                                <p className="text-[10px] text-muted-foreground font-medium leading-relaxed">
+                                                    Redis Streams acts as an immutable journal, absorbing spikes in traffic and decoupling ingest rate from database updates.
+                                                </p>
+                                            </div>
+                                            <div className="p-4 bg-zinc-950/80 border border-border/60 rounded-2xl space-y-3">
+                                                <span className="text-[9px] text-blue-400 uppercase tracking-widest block text-center">Active Streams</span>
+                                                <div className="space-y-2 text-[9px]">
+                                                    <div className="p-2 bg-muted/60 border border-border/40 rounded-xl flex items-center gap-2">
+                                                        <GitBranch className="w-3.5 h-3.5 text-blue-500" />
+                                                        <span>stream:social-post</span>
+                                                    </div>
+                                                    <div className="p-2 bg-muted/60 border border-border/40 rounded-xl flex items-center gap-2">
+                                                        <GitBranch className="w-3.5 h-3.5 text-blue-500" />
+                                                        <span>stream:social-publish</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Card 3: Execution */}
+                                <div className="rounded-[2rem] border border-border bg-card/30 backdrop-blur-sm p-6 md:p-8 space-y-6 hover:border-purple-500/30 hover:-translate-y-1 transition-all duration-500 relative group overflow-hidden flex flex-col justify-between">
+                                    <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-full blur-2xl pointer-events-none group-hover:bg-purple-500/10 transition-colors"></div>
+                                    <div className="space-y-6">
+                                        <div className="flex items-center justify-between pb-3 border-b border-border/50">
+                                            <span className="text-[10px] text-purple-400 uppercase tracking-[0.2em]">03. Workers</span>
+                                            <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
+                                        </div>
+                                        <div className="space-y-3">
+                                            {[
+                                                { service: "identity-service", desc: "Auth, users & tokens", db: "identity-db" },
+                                                { service: "social-post-service", desc: "Post content metadata", db: "social-post-db" },
+                                                { service: "social-account-service", desc: "Account integrations", db: "social-account-db" },
+                                                { service: "social-publish-service", desc: "Step execution & dispatch", db: "social-publish-db" },
+                                            ].map((srv, idx) => (
+                                                <div key={idx} className="p-2.5 rounded-xl border border-border bg-zinc-950/60 flex items-center justify-between gap-3 hover:border-purple-500/20 transition-all duration-300">
+                                                    <div className="space-y-0.5">
+                                                        <span className="text-[8px] text-muted-foreground uppercase tracking-widest block">Domain {idx + 1}</span>
+                                                        <span className="text-[10px] text-purple-400">{srv.service}</span>
+                                                        <span className="text-[8px] text-muted-foreground font-medium block">{srv.desc}</span>
+                                                    </div>
+                                                    <div className="px-2 py-1 bg-muted border border-border/40 rounded-lg text-orange-400 text-[8.5px] flex items-center gap-1 shrink-0">
+                                                        <Database className="w-3 h-3" />
+                                                        <span>{srv.db.replace("-db", "")}</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -1519,7 +1536,7 @@ export const Welcome: React.FC = () => {
                         <div className="space-y-4 max-w-3xl">
                             <Badge
                                 variant="outline"
-                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-border/60 text-muted-foreground bg-card"
+                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-accent/25 text-accent bg-accent/5"
                             >
                                 Engineering Deep Dive
                             </Badge>
@@ -1544,7 +1561,7 @@ export const Welcome: React.FC = () => {
                                         className={cn(
                                             "p-4 rounded-xl border text-left transition-all duration-300 font-mono text-xs font-black uppercase tracking-wider",
                                             activeTab === tab.id
-                                                ? "border-border/60 bg-muted text-foreground"
+                                                ? "border-accent bg-accent/5 text-accent"
                                                 : "border-zinc-950 bg-muted/40 text-muted-foreground hover:text-foreground hover:border-border",
                                         )}
                                     >
@@ -1578,7 +1595,7 @@ export const Welcome: React.FC = () => {
                                                             key={index}
                                                             className="flex items-start gap-3 text-xs text-foreground"
                                                         >
-                                                            <div className="w-1.5 h-1.5 rounded-full bg-white mt-1.5 shrink-0"></div>
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-accent mt-1.5 shrink-0"></div>
                                                             <p className="leading-relaxed font-medium">
                                                                 {bullet}
                                                             </p>
@@ -1609,7 +1626,7 @@ export const Welcome: React.FC = () => {
                         <div className="max-w-3xl space-y-4 mb-16">
                             <Badge
                                 variant="outline"
-                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-border/60 text-muted-foreground bg-card"
+                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-accent/25 text-accent bg-accent/5"
                             >
                                 Technical Stack
                             </Badge>
@@ -1686,97 +1703,251 @@ export const Welcome: React.FC = () => {
                     id="pricing-roadmap"
                     className="border-t border-border bg-[#070708] py-20 text-left"
                 >
-                    <div className="max-w-7xl mx-auto px-6">
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                            {/* FAQ Column */}
-                            <div className="lg:col-span-7 space-y-8">
-                                <div className="space-y-3">
-                                    <Badge
-                                        variant="outline"
-                                        className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-border/60 text-muted-foreground bg-card"
-                                    >
-                                        Developer FAQ
-                                    </Badge>
-                                    <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground leading-tight">
-                                        Under the Hood Inquiries
-                                    </h2>
-                                </div>
+                    <div className="max-w-7xl mx-auto px-6 space-y-20">
+                        {/* Section Header */}
+                        <div className="max-w-3xl space-y-4">
+                            <Badge
+                                variant="outline"
+                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-border/60 text-accent bg-card"
+                            >
+                                Pricing & Plans
+                            </Badge>
+                            <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-foreground leading-tight">
+                                Transparent plans for any scale
+                            </h2>
+                            <p className="text-muted-foreground text-xs md:text-sm leading-relaxed">
+                                Choose our managed cloud service for a
+                                hassle-free deployment, or host the open-source
+                                core codebase on your own infrastructure.
+                            </p>
+                        </div>
 
-                                <div className="divide-y divide-border">
-                                    {[
-                                        {
-                                            q: "Why use Redis Streams instead of Celery/RabbitMQ?",
-                                            a: "Celery introduces heavy task state tracking overhead and RabbitMQ requires separate AMQP management. Redis Streams delivers high message throughput via Consumer Groups while serving as a fast cache for lease management and idempotency checks.",
-                                        },
-                                        {
-                                            q: "How does step checkpointing work during worker failure?",
-                                            a: "Our StateManager logs each checkpoint step (e.g. step_1, step_2) to PostgreSQL before execution continues. When a crashed job is re-acquired, the worker queries PostgreSQL and skips already completed steps.",
-                                        },
-                                        {
-                                            q: "How is idempotency guaranteed if Redis goes down?",
-                                            a: "Redis is the primary speed layer for deduplication. If Redis goes down, database-level unique constraints in PostgreSQL serve as a durable secondary boundary, rejecting duplicate record inserts.",
-                                        },
-                                        {
-                                            q: "Can DLQ jobs be replayed automatically?",
-                                            a: "No. To prevent cascading failures under retry storms, failed entries are isolated to the DLQ stream. Developers must explicitly trigger replay via the Gateway POST /dlq/{service}/{job_id}/replay endpoint.",
-                                        },
-                                    ].map((faq, i) => (
-                                        <div
-                                            key={i}
-                                            className="py-6 first:pt-0 last:pb-0 space-y-2"
-                                        >
-                                            <h4 className="text-sm font-extrabold text-foreground">
-                                                {faq.q}
-                                            </h4>
-                                            <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-                                                {faq.a}
-                                            </p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Pricing Column */}
-                            <div className="lg:col-span-5 rounded-[2rem] border border-border bg-muted/20 p-8 flex flex-col justify-between space-y-8 relative overflow-hidden">
-                                <div className="absolute top-0 right-0 bg-white text-black px-4 py-1.5 rounded-bl-xl text-[9px] font-mono font-black uppercase tracking-widest">
-                                    Developer Tier
-                                </div>
-                                <div className="space-y-4">
-                                    <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest block">
-                                        Deployment License
-                                    </span>
-                                    <h3 className="text-3xl font-extrabold text-foreground">
-                                        Open Source
-                                    </h3>
-                                    <div className="text-xs text-muted-foreground font-medium leading-relaxed">
-                                        AD. Publish is fully open-source under
-                                        the MIT License. Scale the cluster
-                                        locally or in your cloud infrastructure
-                                        with zero licensing fees.
+                        {/* Pricing Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            {/* Starter Plan */}
+                            <div className="rounded-[2.5rem] border border-border bg-card/40 backdrop-blur-md p-8 flex flex-col justify-between hover:border-accent/20 transition-all duration-500 hover:shadow-lg relative group">
+                                <div className="space-y-6">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">
+                                            Starter
+                                        </span>
                                     </div>
-                                    <ul className="space-y-3 pt-4">
+                                    <div className="space-y-1">
+                                        <div className="flex items-baseline text-foreground">
+                                            <span className="text-4xl md:text-5xl font-black tracking-tighter">
+                                                $0
+                                            </span>
+                                            <span className="text-xs text-muted-foreground font-bold italic opacity-40 ml-1">
+                                                /month
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                                            Perfect for exploring the platform
+                                            and personal use.
+                                        </p>
+                                    </div>
+
+                                    <div className="h-px bg-border/40 w-full" />
+
+                                    <ul className="space-y-4">
                                         {[
-                                            "Full cluster orchestrations (Docker Compose)",
-                                            "Unlimited worker nodes scaling",
-                                            "Distributed tracing & telemetry config",
-                                            "Automated retry & state recovery patterns",
-                                        ].map((p, idx) => (
+                                            "3 Social Profiles",
+                                            "10 Posts / Month",
+                                            "Basic Analytics",
+                                            "Standard Support",
+                                        ].map((feat, idx) => (
                                             <li
                                                 key={idx}
-                                                className="flex items-center gap-2.5 text-xs text-foreground font-medium"
+                                                className="flex items-start gap-3 text-xs text-foreground/80 font-medium"
                                             >
-                                                <CheckCircle2 className="w-4 h-4 text-foreground shrink-0" />
-                                                <span>{p}</span>
+                                                <div className="p-0.5 rounded-full bg-accent/10 text-accent mt-0.5 shadow-inner">
+                                                    <Check className="w-3 h-3 stroke-[3px]" />
+                                                </div>
+                                                <span>{feat}</span>
                                             </li>
                                         ))}
                                     </ul>
                                 </div>
+                                <div className="pt-8">
+                                    <Link to="/register">
+                                        <Button
+                                            variant="outline"
+                                            className="w-full h-12 rounded-xl font-black uppercase tracking-widest text-[10px] active:scale-95 transition-transform"
+                                        >
+                                            Get Started
+                                        </Button>
+                                    </Link>
+                                </div>
+                            </div>
 
-                                <Link to="/register">
-                                    <Button className="w-full h-11 bg-white hover:bg-zinc-200 text-black font-extrabold text-xs uppercase tracking-widest rounded-lg">
-                                        Spin Up Cluster
-                                    </Button>
-                                </Link>
+                            {/* Pro Plan (Featured) */}
+                            <div className="rounded-[2.5rem] border border-accent bg-accent/[0.02] backdrop-blur-md p-8 flex flex-col justify-between shadow-xl shadow-accent/[0.03] hover:shadow-accent/[0.08] transition-all duration-500 hover:-translate-y-1 relative group ring-1 ring-accent">
+                                <div className="absolute -right-10 -top-10 w-40 h-40 bg-accent/5 rounded-full blur-3xl group-hover:bg-accent/10 transition-all duration-700"></div>
+                                <div className="space-y-6 relative z-10">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-accent">
+                                            Pro Plan
+                                        </span>
+                                        <Badge
+                                            variant="success"
+                                            className="bg-accent/10 text-accent border-accent/20 font-black text-[9px] uppercase tracking-widest rounded-full px-2.5 py-0.5"
+                                        >
+                                            <Star className="w-2.5 h-2.5 mr-1 fill-accent text-accent" />{" "}
+                                            Popular
+                                        </Badge>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <div className="flex items-baseline text-foreground">
+                                            <span className="text-4xl md:text-5xl font-black tracking-tighter">
+                                                $29
+                                            </span>
+                                            <span className="text-xs text-accent font-bold italic opacity-60 ml-1">
+                                                /month
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                                            Ideal for growing businesses and
+                                            social media managers.
+                                        </p>
+                                    </div>
+
+                                    <div className="h-px bg-accent/20 w-full" />
+
+                                    <ul className="space-y-4">
+                                        {[
+                                            "10 Social Profiles",
+                                            "Unlimited Posts",
+                                            "Advanced Analytics",
+                                            "Priority Support",
+                                            "Team Collaboration",
+                                        ].map((feat, idx) => (
+                                            <li
+                                                key={idx}
+                                                className="flex items-start gap-3 text-xs text-foreground font-semibold"
+                                            >
+                                                <div className="p-0.5 rounded-full bg-accent text-accent-foreground mt-0.5 shadow-md shadow-accent/20">
+                                                    <Check className="w-3 h-3 stroke-[3px]" />
+                                                </div>
+                                                <span>{feat}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                                <div className="pt-8 relative z-10">
+                                    <Link to="/register">
+                                        <Button
+                                            variant="accent"
+                                            className="w-full h-12 rounded-xl font-black uppercase tracking-widest text-[10px] active:scale-95 transition-all shadow-lg shadow-accent/15"
+                                        >
+                                            Start Free Trial
+                                        </Button>
+                                    </Link>
+                                </div>
+                            </div>
+
+                            {/* Enterprise Plan */}
+                            <div className="rounded-[2.5rem] border border-border bg-card/40 backdrop-blur-md p-8 flex flex-col justify-between hover:border-accent/20 transition-all duration-500 hover:shadow-lg relative group">
+                                <div className="space-y-6">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">
+                                            Enterprise
+                                        </span>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <div className="flex items-baseline text-foreground">
+                                            <span className="text-4xl md:text-5xl font-black tracking-tighter">
+                                                $99
+                                            </span>
+                                            <span className="text-xs text-muted-foreground font-bold italic opacity-40 ml-1">
+                                                /month
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                                            Complete solution for large agencies
+                                            and corporations.
+                                        </p>
+                                    </div>
+
+                                    <div className="h-px bg-border/40 w-full" />
+
+                                    <ul className="space-y-4">
+                                        {[
+                                            "Unlimited everything",
+                                            "Custom Reporting",
+                                            "Dedicated Manager",
+                                            "API Access",
+                                            "SSO integration",
+                                        ].map((feat, idx) => (
+                                            <li
+                                                key={idx}
+                                                className="flex items-start gap-3 text-xs text-foreground/80 font-medium"
+                                            >
+                                                <div className="p-0.5 rounded-full bg-accent/10 text-accent mt-0.5 shadow-inner">
+                                                    <Check className="w-3 h-3 stroke-[3px]" />
+                                                </div>
+                                                <span>{feat}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                                <div className="pt-8">
+                                    <Link to="/register">
+                                        <Button
+                                            variant="outline"
+                                            className="w-full h-12 rounded-xl font-black uppercase tracking-widest text-[10px] active:scale-95 transition-transform"
+                                        >
+                                            Contact Sales
+                                        </Button>
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* FAQ Section */}
+                        <div className="pt-8 border-t border-border/40 space-y-12">
+                            <div className="space-y-3">
+                                <Badge
+                                    variant="outline"
+                                    className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-accent/25 text-accent bg-accent/5"
+                                >
+                                    Developer FAQ
+                                </Badge>
+                                <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground leading-tight">
+                                    Under the Hood Inquiries
+                                </h2>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+                                {[
+                                    {
+                                        q: "Why use Redis Streams instead of Celery/RabbitMQ?",
+                                        a: "Celery introduces heavy task state tracking overhead and RabbitMQ requires separate AMQP management. Redis Streams delivers high message throughput via Consumer Groups while serving as a fast cache for lease management and idempotency checks.",
+                                    },
+                                    {
+                                        q: "How does step checkpointing work during worker failure?",
+                                        a: "Our StateManager logs each checkpoint step (e.g. step_1, step_2) to PostgreSQL before execution continues. When a crashed job is re-acquired, the worker queries PostgreSQL and skips already completed steps.",
+                                    },
+                                    {
+                                        q: "How is idempotency guaranteed if Redis goes down?",
+                                        a: "Redis is the primary speed layer for deduplication. If Redis goes down, database-level unique constraints in PostgreSQL serve as a durable secondary boundary, rejecting duplicate record inserts.",
+                                    },
+                                    {
+                                        q: "Can DLQ jobs be replayed automatically?",
+                                        a: "No. To prevent cascading failures under retry storms, failed entries are isolated to the DLQ stream. Developers must explicitly trigger replay via the Gateway POST /dlq/{service}/{job_id}/replay endpoint.",
+                                    },
+                                ].map((faq, i) => (
+                                    <div
+                                        key={i}
+                                        className="p-6 rounded-2xl border border-border/40 bg-card/25 hover:border-accent/15 transition-all duration-300 space-y-2"
+                                    >
+                                        <h4 className="text-sm font-extrabold text-foreground">
+                                            {faq.q}
+                                        </h4>
+                                        <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                                            {faq.a}
+                                        </p>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
@@ -1784,13 +1955,19 @@ export const Welcome: React.FC = () => {
 
                 {/* FINAL CTA SECTION */}
                 <section className="max-w-7xl mx-auto px-6 py-20">
-                    <div className="relative rounded-[2.5rem] bg-white text-black overflow-hidden p-12 md:p-20 text-center space-y-8">
+                    <div className="relative rounded-[2.5rem] border border-border bg-card/45 backdrop-blur-md overflow-hidden p-12 md:p-20 text-center space-y-8 shadow-2xl hover:border-accent/20 transition-all duration-700 group">
                         {/* Glow details */}
-                        <div className="absolute -top-24 -right-24 w-64 h-64 bg-zinc-200/50 rounded-full blur-[100px] pointer-events-none"></div>
-                        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-zinc-300/40 rounded-full blur-[100px] pointer-events-none"></div>
+                        <div className="absolute -top-24 -right-24 w-80 h-80 bg-accent/5 rounded-full blur-[100px] pointer-events-none group-hover:bg-accent/10 transition-all duration-700"></div>
+                        <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-accent/5 rounded-full blur-[100px] pointer-events-none group-hover:bg-accent/10 transition-all duration-700"></div>
 
                         <div className="space-y-4 relative z-10 max-w-3xl mx-auto">
-                            <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight">
+                            <Badge
+                                variant="outline"
+                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-accent/25 text-accent bg-accent/5"
+                            >
+                                Deployment
+                            </Badge>
+                            <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight text-foreground">
                                 Launch the cluster in your environment
                             </h2>
                             <p className="text-xs md:text-sm text-muted-foreground font-medium max-w-xl mx-auto leading-relaxed">
@@ -1801,26 +1978,62 @@ export const Welcome: React.FC = () => {
                         </div>
 
                         {/* Interactive terminal command copy block */}
-                        <div className="max-w-md mx-auto p-4 rounded-xl bg-card text-foreground border border-border font-mono text-xs flex items-center justify-between shadow-2xl relative z-10">
-                            <span>$ docker compose up --build -d</span>
-                            <Badge
-                                variant="outline"
-                                className="text-[9px] border-border/60 text-muted-foreground bg-card font-mono uppercase px-2 py-0.5 select-none"
+                        <div
+                            onClick={handleCopy}
+                            className="max-w-md mx-auto p-4 rounded-xl bg-zinc-950/60 hover:bg-zinc-950 text-foreground border border-border/60 hover:border-accent/30 font-mono text-xs flex items-center justify-between shadow-2xl relative z-10 cursor-pointer transition-all duration-300 group/term"
+                        >
+                            <div className="flex items-center gap-2.5">
+                                <span className="text-accent font-bold">$</span>
+                                <span className="text-muted-foreground group-hover/term:text-foreground transition-colors select-all">
+                                    docker compose up --build -d
+                                </span>
+                            </div>
+                            <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 px-2.5 rounded-md text-[10px] uppercase tracking-wider font-extrabold flex items-center gap-1.5 hover:bg-background/80"
                             >
-                                READY
-                            </Badge>
+                                {copied ? (
+                                    <>
+                                        <Check className="w-3.5 h-3.5 text-accent" />
+                                        <span className="text-accent">
+                                            Copied
+                                        </span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Copy className="w-3.5 h-3.5 text-muted-foreground group-hover/term:text-foreground transition-colors" />
+                                        <span>Copy</span>
+                                    </>
+                                )}
+                            </Button>
                         </div>
 
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 relative z-10 pt-4">
                             <Link to="/register" className="w-full sm:w-auto">
                                 <Button
                                     size="lg"
-                                    className="w-full sm:w-auto rounded-lg h-12 px-8 text-xs font-black uppercase tracking-widest bg-background text-foreground hover:bg-muted shadow-2xl shadow-black/25 gap-2"
+                                    variant="accent"
+                                    className="w-full sm:w-auto rounded-lg h-12 px-8 text-xs font-black uppercase tracking-widest gap-2 shadow-lg shadow-accent/15"
                                 >
                                     Launch Console{" "}
                                     <ChevronRight className="w-4 h-4 stroke-[3px]" />
                                 </Button>
                             </Link>
+                            <a
+                                href="https://github.com/zerexei/posexei"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full sm:w-auto"
+                            >
+                                <Button
+                                    size="lg"
+                                    variant="outline"
+                                    className="w-full sm:w-auto rounded-lg h-12 px-8 text-xs font-black uppercase tracking-widest gap-2 hover:bg-muted"
+                                >
+                                    <GithubIcon /> GitHub Repository
+                                </Button>
+                            </a>
                         </div>
                     </div>
                 </section>
@@ -1925,8 +2138,8 @@ export const Welcome: React.FC = () => {
 
                 <div className="max-w-7xl mx-auto px-6 pt-12 mt-12 border-t border-border flex flex-col md:flex-row justify-between items-center gap-6 font-mono text-[9px] text-muted-foreground">
                     <p>
-                        © 2026 AD. Publish. All rights reserved. Built under the
-                        MIT Open Source License.
+                        © 2026 AD. Publish. All rights reserved. Codebase
+                        licensed under the MIT License.
                     </p>
                     <div className="flex items-center gap-6">
                         <a
