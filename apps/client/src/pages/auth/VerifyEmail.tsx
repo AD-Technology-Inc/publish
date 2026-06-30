@@ -1,102 +1,175 @@
 import * as React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthLayout } from '@/layouts/AuthLayout';
-import { Button, Input, Label } from '@/components/ui/core';
-import { ArrowRight, ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/core';
+import { ArrowRight, ArrowLeft, LoaderCircle, PartyPopper, RotateCcw } from 'lucide-react';
+
+const OTP_LENGTH = 6;
 
 export const VerifyEmail: React.FC = () => {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = React.useState(false);
     const [isSuccess, setIsSuccess] = React.useState(false);
-    const [code, setCode] = React.useState<string[]>(Array(6).fill(''));
+    const [code, setCode] = React.useState<string[]>(Array(OTP_LENGTH).fill(''));
+    const inputRefs = React.useRef<Array<HTMLInputElement | null>>(Array(OTP_LENGTH).fill(null));
 
-    const handleChange = (element: HTMLInputElement, index: number) => {
-        if (isNaN(Number(element.value))) return;
+    const isComplete = code.every((v) => v !== '');
 
+    /* Focus first input on mount */
+    React.useEffect(() => {
+        inputRefs.current[0]?.focus();
+    }, []);
+
+    const handleChange = (value: string, index: number) => {
+        if (!/^\d*$/.test(value)) return;
+        const digit = value.slice(-1); // only last char
         const newCode = [...code];
-        newCode[index] = element.value;
+        newCode[index] = digit;
         setCode(newCode);
-
-        // Move to next field if current field has a value
-        if (element.value && element.nextSibling) {
-            (element.nextSibling as HTMLInputElement).focus();
+        if (digit && index < OTP_LENGTH - 1) {
+            inputRefs.current[index + 1]?.focus();
         }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
-        if (e.key === 'Backspace' && !code[index] && e.currentTarget.previousSibling) {
-            (e.currentTarget.previousSibling as HTMLInputElement).focus();
+        if (e.key === 'Backspace') {
+            if (code[index]) {
+                const newCode = [...code];
+                newCode[index] = '';
+                setCode(newCode);
+            } else if (index > 0) {
+                inputRefs.current[index - 1]?.focus();
+            }
+        } else if (e.key === 'ArrowLeft' && index > 0) {
+            inputRefs.current[index - 1]?.focus();
+        } else if (e.key === 'ArrowRight' && index < OTP_LENGTH - 1) {
+            inputRefs.current[index + 1]?.focus();
         }
+    };
+
+    /* Paste support */
+    const handlePaste = (e: React.ClipboardEvent, index: number) => {
+        e.preventDefault();
+        const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, OTP_LENGTH);
+        if (!pasted) return;
+        const newCode = [...code];
+        pasted.split('').forEach((char, i) => {
+            if (index + i < OTP_LENGTH) newCode[index + i] = char;
+        });
+        setCode(newCode);
+        const nextFocus = Math.min(index + pasted.length, OTP_LENGTH - 1);
+        inputRefs.current[nextFocus]?.focus();
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        if (!isComplete) return;
         setIsLoading(true);
-        // Simulate email verification
         setTimeout(() => {
             setIsLoading(false);
             setIsSuccess(true);
-            setTimeout(() => {
-                navigate('/dashboard');
-            }, 1500);
+            setTimeout(() => navigate('/dashboard'), 1800);
         }, 1200);
     };
 
     return (
-        <AuthLayout 
-            title="Verify your email" 
-            description="We sent a 6-digit verification code to your email address"
+        <AuthLayout
+            title="Verify your email"
+            description="Enter the 6-digit code we sent to your email address."
         >
-            <div className="grid gap-6 animate-in fade-in slide-in-from-bottom-2 duration-500 text-left">
+            <div className="space-y-6">
                 {isSuccess ? (
-                    <div className="space-y-4 text-center">
-                        <div className="p-4 bg-green-500/5 border border-green-500/20 text-green-400 rounded-xl text-xs font-semibold leading-relaxed">
-                            Email verified successfully. Welcome to the platform! Redirecting to dashboard...
+                    /* ── Success ── */
+                    <div className="space-y-5 text-center">
+                        <div className="flex justify-center">
+                            <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                                <PartyPopper className="w-7 h-7 text-emerald-400" />
+                            </div>
+                        </div>
+                        <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 space-y-1">
+                            <p className="text-xs font-semibold text-zinc-300 leading-relaxed">
+                                Email verified successfully — welcome to AD. Publish!
+                            </p>
+                            <p className="text-[10px] text-zinc-600 font-medium">
+                                Redirecting to your dashboard…
+                            </p>
                         </div>
                     </div>
                 ) : (
+                    /* ── Form ── */
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="space-y-2 text-center">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Verification Code</Label>
-                            <div className="flex justify-between gap-2 pt-2">
-                                {code.map((data, index) => (
-                                    <Input
+                        {/* OTP inputs */}
+                        <div className="space-y-2">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 px-0.5">
+                                Verification code
+                            </p>
+                            <div className="flex items-center justify-between gap-2">
+                                {code.map((digit, index) => (
+                                    <input
                                         key={index}
+                                        ref={(el) => {
+                                            inputRefs.current[index] = el;
+                                        }}
                                         type="text"
+                                        inputMode="numeric"
                                         maxLength={1}
-                                        value={data}
-                                        onChange={e => handleChange(e.target, index)}
-                                        onKeyDown={e => handleKeyDown(e, index)}
-                                        className="w-11 h-12 text-center text-lg font-bold rounded-xl border-border bg-muted/10 focus-visible:ring-accent/20 focus-visible:border-accent/40"
+                                        value={digit}
+                                        onChange={(e) => handleChange(e.target.value, index)}
+                                        onKeyDown={(e) => handleKeyDown(e, index)}
+                                        onPaste={(e) => handlePaste(e, index)}
+                                        aria-label={`Digit ${index + 1}`}
+                                        className={[
+                                            'w-full aspect-square max-w-[52px] text-center text-lg font-black rounded-xl border bg-zinc-900/70 text-white',
+                                            'transition-all duration-200 outline-none',
+                                            'focus:border-accent/60 focus:ring-2 focus:ring-accent/20 focus:bg-zinc-800/80',
+                                            digit
+                                                ? 'border-accent/40 bg-zinc-800/60'
+                                                : 'border-zinc-800',
+                                        ].join(' ')}
                                     />
                                 ))}
                             </div>
                         </div>
+
                         <div className="space-y-3">
-                            <Button 
-                                type="submit" 
+                            <Button
+                                type="submit"
                                 variant="accent"
-                                className="w-full h-12 rounded-xl font-bold shadow-lg shadow-accent/15 transition-all hover:scale-[1.02] active:scale-95 border-0 flex items-center justify-center gap-2 group/btn"
-                                disabled={isLoading || code.some(val => val === '')}
+                                disabled={isLoading || !isComplete}
+                                className="w-full h-11 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-accent/10 border-0 flex items-center justify-center gap-2 group/btn transition-all hover:shadow-accent/20"
                             >
-                                <span>{isLoading ? 'Verifying...' : 'Verify Code'}</span>
-                                {!isLoading && <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />}
+                                {isLoading ? (
+                                    <>
+                                        <LoaderCircle className="w-4 h-4 animate-spin" />
+                                        <span>Verifying…</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span>Verify code</span>
+                                        <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform" />
+                                    </>
+                                )}
                             </Button>
-                            <Button 
+
+                            <button
                                 type="button"
-                                variant="outline"
-                                className="w-full h-11 rounded-xl font-bold border-border bg-zinc-950/60 shadow-xs hover:bg-white/5 hover:border-zinc-700 hover:text-foreground transition-all"
+                                onClick={() => setCode(Array(OTP_LENGTH).fill(''))}
+                                className="w-full h-11 rounded-xl border border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800/80 hover:border-zinc-700 text-xs font-bold text-zinc-400 hover:text-white transition-all flex items-center justify-center gap-2"
                             >
-                                Resend Code
-                            </Button>
+                                <RotateCcw className="w-3.5 h-3.5" />
+                                Resend code
+                            </button>
                         </div>
                     </form>
                 )}
 
-                <p className="text-center text-xs text-muted-foreground font-medium mt-2">
-                    <Link to="/register" className="inline-flex items-center gap-1.5 font-black text-accent hover:underline">
+                <p className="text-center text-xs text-zinc-600 font-medium">
+                    <Link
+                        to="/register"
+                        className="inline-flex items-center gap-1.5 font-black text-accent hover:text-accent/80 transition-colors"
+                    >
                         <ArrowLeft className="w-3.5 h-3.5" />
-                        <span>Create another account</span>
+                        Create another account
                     </Link>
                 </p>
             </div>
