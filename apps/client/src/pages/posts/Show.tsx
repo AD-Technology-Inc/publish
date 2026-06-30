@@ -100,7 +100,7 @@ export const PostShow: React.FC = () => {
                                 Full Analysis
                             </Button>
                         </Link>
-                        <Button className="h-12 px-8 rounded-2xl shadow-lg shadow-primary/20 font-bold gap-2 active:scale-95 transition-all outline-none">
+                        <Button variant="accent" className="h-12 px-8 rounded-2xl shadow-lg shadow-accent/15 font-bold gap-2 active:scale-95 transition-all outline-none">
                             <Edit2 className="w-4 h-4" />
                             Edit Publication
                         </Button>
@@ -194,7 +194,7 @@ export const PostShow: React.FC = () => {
                                         <p className="text-3xl font-black text-emerald-500 tracking-tight tabular-nums">4.8%</p>
                                     </div>
                                 </div>
-                                <Button className="w-full rounded-2xl border-0 bg-primary/5 hover:bg-primary/10 h-14 font-black text-[10px] uppercase tracking-[0.2em] text-primary transition-all shadow-none">
+                                <Button variant="ghost" className="w-full rounded-2xl border-0 bg-accent/5 hover:bg-accent/10 h-14 font-black text-[10px] uppercase tracking-[0.2em] text-accent transition-all shadow-none">
                                     Full Insights Console
                                 </Button>
                             </CardContent>
@@ -203,12 +203,12 @@ export const PostShow: React.FC = () => {
                         <Card className="rounded-[2.5rem] border-border/60 bg-card shadow-sm text-left border overflow-hidden">
                             <CardHeader className="p-8 pb-4">
                                 <CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground opacity-60 flex items-center gap-3">
-                                    <Zap className="w-4 h-4 text-primary" /> Publication Metadata
+                                    <Zap className="w-4 h-4 text-accent" /> Publication Metadata
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-8 pt-4 space-y-8">
                                 <div className="flex items-start gap-4 group">
-                                    <div className="w-11 h-11 rounded-2xl bg-muted border border-border flex items-center justify-center shrink-0 transition-colors group-hover:bg-primary/5 group-hover:text-primary group-hover:border-primary/20">
+                                    <div className="w-11 h-11 rounded-2xl bg-muted border border-border flex items-center justify-center shrink-0 transition-colors group-hover:bg-accent/5 group-hover:text-accent group-hover:border-accent/20">
                                         <Calendar className="w-5 h-5 opacity-40 group-hover:opacity-100 transition-opacity" />
                                     </div>
                                     <div className="space-y-1">
@@ -217,7 +217,7 @@ export const PostShow: React.FC = () => {
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-4 group">
-                                    <div className="w-11 h-11 rounded-2xl bg-muted border border-border flex items-center justify-center shrink-0 transition-colors group-hover:bg-primary/5 group-hover:text-primary group-hover:border-primary/20">
+                                    <div className="w-11 h-11 rounded-2xl bg-muted border border-border flex items-center justify-center shrink-0 transition-colors group-hover:bg-accent/5 group-hover:text-accent group-hover:border-accent/20">
                                         <History className="w-5 h-5 opacity-40 group-hover:opacity-100 transition-opacity" />
                                     </div>
                                     <div className="space-y-1">
@@ -226,7 +226,7 @@ export const PostShow: React.FC = () => {
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-4 group">
-                                    <div className="w-11 h-11 rounded-2xl bg-muted border border-border flex items-center justify-center shrink-0 transition-colors group-hover:bg-primary/5 group-hover:text-primary group-hover:border-primary/20">
+                                    <div className="w-11 h-11 rounded-2xl bg-muted border border-border flex items-center justify-center shrink-0 transition-colors group-hover:bg-accent/5 group-hover:text-accent group-hover:border-accent/20">
                                         <Globe className="w-5 h-5 opacity-40 group-hover:opacity-100 transition-opacity" />
                                     </div>
                                     <div className="space-y-1">

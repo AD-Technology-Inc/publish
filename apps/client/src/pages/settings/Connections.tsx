@@ -145,7 +145,7 @@ export const Connections: React.FC = () => {
                                 <button
                                     key={provider.id}
                                     onClick={() => openConnectDialog(provider)}
-                                    className="group flex flex-col items-center justify-center rounded-3xl border border-border bg-card p-6 transition-all duration-300 hover:border-primary/30 hover:bg-primary/5 hover:shadow-xl hover:shadow-primary/[0.02]"
+                                    className="group flex flex-col items-center justify-center rounded-3xl border border-border bg-card p-6 transition-all duration-300 hover:border-accent/30 hover:bg-accent/5 hover:shadow-xl hover:shadow-accent/[0.02]"
                                 >
                                     <div className={cn('mb-4 rounded-2xl p-4 transition-transform group-hover:scale-110 duration-500 shadow-sm', provider.bg)}>
                                         <provider.icon className={cn('h-7 w-7', provider.color)} />
@@ -215,7 +215,8 @@ export const Connections: React.FC = () => {
 
                             <DialogFooter>
                                 <Button
-                                    className="w-full h-12 rounded-2xl font-bold shadow-lg shadow-primary/20"
+                                    variant="accent"
+                                    className="w-full h-12 rounded-2xl font-bold shadow-lg shadow-accent/15"
                                     onClick={handleConnect}
                                     disabled={connecting}
                                 >
@@ -248,7 +249,7 @@ export const Connections: React.FC = () => {
                                     const status = getStatusBadge(account.status);
                                     if (!provider) return null;
                                     return (
-                                        <Card key={account.id} className="overflow-hidden border-border/50 bg-card shadow-sm hover:border-primary/10 transition-all rounded-[2rem]">
+                                        <Card key={account.id} className="overflow-hidden border-border/50 bg-card shadow-sm hover:border-accent/20 transition-all rounded-[2rem]">
                                             <CardContent className="p-5">
                                                 <div className="flex items-center justify-between gap-4">
                                                     <div className="flex min-w-0 items-center gap-4">

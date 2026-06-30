@@ -13,6 +13,18 @@ export const routes = {
         name: "register",
         path: "/register",
     },
+    forgotPassword: {
+        name: "forgotPassword",
+        path: "/forgot-password",
+    },
+    resetPassword: {
+        name: "resetPassword",
+        path: "/reset-password",
+    },
+    verifyEmail: {
+        name: "verifyEmail",
+        path: "/verify-email",
+    },
 } as const;
 
 export const authRoutes: RouteObject[] = [
@@ -26,6 +38,24 @@ export const authRoutes: RouteObject[] = [
         path: routes.register.path,
         lazy: async () => ({
             Component: (await import("@/pages/auth/Register")).default,
+        }),
+    },
+    {
+        path: routes.forgotPassword.path,
+        lazy: async () => ({
+            Component: (await import("@/pages/auth/ForgotPassword")).default,
+        }),
+    },
+    {
+        path: routes.resetPassword.path,
+        lazy: async () => ({
+            Component: (await import("@/pages/auth/ResetPassword")).default,
+        }),
+    },
+    {
+        path: routes.verifyEmail.path,
+        lazy: async () => ({
+            Component: (await import("@/pages/auth/VerifyEmail")).default,
         }),
     },
 ];

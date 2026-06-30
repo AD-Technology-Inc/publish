@@ -51,6 +51,19 @@
     background-color: color-mix(in srgb, var(--secondary) 90%, black);
 }
 
+.button-accent {
+    background-color: var(--accent);
+    color: var(--accent-foreground);
+}
+
+.button-accent:hover {
+    background-color: var(--accent-hover);
+}
+
+.button-accent:active {
+    background-color: color-mix(in srgb, var(--accent-hover) 90%, black);
+}
+
 .button-outline {
     border-color: var(--border);
     background-color: var(--background);

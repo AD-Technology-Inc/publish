@@ -79,13 +79,13 @@ export const Billing: React.FC = () => {
                     {/* Current Plan Overview */}
                     <section className="space-y-4">
                         <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1 opacity-60">Your active subscription</h3>
-                        <Card className="rounded-[2.5rem] border-border/60 bg-linear-to-br from-primary/[0.03] to-transparent shadow-none overflow-hidden relative group">
-                            <div className="absolute -right-10 -top-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-all duration-700"></div>
+                        <Card className="rounded-[2.5rem] border-border/60 bg-linear-to-br from-accent/5 to-transparent shadow-none overflow-hidden relative group">
+                            <div className="absolute -right-10 -top-10 w-40 h-40 bg-accent/5 rounded-full blur-3xl group-hover:bg-accent/10 transition-all duration-700"></div>
                             <CardContent className="p-8 relative z-10">
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
                                     <div className="space-y-4">
                                         <div className="flex items-center gap-4">
-                                            <div className="p-4 rounded-2xl bg-primary text-primary-foreground shadow-xl shadow-primary/20">
+                                            <div className="p-4 rounded-2xl bg-accent text-accent-foreground shadow-xl shadow-accent/15">
                                                 <ShieldCheck className="w-6 h-6" />
                                             </div>
                                             <div>
@@ -110,7 +110,7 @@ export const Billing: React.FC = () => {
                                             <span className="text-5xl font-black text-foreground tracking-tighter">$29</span>
                                             <span className="text-sm text-muted-foreground font-bold italic opacity-40 ml-1">/month</span>
                                         </div>
-                                        <Button className="w-full rounded-2xl font-bold h-12 shadow-lg shadow-primary/20">Manage Billing</Button>
+                                        <Button variant="accent" className="w-full rounded-2xl font-bold h-12 shadow-lg shadow-accent/15">Manage Billing</Button>
                                         <Button variant="ghost" className="w-full rounded-2xl font-bold h-12 text-xs text-muted-foreground hover:bg-rose-500/5 hover:text-rose-500">Cancel Subscription</Button>
                                     </div>
                                 </div>
@@ -122,18 +122,18 @@ export const Billing: React.FC = () => {
                     <section className="space-y-6">
                         <div className="flex items-center justify-between px-1">
                             <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">Explore Upgrade Options</h3>
-                            <Badge variant="outline" className="font-black text-[9px] uppercase tracking-widest rounded-full px-3 py-1 bg-primary/5 text-primary border-primary/20">Save 20% Annual</Badge>
+                            <Badge variant="outline" className="font-black text-[9px] uppercase tracking-widest rounded-full px-3 py-1 bg-accent/5 text-accent border-accent/20">Save 20% Annual</Badge>
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {plans.map((plan) => (
                                 <Card key={plan.name} 
                                       className={cn('rounded-[2.5rem] border-border/60 bg-card shadow-sm transition-all duration-500 flex flex-col', 
-                                                 plan.current ? 'ring-2 ring-primary bg-primary/[0.01] shadow-xl shadow-primary/[0.05]' : 'hover:border-primary/20 hover:shadow-lg')}>
+                                                 plan.current ? 'ring-2 ring-accent bg-accent/[0.01] shadow-xl shadow-accent/[0.05]' : 'hover:border-accent/20 hover:shadow-lg')}>
                                     <CardHeader className="p-8 pb-4">
                                         <div className="flex items-center justify-between mb-3">
                                             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-40">{plan.name}</span>
-                                            {plan.name === 'Pro' && <Star className="w-4 h-4 text-primary fill-primary" />}
+                                            {plan.name === 'Pro' && <Star className="w-4 h-4 text-accent fill-accent" />}
                                         </div>
                                         <CardTitle className="text-4xl font-black text-foreground tracking-tighter">{plan.price}</CardTitle>
                                         <CardDescription className="text-xs font-medium pt-3 leading-relaxed opacity-60">{plan.description}</CardDescription>
@@ -142,7 +142,7 @@ export const Billing: React.FC = () => {
                                         <div className="space-y-4 mb-10 flex-1">
                                             {plan.features.map((feature) => (
                                                 <div key={feature} className="flex items-start gap-3.5">
-                                                    <div className="p-1 rounded-full bg-primary/10 text-primary mt-0.5 shadow-inner">
+                                                    <div className="p-1 rounded-full bg-accent/10 text-accent mt-0.5 shadow-inner">
                                                         <Check className="w-2.5 h-2.5 stroke-[4px]" />
                                                     </div>
                                                     <span className="text-xs font-bold text-foreground/70 leading-tight">{feature}</span>
@@ -190,7 +190,7 @@ export const Billing: React.FC = () => {
                                                 </td>
                                                 <td className="p-6 text-right">
                                                     <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-background border border-transparent hover:border-border transition-all">
-                                                        <Download className="w-4 h-4 text-muted-foreground group-hover:text-primary" />
+                                                        <Download className="w-4 h-4 text-muted-foreground group-hover:text-accent" />
                                                     </Button>
                                                 </td>
                                             </tr>

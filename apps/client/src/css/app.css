@@ -52,6 +52,7 @@
   --color-muted-foreground: var(--muted-foreground);
 
   --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
   --color-accent-foreground: var(--accent-foreground);
 
   --color-destructive: var(--destructive);
