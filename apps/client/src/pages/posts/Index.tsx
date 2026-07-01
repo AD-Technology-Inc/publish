@@ -54,8 +54,8 @@ const getStatusConfig = (status: string) => {
             };
         case "scheduled":
             return {
-                color: "bg-accent/10 text-accent border-accent/20",
-                dot: "bg-accent",
+                color: "bg-primary/10 text-primary border-primary/20",
+                dot: "bg-primary",
                 icon: Clock,
                 label: "Scheduled",
             };
@@ -206,7 +206,7 @@ const GridCard: React.FC<{ post: (typeof mockPosts)[0] }> = ({ post }) => {
 
             {/* Content */}
             <div className="px-5 pb-5 flex-1 space-y-2">
-                <h3 className="font-bold text-sm leading-snug text-foreground line-clamp-2 group-hover:text-accent transition-colors">
+                <h3 className="font-bold text-sm leading-snug text-foreground line-clamp-2 group-hover:text-primary transition-colors">
                     {post.title}
                 </h3>
                 <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
@@ -257,7 +257,7 @@ const ListRow: React.FC<{ post: (typeof mockPosts)[0] }> = ({ post }) => {
                         <TypeIcon className="w-3.5 h-3.5 text-muted-foreground/60" />
                     </div>
                     <div className="min-w-0">
-                        <p className="text-sm font-bold text-foreground truncate max-w-[240px] group-hover:text-accent transition-colors">
+                        <p className="text-sm font-bold text-foreground truncate max-w-[240px] group-hover:text-primary transition-colors">
                             {post.title}
                         </p>
                         <p className="text-[10px] text-muted-foreground/50 font-bold uppercase tracking-wider mt-0.5">
@@ -360,7 +360,6 @@ export const PostsIndex: React.FC = () => {
 
                     <Link to="/posts/create">
                         <Button
-                            variant="accent"
                             className="rounded-xl h-9 px-5 gap-2 text-[11px] font-black uppercase tracking-widest active:scale-95 transition-transform"
                         >
                             <Plus className="w-3.5 h-3.5 stroke-[3px]" />
@@ -372,10 +371,10 @@ export const PostsIndex: React.FC = () => {
                 {/* ── Stat strip ──────────────────────────────────────────── */}
                 <div className="grid grid-cols-4 gap-3">
                     {[
-                        { label: "Total",     value: counts.all,       accent: false },
-                        { label: "Published", value: counts.published,  accent: false, dot: "bg-emerald-500" },
-                        { label: "Scheduled", value: counts.scheduled,  accent: false, dot: "bg-accent" },
-                        { label: "Drafts",    value: counts.draft,      accent: false, dot: "bg-muted-foreground/40" },
+                        { label: "Total",     value: counts.all,       primary: false },
+                        { label: "Published", value: counts.published,  primary: false, dot: "bg-emerald-500" },
+                        { label: "Scheduled", value: counts.scheduled,  primary: false, dot: "bg-primary" },
+                        { label: "Drafts",    value: counts.draft,      primary: false, dot: "bg-muted-foreground/40" },
                     ].map(({ label, value, dot }) => (
                         <div
                             key={label}
@@ -396,12 +395,12 @@ export const PostsIndex: React.FC = () => {
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                     {/* Search */}
                     <div className="relative flex-1 w-full sm:max-w-sm group">
-                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50 group-focus-within:text-accent transition-colors" />
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
                         <Input
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search posts…"
-                            className="pl-10 h-9 rounded-xl bg-card border-border/60 text-sm focus-visible:ring-accent/20 focus-visible:border-accent/40 transition-all"
+                            className="pl-10 h-9 rounded-xl bg-card border-border/60 text-sm focus-visible:ring-primary/20 focus-visible:border-primary/40 transition-all"
                         />
                     </div>
 
@@ -500,7 +499,6 @@ export const PostsIndex: React.FC = () => {
                             </Button>
                             <Link to="/posts/create">
                                 <Button
-                                    variant="accent"
                                     className="rounded-xl h-9 px-5 gap-2 text-[11px] font-black uppercase tracking-widest"
                                 >
                                     <Plus className="w-3.5 h-3.5 stroke-[3px]" /> New Post

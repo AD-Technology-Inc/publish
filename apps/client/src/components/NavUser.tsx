@@ -25,7 +25,7 @@ export const NavUser: React.FC = () => {
                             className="h-12 rounded-2xl transition-all hover:bg-muted data-[state=open]:bg-muted w-full"
                         >
                             <UserInfo user={user} />
-                            <ChevronsUpDown className="ml-auto size-3.5 opacity-50" />
+                            <ChevronsUpDown className="ml-auto size-3.5 opacity-50 group-data-[collapsible=icon]:hidden" />
                         </SidebarMenuButton>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56 rounded-2xl p-2 mb-2" align="end" side="top">

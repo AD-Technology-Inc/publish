@@ -24,9 +24,9 @@ export const AuthLayout: React.FC<Props> = ({ title, description, children }) =>
                 <div className="absolute inset-0 bg-black/50 pointer-events-none" />
                 {/* Fine grid */}
                 <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[size:52px_52px] pointer-events-none" />
-                {/* Radial accent glow */}
-                <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_20%_-10%,var(--accent),transparent_55%)] opacity-[0.12] pointer-events-none" />
-                <div className="absolute bottom-0 right-0 w-2/3 h-1/2 bg-[radial-gradient(ellipse_at_80%_100%,var(--accent),transparent_60%)] opacity-[0.06] pointer-events-none" />
+                {/* Radial primary glow */}
+                <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_20%_-10%,var(--primary),transparent_55%)] opacity-[0.12] pointer-events-none" />
+                <div className="absolute bottom-0 right-0 w-2/3 h-1/2 bg-[radial-gradient(ellipse_at_80%_100%,var(--primary),transparent_60%)] opacity-[0.06] pointer-events-none" />
 
                 {/* Header */}
                 <div className="relative z-10 flex items-center gap-3">
@@ -40,7 +40,7 @@ export const AuthLayout: React.FC<Props> = ({ title, description, children }) =>
                 {/* Middle content */}
                 <div className="relative z-10 space-y-10 my-auto max-w-[480px]">
                     {/* Tag */}
-                    <span className="text-[10px] font-mono font-black uppercase tracking-[0.2em] text-accent">
+                    <span className="text-[10px] font-mono font-black uppercase tracking-[0.2em] text-primary">
                         Reliability Engine
                     </span>
 
@@ -48,7 +48,7 @@ export const AuthLayout: React.FC<Props> = ({ title, description, children }) =>
                     <div className="space-y-4">
                         <h2 className="text-3xl xl:text-[2.6rem] font-extrabold text-white tracking-tight leading-[1.1]">
                             Distributed coordination{" "}
-                            <span className="text-accent">without the chaos.</span>
+                            <span className="text-primary">without the chaos.</span>
                         </h2>
                         <p className="text-sm text-zinc-400 leading-relaxed font-medium max-w-sm">
                             High-frequency pipelines, decoupled ingestion routes, and
@@ -86,7 +86,7 @@ export const AuthLayout: React.FC<Props> = ({ title, description, children }) =>
                         </div>
                         <div className="space-y-1.5 text-zinc-400 leading-relaxed">
                             <p className="flex items-center gap-2">
-                                <span className="text-accent shrink-0">●</span>
+                                <span className="text-primary shrink-0">●</span>
                                 <span>[ingress-gateway] edge routing initialized</span>
                             </p>
                             <p className="flex items-center gap-2">
@@ -115,7 +115,7 @@ export const AuthLayout: React.FC<Props> = ({ title, description, children }) =>
             {/* ── Right panel ─────────────────────────────────────────── */}
             <div className="w-full lg:w-[54%] xl:w-[50%] flex flex-col justify-center items-center px-6 py-12 md:px-16 relative bg-zinc-950">
                 {/* Subtle ambient glow */}
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,var(--accent),transparent_60%)] opacity-[0.05] pointer-events-none" />
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,var(--primary),transparent_60%)] opacity-[0.05] pointer-events-none" />
 
                 <div className="w-full max-w-[380px] flex flex-col gap-9 relative z-10">
                     {/* Mobile logo */}

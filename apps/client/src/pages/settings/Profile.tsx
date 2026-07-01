@@ -40,7 +40,7 @@ export const Profile: React.FC = () => {
                                     <div className="w-24 h-24 rounded-[2rem] bg-muted border border-border flex items-center justify-center overflow-hidden transition-all group-hover:border-primary/20 shadow-sm">
                                         <UserIcon className="w-10 h-10 text-muted-foreground/40 group-hover:scale-110 transition-transform duration-500" />
                                     </div>
-                                    <button className="absolute -bottom-1 -right-1 w-9 h-9 bg-accent text-accent-foreground rounded-xl flex items-center justify-center shadow-lg hover:scale-110 hover:bg-accent-hover transition-all active:scale-95 border-4 border-background">
+                                    <button className="absolute -bottom-1 -right-1 w-9 h-9 bg-primary text-primary-foreground rounded-xl flex items-center justify-center shadow-lg hover:scale-110 hover:bg-primary-hover transition-all active:scale-95 border-4 border-background">
                                         <Camera className="w-4 h-4" />
                                     </button>
                                 </div>
@@ -64,7 +64,7 @@ export const Profile: React.FC = () => {
                                         <Input 
                                             value={formData.name}
                                             onChange={(e) => setFormData({...formData, name: e.target.value})}
-                                            className="h-11 rounded-xl border-border bg-muted/20 focus-visible:ring-accent/20 font-medium px-4" 
+                                            className="h-11 rounded-xl border-border bg-muted/20 focus-visible:ring-primary/20 font-medium px-4" 
                                         />
                                     </div>
                                     <div className="space-y-2">
@@ -72,12 +72,12 @@ export const Profile: React.FC = () => {
                                         <Input 
                                             value={formData.email}
                                             onChange={(e) => setFormData({...formData, email: e.target.value})}
-                                            className="h-11 rounded-xl border-border bg-muted/20 focus-visible:ring-accent/20 font-medium px-4" 
+                                            className="h-11 rounded-xl border-border bg-muted/20 focus-visible:ring-primary/20 font-medium px-4" 
                                         />
                                     </div>
                                 </div>
                                 <div className="pt-4 border-t border-border/40 flex justify-end">
-                                    <Button variant="accent" className="rounded-xl h-11 px-8 font-bold gap-2 shadow-lg shadow-accent/15">
+                                    <Button className="rounded-xl h-11 px-8 font-bold gap-2 shadow-lg shadow-primary/15">
                                         <Check className="w-4 h-4" /> Save Changes
                                     </Button>
                                 </div>
@@ -91,7 +91,7 @@ export const Profile: React.FC = () => {
                                     <h4 className="text-sm font-bold text-rose-600">Delete Account</h4>
                                     <p className="text-xs text-muted-foreground font-medium">Permanently remove your account and all associated data.</p>
                                 </div>
-                                <Button variant="destructive" className="rounded-xl h-10 px-6 font-bold text-[10px] uppercase tracking-widest">
+                                <Button variant="danger" className="rounded-xl h-10 px-6 font-bold text-[10px] uppercase tracking-widest">
                                     Deactivate
                                 </Button>
                              </div>

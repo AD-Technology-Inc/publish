@@ -534,7 +534,7 @@ export const Welcome: React.FC = () => {
                         <AppLogo />
                         <Badge
                             variant="outline"
-                            className="text-[9px] font-mono py-0 px-2 rounded-full border-border text-muted-foreground bg-muted"
+                            className="text-[9px] font-mono py-0 px-2 rounded-full text-primary border-primary"
                         >
                             v0.1.0 - PRE-ALPHA
                         </Badge>
@@ -590,8 +590,7 @@ export const Welcome: React.FC = () => {
                         </Link>
                         <Link to="/register">
                             <Button
-                                variant="accent"
-                                className="font-black rounded-lg text-[11px] uppercase tracking-widest px-5 h-9 shadow-sm shadow-accent/15"
+                                className="font-black rounded-lg text-[11px] uppercase tracking-widest px-5 h-9 shadow-sm shadow-primary/15"
                             >
                                 Launch App
                             </Button>
@@ -609,14 +608,14 @@ export const Welcome: React.FC = () => {
                     <div className="space-y-8 max-w-4xl mx-auto">
                         <Badge
                             variant="outline"
-                            className="rounded-full py-1 px-4 text-[10px] font-mono uppercase tracking-[0.2em] border-accent/25 text-accent bg-accent/5"
+                            className="rounded-full py-1 px-4 text-[10px] font-mono uppercase tracking-[0.2em] border-primary/25 text-primary bg-primary/5"
                         >
                             Distributed Publishing Engine
                         </Badge>
 
                         <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.08] text-foreground">
                             Reliable async publishing <br />
-                            <span className="text-accent">
+                            <span className="text-primary">
                                 engineered for failure safety.
                             </span>
                         </h1>
@@ -630,12 +629,11 @@ export const Welcome: React.FC = () => {
                             steps under real-world cluster conditions.
                         </p>
 
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
+                        <div className="flex flex-col flex-wrap sm:flex-row items-center justify-center gap-4 pt-6">
                             <Link to="/register" className="w-full sm:w-auto">
                                 <Button
                                     size="lg"
-                                    variant="accent"
-                                    className="w-full sm:w-auto rounded-lg h-12 px-8 text-xs font-black uppercase tracking-widest gap-2 shadow-lg shadow-accent/15"
+                                    className="w-full sm:w-auto rounded-lg h-12 px-8 text-xs font-black uppercase tracking-widest gap-2 shadow-lg shadow-primary/15"
                                 >
                                     Start Live Demo{" "}
                                     <ArrowRight className="w-4 h-4" />
@@ -716,7 +714,7 @@ export const Welcome: React.FC = () => {
                         <div className="text-left max-w-3xl space-y-4">
                             <Badge
                                 variant="outline"
-                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-accent/25 text-accent bg-accent/5"
+                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-primary/25 text-primary bg-primary/5"
                             >
                                 The Distributed Inconsistency Challenge
                             </Badge>
@@ -797,7 +795,7 @@ export const Welcome: React.FC = () => {
                             <div className="lg:col-span-5 space-y-6 text-left">
                                 <Badge
                                     variant="outline"
-                                    className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-accent/25 text-accent bg-accent/5"
+                                    className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-primary/25 text-primary bg-primary/5"
                                 >
                                     Defensive Architecture
                                 </Badge>
@@ -883,7 +881,7 @@ export const Welcome: React.FC = () => {
                         <div className="text-center max-w-2xl mx-auto space-y-4">
                             <Badge
                                 variant="outline"
-                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-accent/25 text-accent bg-accent/5"
+                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-primary/25 text-primary bg-primary/5"
                             >
                                 Core Capabilities
                             </Badge>
@@ -938,7 +936,7 @@ export const Welcome: React.FC = () => {
                         <div className="text-left max-w-3xl space-y-4 mb-16">
                             <Badge
                                 variant="outline"
-                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-accent/25 text-accent bg-accent/5"
+                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-primary/25 text-primary bg-primary/5"
                             >
                                 Operational Lifecycle
                             </Badge>
@@ -1023,7 +1021,7 @@ export const Welcome: React.FC = () => {
                         <div className="text-center max-w-2xl mx-auto space-y-4">
                             <Badge
                                 variant="outline"
-                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-accent/25 text-accent bg-accent/5"
+                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-primary/25 text-primary bg-primary/5"
                             >
                                 Simulation Sandbox
                             </Badge>
@@ -1079,7 +1077,7 @@ export const Welcome: React.FC = () => {
                                                 className={cn(
                                                     "p-4 rounded-xl border text-left transition-all duration-300 relative overflow-hidden disabled:opacity-60",
                                                     simType === sc.id
-                                                        ? "border-accent bg-accent/5 text-foreground shadow-lg shadow-accent/5"
+                                                        ? "border-primary bg-primary/5 text-foreground shadow-lg shadow-primary/5"
                                                         : "border-border bg-zinc-950/60 text-muted-foreground hover:border-border/60 hover:text-foreground",
                                                 )}
                                             >
@@ -1097,8 +1095,7 @@ export const Welcome: React.FC = () => {
                                 <Button
                                     onClick={() => runSimulation(simType)}
                                     disabled={isSimulating}
-                                    variant="accent"
-                                    className="w-full h-11 rounded-lg flex items-center justify-center gap-2 font-extrabold text-xs uppercase tracking-widest shadow-lg shadow-accent/15"
+                                    className="w-full h-11 rounded-lg flex items-center justify-center gap-2 font-extrabold text-xs uppercase tracking-widest shadow-lg shadow-primary/15"
                                 >
                                     {isSimulating ? (
                                         <>
@@ -1329,7 +1326,7 @@ export const Welcome: React.FC = () => {
                         <div className="max-w-3xl space-y-4 mb-16">
                             <Badge
                                 variant="outline"
-                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-accent/25 text-accent bg-accent/5"
+                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-primary/25 text-primary bg-primary/5"
                             >
                                 System Guarantees
                             </Badge>
@@ -1406,7 +1403,7 @@ export const Welcome: React.FC = () => {
                         <div className="max-w-3xl space-y-4 mb-16 text-left mx-auto md:text-center">
                             <Badge
                                 variant="outline"
-                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-accent/25 text-accent bg-accent/5"
+                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-primary/25 text-primary bg-primary/5"
                             >
                                 Architecture Blueprint
                             </Badge>
@@ -1426,12 +1423,12 @@ export const Welcome: React.FC = () => {
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-xs font-mono font-extrabold text-left">
                                 
                                 {/* Card 1: Ingestion */}
-                                <div className="rounded-[2rem] border border-border bg-card/30 backdrop-blur-sm p-6 md:p-8 space-y-6 hover:border-accent/30 hover:-translate-y-1 transition-all duration-500 relative group overflow-hidden flex flex-col justify-between">
-                                    <div className="absolute top-0 right-0 w-24 h-24 bg-accent/5 rounded-full blur-2xl pointer-events-none group-hover:bg-accent/10 transition-colors"></div>
+                                <div className="rounded-[2rem] border border-border bg-card/30 backdrop-blur-sm p-6 md:p-8 space-y-6 hover:border-primary/30 hover:-translate-y-1 transition-all duration-500 relative group overflow-hidden flex flex-col justify-between">
+                                    <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl pointer-events-none group-hover:bg-primary/10 transition-colors"></div>
                                     <div className="space-y-6">
                                         <div className="flex items-center justify-between pb-3 border-b border-border/50">
-                                            <span className="text-[10px] text-accent uppercase tracking-[0.2em]">01. Ingestion</span>
-                                            <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></div>
+                                            <span className="text-[10px] text-primary uppercase tracking-[0.2em]">01. Ingestion</span>
+                                            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
                                         </div>
                                         <div className="space-y-4">
                                             <div>
@@ -1536,7 +1533,7 @@ export const Welcome: React.FC = () => {
                         <div className="space-y-4 max-w-3xl">
                             <Badge
                                 variant="outline"
-                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-accent/25 text-accent bg-accent/5"
+                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-primary/25 text-primary bg-primary/5"
                             >
                                 Engineering Deep Dive
                             </Badge>
@@ -1561,7 +1558,7 @@ export const Welcome: React.FC = () => {
                                         className={cn(
                                             "p-4 rounded-xl border text-left transition-all duration-300 font-mono text-xs font-black uppercase tracking-wider",
                                             activeTab === tab.id
-                                                ? "border-accent bg-accent/5 text-accent"
+                                                ? "border-primary bg-primary/5 text-primary"
                                                 : "border-zinc-950 bg-muted/40 text-muted-foreground hover:text-foreground hover:border-border",
                                         )}
                                     >
@@ -1595,7 +1592,7 @@ export const Welcome: React.FC = () => {
                                                             key={index}
                                                             className="flex items-start gap-3 text-xs text-foreground"
                                                         >
-                                                            <div className="w-1.5 h-1.5 rounded-full bg-accent mt-1.5 shrink-0"></div>
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0"></div>
                                                             <p className="leading-relaxed font-medium">
                                                                 {bullet}
                                                             </p>
@@ -1626,7 +1623,7 @@ export const Welcome: React.FC = () => {
                         <div className="max-w-3xl space-y-4 mb-16">
                             <Badge
                                 variant="outline"
-                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-accent/25 text-accent bg-accent/5"
+                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-primary/25 text-primary bg-primary/5"
                             >
                                 Technical Stack
                             </Badge>
@@ -1708,7 +1705,7 @@ export const Welcome: React.FC = () => {
                         <div className="max-w-3xl space-y-4">
                             <Badge
                                 variant="outline"
-                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-border/60 text-accent bg-card"
+                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-border/60 text-primary bg-card"
                             >
                                 Pricing & Plans
                             </Badge>
@@ -1725,7 +1722,7 @@ export const Welcome: React.FC = () => {
                         {/* Pricing Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             {/* Starter Plan */}
-                            <div className="rounded-[2.5rem] border border-border bg-card/40 backdrop-blur-md p-8 flex flex-col justify-between hover:border-accent/20 transition-all duration-500 hover:shadow-lg relative group">
+                            <div className="rounded-[2.5rem] border border-border bg-card/40 backdrop-blur-md p-8 flex flex-col justify-between hover:border-primary/20 transition-all duration-500 hover:shadow-lg relative group">
                                 <div className="space-y-6">
                                     <div className="flex items-center justify-between">
                                         <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">
@@ -1760,7 +1757,7 @@ export const Welcome: React.FC = () => {
                                                 key={idx}
                                                 className="flex items-start gap-3 text-xs text-foreground/80 font-medium"
                                             >
-                                                <div className="p-0.5 rounded-full bg-accent/10 text-accent mt-0.5 shadow-inner">
+                                                <div className="p-0.5 rounded-full bg-primary/10 text-primary mt-0.5 shadow-inner">
                                                     <Check className="w-3 h-3 stroke-[3px]" />
                                                 </div>
                                                 <span>{feat}</span>
@@ -1781,18 +1778,18 @@ export const Welcome: React.FC = () => {
                             </div>
 
                             {/* Pro Plan (Featured) */}
-                            <div className="rounded-[2.5rem] border border-accent bg-accent/[0.02] backdrop-blur-md p-8 flex flex-col justify-between shadow-xl shadow-accent/[0.03] hover:shadow-accent/[0.08] transition-all duration-500 hover:-translate-y-1 relative group ring-1 ring-accent">
-                                <div className="absolute -right-10 -top-10 w-40 h-40 bg-accent/5 rounded-full blur-3xl group-hover:bg-accent/10 transition-all duration-700"></div>
+                            <div className="rounded-[2.5rem] border border-primary bg-primary/[0.02] backdrop-blur-md p-8 flex flex-col justify-between shadow-xl shadow-primary/[0.03] hover:shadow-primary/[0.08] transition-all duration-500 hover:-translate-y-1 relative group ring-1 ring-primary">
+                                <div className="absolute -right-10 -top-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-all duration-700"></div>
                                 <div className="space-y-6 relative z-10">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-accent">
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
                                             Pro Plan
                                         </span>
                                         <Badge
                                             variant="success"
-                                            className="bg-accent/10 text-accent border-accent/20 font-black text-[9px] uppercase tracking-widest rounded-full px-2.5 py-0.5"
+                                            className="bg-primary/10 text-primary border-primary/20 font-black text-[9px] uppercase tracking-widest rounded-full px-2.5 py-0.5"
                                         >
-                                            <Star className="w-2.5 h-2.5 mr-1 fill-accent text-accent" />{" "}
+                                            <Star className="w-2.5 h-2.5 mr-1 fill-primary text-primary" />{" "}
                                             Popular
                                         </Badge>
                                     </div>
@@ -1801,7 +1798,7 @@ export const Welcome: React.FC = () => {
                                             <span className="text-4xl md:text-5xl font-black tracking-tighter">
                                                 $29
                                             </span>
-                                            <span className="text-xs text-accent font-bold italic opacity-60 ml-1">
+                                            <span className="text-xs text-primary font-bold italic opacity-60 ml-1">
                                                 /month
                                             </span>
                                         </div>
@@ -1811,7 +1808,7 @@ export const Welcome: React.FC = () => {
                                         </p>
                                     </div>
 
-                                    <div className="h-px bg-accent/20 w-full" />
+                                    <div className="h-px bg-primary/20 w-full" />
 
                                     <ul className="space-y-4">
                                         {[
@@ -1825,7 +1822,7 @@ export const Welcome: React.FC = () => {
                                                 key={idx}
                                                 className="flex items-start gap-3 text-xs text-foreground font-semibold"
                                             >
-                                                <div className="p-0.5 rounded-full bg-accent text-accent-foreground mt-0.5 shadow-md shadow-accent/20">
+                                                <div className="p-0.5 rounded-full bg-primary text-primary-foreground mt-0.5 shadow-md shadow-primary/20">
                                                     <Check className="w-3 h-3 stroke-[3px]" />
                                                 </div>
                                                 <span>{feat}</span>
@@ -1836,8 +1833,7 @@ export const Welcome: React.FC = () => {
                                 <div className="pt-8 relative z-10">
                                     <Link to="/register">
                                         <Button
-                                            variant="accent"
-                                            className="w-full h-12 rounded-xl font-black uppercase tracking-widest text-[10px] active:scale-95 transition-all shadow-lg shadow-accent/15"
+                                            className="w-full h-12 rounded-xl font-black uppercase tracking-widest text-[10px] active:scale-95 transition-all shadow-lg shadow-primary/15"
                                         >
                                             Start Free Trial
                                         </Button>
@@ -1846,7 +1842,7 @@ export const Welcome: React.FC = () => {
                             </div>
 
                             {/* Enterprise Plan */}
-                            <div className="rounded-[2.5rem] border border-border bg-card/40 backdrop-blur-md p-8 flex flex-col justify-between hover:border-accent/20 transition-all duration-500 hover:shadow-lg relative group">
+                            <div className="rounded-[2.5rem] border border-border bg-card/40 backdrop-blur-md p-8 flex flex-col justify-between hover:border-primary/20 transition-all duration-500 hover:shadow-lg relative group">
                                 <div className="space-y-6">
                                     <div className="flex items-center justify-between">
                                         <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">
@@ -1882,7 +1878,7 @@ export const Welcome: React.FC = () => {
                                                 key={idx}
                                                 className="flex items-start gap-3 text-xs text-foreground/80 font-medium"
                                             >
-                                                <div className="p-0.5 rounded-full bg-accent/10 text-accent mt-0.5 shadow-inner">
+                                                <div className="p-0.5 rounded-full bg-primary/10 text-primary mt-0.5 shadow-inner">
                                                     <Check className="w-3 h-3 stroke-[3px]" />
                                                 </div>
                                                 <span>{feat}</span>
@@ -1908,7 +1904,7 @@ export const Welcome: React.FC = () => {
                             <div className="space-y-3">
                                 <Badge
                                     variant="outline"
-                                    className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-accent/25 text-accent bg-accent/5"
+                                    className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-primary/25 text-primary bg-primary/5"
                                 >
                                     Developer FAQ
                                 </Badge>
@@ -1938,7 +1934,7 @@ export const Welcome: React.FC = () => {
                                 ].map((faq, i) => (
                                     <div
                                         key={i}
-                                        className="p-6 rounded-2xl border border-border/40 bg-card/25 hover:border-accent/15 transition-all duration-300 space-y-2"
+                                        className="p-6 rounded-2xl border border-border/40 bg-card/25 hover:border-primary/15 transition-all duration-300 space-y-2"
                                     >
                                         <h4 className="text-sm font-extrabold text-foreground">
                                             {faq.q}
@@ -1955,15 +1951,15 @@ export const Welcome: React.FC = () => {
 
                 {/* FINAL CTA SECTION */}
                 <section className="max-w-7xl mx-auto px-6 py-20">
-                    <div className="relative rounded-[2.5rem] border border-border bg-card/45 backdrop-blur-md overflow-hidden p-12 md:p-20 text-center space-y-8 shadow-2xl hover:border-accent/20 transition-all duration-700 group">
+                    <div className="relative rounded-[2.5rem] border border-border bg-card/45 backdrop-blur-md overflow-hidden p-12 md:p-20 text-center space-y-8 shadow-2xl hover:border-primary/20 transition-all duration-700 group">
                         {/* Glow details */}
-                        <div className="absolute -top-24 -right-24 w-80 h-80 bg-accent/5 rounded-full blur-[100px] pointer-events-none group-hover:bg-accent/10 transition-all duration-700"></div>
-                        <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-accent/5 rounded-full blur-[100px] pointer-events-none group-hover:bg-accent/10 transition-all duration-700"></div>
+                        <div className="absolute -top-24 -right-24 w-80 h-80 bg-primary/5 rounded-full blur-[100px] pointer-events-none group-hover:bg-primary/10 transition-all duration-700"></div>
+                        <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-primary/5 rounded-full blur-[100px] pointer-events-none group-hover:bg-primary/10 transition-all duration-700"></div>
 
                         <div className="space-y-4 relative z-10 max-w-3xl mx-auto">
                             <Badge
                                 variant="outline"
-                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-accent/25 text-accent bg-accent/5"
+                                className="rounded-full py-0.5 px-3 text-[9px] font-mono uppercase tracking-widest border-primary/25 text-primary bg-primary/5"
                             >
                                 Deployment
                             </Badge>
@@ -1980,10 +1976,10 @@ export const Welcome: React.FC = () => {
                         {/* Interactive terminal command copy block */}
                         <div
                             onClick={handleCopy}
-                            className="max-w-md mx-auto p-4 rounded-xl bg-zinc-950/60 hover:bg-zinc-950 text-foreground border border-border/60 hover:border-accent/30 font-mono text-xs flex items-center justify-between shadow-2xl relative z-10 cursor-pointer transition-all duration-300 group/term"
+                            className="max-w-md mx-auto p-4 rounded-xl bg-zinc-950/60 hover:bg-zinc-950 text-foreground border border-border/60 hover:border-primary/30 font-mono text-xs flex items-center justify-between shadow-2xl relative z-10 cursor-pointer transition-all duration-300 group/term"
                         >
                             <div className="flex items-center gap-2.5">
-                                <span className="text-accent font-bold">$</span>
+                                <span className="text-primary font-bold">$</span>
                                 <span className="text-muted-foreground group-hover/term:text-foreground transition-colors select-all">
                                     docker compose up --build -d
                                 </span>
@@ -1995,8 +1991,8 @@ export const Welcome: React.FC = () => {
                             >
                                 {copied ? (
                                     <>
-                                        <Check className="w-3.5 h-3.5 text-accent" />
-                                        <span className="text-accent">
+                                        <Check className="w-3.5 h-3.5 text-primary" />
+                                        <span className="text-primary">
                                             Copied
                                         </span>
                                     </>
@@ -2013,8 +2009,7 @@ export const Welcome: React.FC = () => {
                             <Link to="/register" className="w-full sm:w-auto">
                                 <Button
                                     size="lg"
-                                    variant="accent"
-                                    className="w-full sm:w-auto rounded-lg h-12 px-8 text-xs font-black uppercase tracking-widest gap-2 shadow-lg shadow-accent/15"
+                                    className="w-full sm:w-auto rounded-lg h-12 px-8 text-xs font-black uppercase tracking-widest gap-2 shadow-lg shadow-primary/15"
                                 >
                                     Launch Console{" "}
                                     <ChevronRight className="w-4 h-4 stroke-[3px]" />

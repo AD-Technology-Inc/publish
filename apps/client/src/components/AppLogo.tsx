@@ -9,12 +9,9 @@ const HOME = "/";
  */
 export const AppLogoIcon: React.FC = () => {
     return (
-        <Link
-            to={HOME}
-            className="text-lg font-bold tracking-tighter leading-none"
-        >
-            AD<span className="text-accent">.</span>
-        </Link>
+        <span className="text-lg font-bold tracking-tighter leading-none">
+            AD<span className="text-primary">.</span>
+        </span>
     );
 };
 
@@ -25,10 +22,8 @@ export const AppLogoIcon: React.FC = () => {
 export const AppLogo: React.FC = () => {
     return (
         <Link to={HOME} className="flex items-baseline gap-1 leading-none">
-            <span className="text-lg font-bold tracking-tighter">
-                AD<span className="text-accent">.</span>
-            </span>
-            <span className="text-lg font-bold tracking-tighter text-accent">
+            <AppLogoIcon />
+            <span className="text-lg font-bold tracking-tighter text-primary group-data-[collapsible=icon]:hidden">
                 Publish
             </span>
         </Link>

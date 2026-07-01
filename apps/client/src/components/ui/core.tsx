@@ -7,7 +7,7 @@ import { X } from "lucide-react"
  * Button Component
  */
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "accent"
+  variant?: "default" | "danger" | "outline" | "secondary" | "ghost" | "link" | "accent"
   size?: "default" | "sm" | "lg" | "icon"
 }
 
@@ -17,10 +17,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     
     const variants = {
       default: "bg-primary text-primary-foreground shadow hover:bg-primary/90",
-      destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
-      outline: "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
+      danger: "bg-danger text-danger-foreground shadow-sm hover:bg-danger/90",
+      outline: "border border-input bg-background shadow-sm hover:bg-primary hover:text-primary-foreground",
       secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
-      ghost: "hover:bg-accent hover:text-accent-foreground",
+      ghost: "hover:bg-primary hover:text-primary-foreground",
       link: "text-primary underline-offset-4 hover:underline",
       accent: "bg-accent text-accent-foreground shadow hover:bg-accent-hover",
     }
@@ -96,7 +96,7 @@ CardFooter.displayName = "CardFooter"
  * Badge Component
  */
 export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: "default" | "secondary" | "destructive" | "outline" | "success" | "warning"
+  variant?: "default" | "secondary" | "danger" | "outline" | "success" | "warning"
 }
 
 function Badge({ className, variant = "default", ...props }: BadgeProps) {
@@ -105,7 +105,7 @@ function Badge({ className, variant = "default", ...props }: BadgeProps) {
   const variants = {
     default: "border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80",
     secondary: "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-    destructive: "border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80",
+    danger: "border-transparent bg-danger text-danger-foreground shadow hover:bg-danger/80",
     outline: "text-foreground",
     success: "border-transparent bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/10",
     warning: "border-transparent bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/10",
@@ -162,7 +162,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HT
       <input
         type="checkbox"
         className={cn(
-          "peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 accent-primary",
+          "peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
           className
         )}
         ref={ref}
@@ -290,7 +290,7 @@ const DropdownMenuItem = ({ className, children, onClick, ...props }: any) => {
   return (
     <div
       className={cn(
-        "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-primary hover:text-primary-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         className
       )}
       onClick={handleClick}

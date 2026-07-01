@@ -101,10 +101,10 @@ const Sparkline: React.FC = () => {
                         className={cn(
                             "w-full rounded-t-lg transition-all duration-300",
                             i === BAR_DATA.length - 1
-                                ? "bg-accent"
+                                ? "bg-primary"
                                 : hovered === i
-                                  ? "bg-accent/60"
-                                  : "bg-muted-foreground/10 hover:bg-accent/30",
+                                  ? "bg-primary/60"
+                                  : "bg-muted-foreground/10 hover:bg-primary/30",
                         )}
                         style={{ height: `${pct}%` }}
                     />
@@ -134,7 +134,7 @@ const StatCard: React.FC<StatCardProps> = ({
 }) => {
     const isPositive = change.startsWith("+");
     return (
-        <div className="rounded-2xl border border-border bg-card p-6 flex flex-col gap-4 hover:border-accent/20 transition-all duration-300 group text-left">
+        <div className="rounded-2xl border border-border bg-card p-6 flex flex-col gap-4 hover:border-primary/20 transition-all duration-300 group text-left">
             <div className="flex items-center justify-between">
                 <div
                     className={cn(
@@ -210,7 +210,7 @@ export const Dashboard: React.FC = () => {
                     <div className="space-y-1.5 text-left">
                         <h1 className="text-2xl font-black tracking-tight text-foreground">
                             Good morning,{" "}
-                            <span className="text-accent">
+                            <span className="text-primary">
                                 {user.name.split(" ")[0]}
                             </span>
                         </h1>
@@ -245,7 +245,6 @@ export const Dashboard: React.FC = () => {
 
                     <Link to="/posts/create">
                         <Button
-                            variant="accent"
                             className="rounded-2xl px-6 h-11 gap-2 font-bold transition-transform active:scale-95"
                         >
                             <Plus className="w-3.5 h-3.5 stroke-[2.5px]" />
@@ -298,7 +297,7 @@ export const Dashboard: React.FC = () => {
                                 </h2>
                                 <Link
                                     to="/posts"
-                                    className="text-[10px] font-black uppercase tracking-widest text-accent hover:opacity-80 transition-opacity"
+                                    className="text-[10px] font-black uppercase tracking-widest text-primary hover:opacity-80 transition-opacity"
                                 >
                                     View all
                                 </Link>
@@ -315,7 +314,7 @@ export const Dashboard: React.FC = () => {
                                     return (
                                         <div
                                             key={activity.id}
-                                            className="flex items-center justify-between px-4 py-3.5 rounded-xl border border-border bg-card hover:border-accent/20 hover:bg-muted/20 transition-all group cursor-default"
+                                            className="flex items-center justify-between px-4 py-3.5 rounded-xl border border-border bg-card hover:border-primary/20 hover:bg-muted/20 transition-all group cursor-default"
                                         >
                                             <div className="flex items-center gap-3.5 min-w-0">
                                                 <div
@@ -333,7 +332,7 @@ export const Dashboard: React.FC = () => {
                                                     />
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <p className="text-sm font-semibold text-foreground truncate group-hover:text-accent transition-colors">
+                                                    <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
                                                         {activity.title}
                                                     </p>
                                                     <div className="flex items-center gap-2 mt-0.5">
@@ -376,7 +375,7 @@ export const Dashboard: React.FC = () => {
                         {/* Monthly milestone card */}
                         <div className="rounded-2xl border border-border bg-card text-left">
                             <div className="p-6 space-y-5">
-                                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-accent">
+                                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary">
                                     <Target className="w-3.5 h-3.5" />
                                     Monthly milestone
                                 </div>
@@ -396,7 +395,7 @@ export const Dashboard: React.FC = () => {
                                     {/* Progress bar */}
                                     <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
                                         <div
-                                            className="h-full rounded-full bg-accent transition-all duration-1000"
+                                            className="h-full rounded-full bg-primary transition-all duration-1000"
                                             style={{ width: "68%" }}
                                         />
                                     </div>
@@ -430,7 +429,7 @@ export const Dashboard: React.FC = () => {
                                             className="flex items-center justify-between gap-3 px-5 py-4 hover:bg-muted/20 transition-colors group cursor-pointer"
                                         >
                                             <div className="min-w-0 space-y-0.5">
-                                                <p className="text-sm font-semibold text-foreground truncate group-hover:text-accent transition-colors">
+                                                <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
                                                     {item.title}
                                                 </p>
                                                 <p className="text-[10px] font-black text-muted-foreground/35 uppercase tracking-wider">

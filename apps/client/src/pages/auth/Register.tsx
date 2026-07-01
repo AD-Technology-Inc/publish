@@ -48,7 +48,7 @@ const AuthField = ({
         >
             {label}
         </Label>
-        <div className="flex items-center rounded-xl border border-zinc-800 bg-zinc-900/70 focus-within:border-accent/50 focus-within:ring-1 focus-within:ring-accent/20 transition-all overflow-hidden h-11">
+        <div className="flex items-center rounded-xl border border-zinc-800 bg-zinc-900/70 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 transition-all overflow-hidden h-11">
             <div className="pl-3.5 pr-3 flex items-center self-stretch border-r border-zinc-800/80 bg-zinc-900/50 shrink-0">
                 <Icon className="w-4 h-4 text-zinc-500" />
             </div>
@@ -167,9 +167,8 @@ export const Register: React.FC = () => {
 
                     <Button
                         type="submit"
-                        variant="accent"
                         disabled={isLoading}
-                        className="w-full h-11 mt-2 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-accent/10 border-0 flex items-center justify-center gap-2 group/btn transition-all hover:shadow-accent/20"
+                        className="w-full h-11 mt-2 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/10 border-0 flex items-center justify-center gap-2 group/btn transition-all hover:shadow-primary/20"
                     >
                         {isLoading ? (
                             <>
@@ -187,11 +186,11 @@ export const Register: React.FC = () => {
 
                 <p className="text-center text-[11px] text-zinc-600 font-medium leading-relaxed">
                     By creating an account you agree to our{' '}
-                    <Link to="#" className="font-black text-accent hover:text-accent/80 transition-colors">
+                    <Link to="#" className="font-black text-primary hover:text-primary/80 transition-colors">
                         Terms of Service
                     </Link>{' '}
                     and{' '}
-                    <Link to="#" className="font-black text-accent hover:text-accent/80 transition-colors">
+                    <Link to="#" className="font-black text-primary hover:text-primary/80 transition-colors">
                         Privacy Policy
                     </Link>
                     .
@@ -199,7 +198,7 @@ export const Register: React.FC = () => {
 
                 <p className="text-center text-xs text-zinc-600 font-medium">
                     Already have an account?{' '}
-                    <Link to="/login" className="font-black text-accent hover:text-accent/80 transition-colors">
+                    <Link to="/login" className="font-black text-primary hover:text-primary/80 transition-colors">
                         Sign in
                     </Link>
                 </p>

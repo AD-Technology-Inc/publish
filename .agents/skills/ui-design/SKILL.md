@@ -1,6 +1,6 @@
 ---
 name: design-system
-description: "Use when building or modifying pages, components, templates, or UI styles in this repository. Prefer the existing CSS design system and Tailwind CSS v4 semantic tokens."
+description: 'Use when building or modifying pages, components, templates, or UI styles in this repository. Prefer the existing CSS design system and Tailwind CSS v4 semantic tokens.'
 ---
 
 # Design System Guide
@@ -9,7 +9,7 @@ This project uses a **CSS-first design system** with Tailwind CSS v4. Reuse the 
 
 The project's design system is defined here:
 
-- src/css
+- <DESIGN_SYSTEM_PATH>
 
 If unavailable, locate the project's design system by inspecting existing CSS, components, and layouts.
 
@@ -108,15 +108,17 @@ When styling is required, always use semantic theme utilities instead of Tailwin
 
 Prefer:
 
-- `bg-background`
-- `text-foreground`
-- `bg-card`
-- `bg-primary`
-- `bg-secondary`
-- `bg-muted`
-- `text-muted-foreground`
-- `border-border`
-- `outline-ring`
+- `bg-background` / `text-foreground` (Core backgrounds & text)
+- `bg-card` (Containers)
+- `bg-primary` / `bg-primary-hover` / `text-primary-foreground` (Primary brand states)
+- `bg-secondary` / `text-secondary-foreground` (Secondary accents)
+- `bg-accent` / `text-accent-foreground` (Interactive highlights)
+- `bg-neutral` / `text-neutral-foreground` (Generic neutral states)
+- `bg-success` / `text-success-foreground` (Success states)
+- `bg-warning` / `text-warning-foreground` (Warning states)
+- `bg-danger` / `text-danger-foreground` (Danger states)
+- `text-black` / `text-white` (Absolute black/white colors)
+- `border-border` (Borders)
 
 Avoid:
 

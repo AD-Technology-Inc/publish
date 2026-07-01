@@ -22,7 +22,7 @@ export const UserInfo: React.FC<Props> = ({ user, showEmail = false }) => {
                 )}
             </div>
 
-            <div className="grid flex-1 text-left text-[11px] leading-tight ml-2 overflow-hidden">
+            <div className="grid flex-1 text-left text-[11px] leading-tight ml-2 overflow-hidden group-data-[collapsible=icon]:hidden">
                 <span className="truncate font-black uppercase tracking-widest text-foreground">{user.name}</span>
                 {showEmail && (
                     <span className="truncate text-[10px] font-bold text-muted-foreground/60 uppercase tracking-tighter">

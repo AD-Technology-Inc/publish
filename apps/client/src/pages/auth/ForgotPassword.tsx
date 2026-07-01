@@ -33,8 +33,8 @@ export const ForgotPassword: React.FC = () => {
                     <div className="space-y-5">
                         {/* Icon pill */}
                         <div className="flex justify-center">
-                            <div className="w-16 h-16 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center">
-                                <MailCheck className="w-7 h-7 text-accent" />
+                            <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                                <MailCheck className="w-7 h-7 text-primary" />
                             </div>
                         </div>
 
@@ -53,8 +53,7 @@ export const ForgotPassword: React.FC = () => {
                                 setIsSent(false);
                                 setEmail('');
                             }}
-                            variant="outline"
-                            className="w-full h-11 rounded-xl border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800/80 hover:border-zinc-700 text-sm font-semibold text-zinc-300 hover:text-white transition-all"
+                            className="w-full"
                         >
                             Send to a different email
                         </Button>
@@ -69,7 +68,7 @@ export const ForgotPassword: React.FC = () => {
                             >
                                 Email address
                             </Label>
-                            <div className="flex items-center rounded-xl border border-zinc-800 bg-zinc-900/70 focus-within:border-accent/50 focus-within:ring-1 focus-within:ring-accent/20 transition-all overflow-hidden h-11">
+                            <div className="flex items-center rounded-xl border border-zinc-800 bg-zinc-900/70 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 transition-all overflow-hidden h-11">
                                 <div className="pl-3.5 pr-3 flex items-center self-stretch border-r border-zinc-800/80 bg-zinc-900/50 shrink-0">
                                     <Mail className="w-4 h-4 text-zinc-500" />
                                 </div>
@@ -88,9 +87,8 @@ export const ForgotPassword: React.FC = () => {
 
                         <Button
                             type="submit"
-                            variant="accent"
                             disabled={isLoading}
-                            className="w-full h-11 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-accent/10 border-0 flex items-center justify-center gap-2 group/btn transition-all hover:shadow-accent/20"
+                            className="w-full h-11 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/10 border-0 flex items-center justify-center gap-2 group/btn transition-all hover:shadow-primary/20"
                         >
                             {isLoading ? (
                                 <>
@@ -110,7 +108,7 @@ export const ForgotPassword: React.FC = () => {
                 <p className="text-center text-xs text-zinc-600 font-medium">
                     <Link
                         to="/login"
-                        className="inline-flex items-center gap-1.5 font-black text-accent hover:text-accent/80 transition-colors"
+                        className="inline-flex items-center gap-1.5 navbar-link"
                     >
                         <ArrowLeft className="w-3.5 h-3.5" />
                         Back to sign in

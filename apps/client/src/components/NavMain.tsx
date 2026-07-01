@@ -31,38 +31,36 @@ export const NavMain: React.FC<Props> = ({ items, label }) => {
                     const Icon = item.icon;
                     return (
                         <SidebarMenuItem key={item.title}>
-                            <Link to={item.href}>
+                            <Link to={item.href} className="w-full">
                                 <SidebarMenuButton
                                     isActive={active}
                                     className={cn(
-                                        "h-10 rounded-xl px-3 transition-all group-data-[state=collapsed]:px-0",
+                                        "h-10 rounded-xl px-3 transition-all group-data-[state=collapsed]:px-0 w-full",
                                         active
-                                            ? "hover:bg-accent-hover"
-                                            : "hover:bg-accent-hover",
+                                            ? "hover:bg-primary-hover"
+                                            : "hover:bg-primary-hover",
                                     )}
                                 >
-                                    <div className="flex items-center gap-3 w-full">
-                                        {Icon && (
-                                            <Icon
-                                                className={cn(
-                                                    "size-4.5 stroke-[2.5px] transition-colors",
-                                                    active
-                                                        ? "text-sidebar-accent-foreground"
-                                                        : "text-muted-foreground/60 group-hover:text-foreground",
-                                                )}
-                                            />
-                                        )}
-                                        <span
+                                    {Icon && (
+                                        <Icon
                                             className={cn(
-                                                "text-[11px] font-black uppercase tracking-widest transition-colors",
+                                                "size-4.5 stroke-[2.5px] transition-colors shrink-0",
                                                 active
-                                                    ? "text-sidebar-accent-foreground"
-                                                    : "text-muted-foreground/70 group-hover:text-foreground",
+                                                    ? "text-primary-foreground"
+                                                    : "text-muted-foreground/60 group-hover:text-foreground",
                                             )}
-                                        >
-                                            {item.title}
-                                        </span>
-                                    </div>
+                                        />
+                                    )}
+                                    <span
+                                        className={cn(
+                                            "text-[11px] font-black uppercase tracking-widest transition-colors group-data-[collapsible=icon]:hidden",
+                                            active
+                                                ? "text-primary-foreground"
+                                                : "text-muted-foreground/70 group-hover:text-foreground",
+                                        )}
+                                    >
+                                        {item.title}
+                                    </span>
                                 </SidebarMenuButton>
                             </Link>
                         </SidebarMenuItem>

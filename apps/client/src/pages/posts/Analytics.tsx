@@ -24,7 +24,7 @@ import { cn } from '@/lib/utils';
 import { useTitle } from '@/hooks/use-title';
 
 const stats = [
-    { label: 'Total Impressions', value: '124.5k', change: '+12.3%', icon: BarChart2, color: 'text-accent', bg: 'bg-accent/10' },
+    { label: 'Total Impressions', value: '124.5k', change: '+12.3%', icon: BarChart2, color: 'text-primary', bg: 'bg-primary/10' },
     { label: 'Total Reach', value: '82.1k', change: '+8.1%', icon: Users, color: 'text-purple-500', bg: 'bg-purple-500/10' },
     { label: 'Engagement Rate', value: '4.2%', change: '+0.5%', icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
     { label: 'Total Clicks', value: '12.4k', change: '+15.2%', icon: MousePointer2, color: 'text-amber-500', bg: 'bg-amber-500/10' },
@@ -101,7 +101,7 @@ export const Analytics: React.FC = () => {
                                 {[...Array(14)].map((_, i) => (
                                     <div 
                                         key={i} 
-                                        className="flex-1 bg-accent/10 hover:bg-accent/35 transition-all rounded-t-md relative group border-x border-t border-transparent hover:border-accent/25" 
+                                        className="flex-1 bg-primary/10 hover:bg-primary/35 transition-all rounded-t-md relative group border-x border-t border-transparent hover:border-primary/25" 
                                         style={{ height: `${Math.random() * 80 + 10}%` }}
                                     >
                                         <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground text-[10px] font-bold py-2 px-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap border border-border shadow-xl z-10">
@@ -143,7 +143,7 @@ export const Analytics: React.FC = () => {
                                             </div>
                                         </div>
                                         <div className="h-2 w-full bg-muted rounded-full overflow-hidden border border-border/50 p-[1px]">
-                                            <div className="h-full bg-accent rounded-full shadow-[0_0_8px_var(--accent)]/30 transition-all duration-1000 ease-out" style={{ width: platform.engagement }}></div>
+                                            <div className="h-full bg-primary rounded-full shadow-[0_0_8px_var(--primary)]/30 transition-all duration-1000 ease-out" style={{ width: platform.engagement }}></div>
                                         </div>
                                     </div>
                                 );
@@ -176,7 +176,7 @@ export const Analytics: React.FC = () => {
                                                     fill="none" 
                                                     stroke="currentColor" 
                                                     strokeWidth="10" 
-                                                    className="text-accent transition-all duration-1000 ease-in-out" 
+                                                    className="text-primary transition-all duration-1000 ease-in-out" 
                                                     strokeDasharray="251" 
                                                     strokeDashoffset={251 - (Math.random() * 150 + 50)}
                                                     strokeLinecap="round"
@@ -184,7 +184,7 @@ export const Analytics: React.FC = () => {
                                             </svg>
                                             <span className="text-sm font-black text-foreground z-10">{Math.floor(Math.random() * 40 + 10)}%</span>
                                         </div>
-                                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest group-hover:text-accent transition-colors">{type}</span>
+                                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest group-hover:text-primary transition-colors">{type}</span>
                                     </div>
                                 ))}
                             </div>
@@ -200,13 +200,13 @@ export const Analytics: React.FC = () => {
                             <div className="space-y-2 pt-2">
                                 {[...Array(3)].map((_, i) => (
                                     <div key={i} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-muted/50 transition-all group cursor-pointer border border-transparent hover:border-border text-left">
-                                        <div className="w-14 h-14 rounded-xl bg-muted overflow-hidden shrink-0 flex items-center justify-center group-hover:bg-accent/5 transition-colors">
-                                            <div className="w-full h-full flex items-center justify-center text-muted-foreground group-hover:text-accent transition-colors">
+                                        <div className="w-14 h-14 rounded-xl bg-muted overflow-hidden shrink-0 flex items-center justify-center group-hover:bg-primary/5 transition-colors">
+                                            <div className="w-full h-full flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
                                                 <BarChart2 className="w-6 h-6" />
                                             </div>
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <h4 className="text-sm font-bold truncate group-hover:text-accent transition-colors text-foreground">Amazing Launch Day Highlights!</h4>
+                                            <h4 className="text-sm font-bold truncate group-hover:text-primary transition-colors text-foreground">Amazing Launch Day Highlights!</h4>
                                             <div className="flex items-center gap-4 mt-1.5">
                                                 <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-tight">
                                                     <Heart className="w-3.5 h-3.5 text-rose-500" /> 1.2k

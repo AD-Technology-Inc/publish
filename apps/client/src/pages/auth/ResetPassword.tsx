@@ -45,7 +45,7 @@ const AuthField = ({
         >
             {label}
         </Label>
-        <div className="flex items-center rounded-xl border border-zinc-800 bg-zinc-900/70 focus-within:border-accent/50 focus-within:ring-1 focus-within:ring-accent/20 transition-all overflow-hidden h-11">
+        <div className="flex items-center rounded-xl border border-zinc-800 bg-zinc-900/70 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 transition-all overflow-hidden h-11">
             <div className="pl-3.5 pr-3 flex items-center self-stretch border-r border-zinc-800/80 bg-zinc-900/50 shrink-0">
                 <Icon className="w-4 h-4 text-zinc-500" />
             </div>
@@ -194,9 +194,8 @@ export const ResetPassword: React.FC = () => {
 
                         <Button
                             type="submit"
-                            variant="accent"
                             disabled={isLoading || mismatch || !password}
-                            className="w-full h-11 mt-2 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-accent/10 border-0 flex items-center justify-center gap-2 group/btn transition-all hover:shadow-accent/20"
+                            className="w-full h-11 mt-2 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/10 border-0 flex items-center justify-center gap-2 group/btn transition-all hover:shadow-primary/20"
                         >
                             {isLoading ? (
                                 <>
@@ -217,7 +216,7 @@ export const ResetPassword: React.FC = () => {
                     <p className="text-center text-xs text-zinc-600 font-medium">
                         <Link
                             to="/login"
-                            className="inline-flex items-center gap-1.5 font-black text-accent hover:text-accent/80 transition-colors"
+                            className="inline-flex items-center gap-1.5 font-black text-primary hover:text-primary/80 transition-colors"
                         >
                             <ArrowLeft className="w-3.5 h-3.5" />
                             Cancel and sign in

@@ -44,7 +44,7 @@ export const Appearance: React.FC = () => {
                                         : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
                                 )}
                             >
-                                <Icon className={cn('h-4 w-4 shrink-0', appearance === value ? 'text-accent' : 'opacity-60')} />
+                                <Icon className={cn('h-4 w-4 shrink-0', appearance === value ? 'text-primary' : 'opacity-60')} />
                                 <span className={cn('ml-2 text-xs font-black uppercase tracking-widest', appearance === value ? 'opacity-100' : 'opacity-60')}>{label}</span>
                             </button>
                         ))}

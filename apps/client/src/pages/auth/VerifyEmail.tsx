@@ -121,9 +121,9 @@ export const VerifyEmail: React.FC = () => {
                                         className={[
                                             'w-full aspect-square max-w-[52px] text-center text-lg font-black rounded-xl border bg-zinc-900/70 text-white',
                                             'transition-all duration-200 outline-none',
-                                            'focus:border-accent/60 focus:ring-2 focus:ring-accent/20 focus:bg-zinc-800/80',
+                                            'focus:border-primary/60 focus:ring-2 focus:ring-primary/20 focus:bg-zinc-800/80',
                                             digit
-                                                ? 'border-accent/40 bg-zinc-800/60'
+                                                ? 'border-primary/40 bg-zinc-800/60'
                                                 : 'border-zinc-800',
                                         ].join(' ')}
                                     />
@@ -134,9 +134,8 @@ export const VerifyEmail: React.FC = () => {
                         <div className="space-y-3">
                             <Button
                                 type="submit"
-                                variant="accent"
                                 disabled={isLoading || !isComplete}
-                                className="w-full h-11 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-accent/10 border-0 flex items-center justify-center gap-2 group/btn transition-all hover:shadow-accent/20"
+                                className="w-full h-11 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/10 border-0 flex items-center justify-center gap-2 group/btn transition-all hover:shadow-primary/20"
                             >
                                 {isLoading ? (
                                     <>
@@ -166,7 +165,7 @@ export const VerifyEmail: React.FC = () => {
                 <p className="text-center text-xs text-zinc-600 font-medium">
                     <Link
                         to="/register"
-                        className="inline-flex items-center gap-1.5 font-black text-accent hover:text-accent/80 transition-colors"
+                        className="inline-flex items-center gap-1.5 font-black text-primary hover:text-primary/80 transition-colors"
                     >
                         <ArrowLeft className="w-3.5 h-3.5" />
                         Create another account
