@@ -13,23 +13,23 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "default", size = "default", ...props }, ref) => {
-    const baseStyles = "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0"
+    const baseStyles = "button [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0"
     
     const variants = {
-      default: "bg-primary text-primary-foreground shadow hover:bg-primary/90",
-      danger: "bg-danger text-danger-foreground shadow-sm hover:bg-danger/90",
-      outline: "border border-input bg-background shadow-sm hover:border-primary hover:text-primary",
-      secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
-      ghost: "hover:text-primary",
-      link: "text-primary underline-offset-4 hover:underline",
-      accent: "bg-accent text-accent-foreground shadow hover:bg-accent-hover",
+      default: "button-default",
+      danger: "button-danger",
+      outline: "button-outline",
+      secondary: "button-secondary",
+      ghost: "button-ghost",
+      link: "button-link",
+      accent: "button-accent",
     }
 
     const sizes = {
-      default: "h-9 px-4 py-2",
-      sm: "h-8 rounded-md px-3 text-xs",
-      lg: "h-10 rounded-md px-8",
-      icon: "size-9",
+      default: "",
+      sm: "button-sm",
+      lg: "button-lg",
+      icon: "w-9 p-0",
     }
 
     return (
@@ -50,7 +50,7 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("rounded-xl border bg-card text-card-foreground shadow", className)}
+      className={cn("card", className)}
       {...props}
     />
   )
@@ -59,35 +59,35 @@ Card.displayName = "Card"
 
 const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("flex flex-col space-y-1.5 p-6", className)} {...props} />
+    <div ref={ref} className={cn("card-header", className)} {...props} />
   )
 )
 CardHeader.displayName = "CardHeader"
 
 const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
   ({ className, ...props }, ref) => (
-    <h3 ref={ref} className={cn("font-semibold leading-none tracking-tight", className)} {...props} />
+    <h3 ref={ref} className={cn("card-title", className)} {...props} />
   )
 )
 CardTitle.displayName = "CardTitle"
 
 const CardDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
   ({ className, ...props }, ref) => (
-    <p ref={ref} className={cn("text-sm text-muted-foreground", className)} {...props} />
+    <p ref={ref} className={cn("card-description", className)} {...props} />
   )
 )
 CardDescription.displayName = "CardDescription"
 
 const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
+    <div ref={ref} className={cn("card-content", className)} {...props} />
   )
 )
 CardContent.displayName = "CardContent"
 
 const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("flex items-center p-6 pt-0", className)} {...props} />
+    <div ref={ref} className={cn("card-footer", className)} {...props} />
   )
 )
 CardFooter.displayName = "CardFooter"
@@ -100,15 +100,15 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 function Badge({ className, variant = "default", ...props }: BadgeProps) {
-  const baseStyles = "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+  const baseStyles = "badge"
   
   const variants = {
-    default: "border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80",
-    secondary: "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-    danger: "border-transparent bg-danger text-danger-foreground shadow hover:bg-danger/80",
-    outline: "text-foreground",
-    success: "border-transparent bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/10",
-    warning: "border-transparent bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/10",
+    default: "bg-primary text-primary-foreground border-transparent",
+    secondary: "",
+    danger: "badge-danger",
+    outline: "bg-transparent text-foreground border-border",
+    success: "badge-success",
+    warning: "badge-warning",
   }
 
   return (
@@ -125,7 +125,7 @@ const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLI
       <input
         type={type}
         className={cn(
-          "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+          "form-input",
           className
         )}
         ref={ref}
@@ -144,7 +144,7 @@ const Label = React.forwardRef<HTMLLabelElement, React.LabelHTMLAttributes<HTMLL
     <label
       ref={ref}
       className={cn(
-        "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
+        "form-label",
         className
       )}
       {...props}
@@ -162,7 +162,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HT
       <input
         type="checkbox"
         className={cn(
-          "peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+          "form-checkbox",
           className
         )}
         ref={ref}
@@ -326,7 +326,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttribu
     return (
       <textarea
         className={cn(
-          "flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+          "form-textarea",
           className
         )}
         ref={ref}
@@ -389,9 +389,9 @@ const DialogContent = ({ className, children }: { className?: string; children: 
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-      <div className="fixed inset-0 bg-black/80 animate-in fade-in-0" onClick={() => context.setOpen(false)} />
+      <div className="dialog-overlay" onClick={() => context.setOpen(false)} />
       <div className={cn(
-        "relative z-50 grid w-full max-w-lg gap-4 border bg-background p-6 shadow-lg duration-200 animate-in fade-in-0 zoom-in-95 sm:rounded-lg md:w-full",
+        "dialog relative z-50",
         className
       )}>
         {children}
@@ -409,25 +409,25 @@ const DialogContent = ({ className, children }: { className?: string; children: 
 }
 
 const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("flex flex-col space-y-1.5 text-center sm:text-left", className)} {...props} />
+  <div className={cn("dialog-header", className)} {...props} />
 )
 
 const DialogTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
   ({ className, ...props }, ref) => (
-    <h2 ref={ref} className={cn("text-lg font-semibold leading-none tracking-tight", className)} {...props} />
+    <h2 ref={ref} className={cn("dialog-title", className)} {...props} />
   )
 )
 DialogTitle.displayName = "DialogTitle"
 
 const DialogDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
   ({ className, ...props }, ref) => (
-    <p ref={ref} className={cn("text-sm text-muted-foreground", className)} {...props} />
+    <p ref={ref} className={cn("dialog-description", className)} {...props} />
   )
 )
 DialogDescription.displayName = "DialogDescription"
 
 const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className)} {...props} />
+  <div className={cn("dialog-footer", className)} {...props} />
 )
 
 const DialogClose = ({ children }: { children: React.ReactNode }) => {
