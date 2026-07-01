@@ -22,7 +22,7 @@ export const AppSidebarHeader: React.FC<Props> = ({ breadcrumbs = [] }) => {
 
             <Badge
                 variant="outline"
-                className="text-[9px] font-mono py-0 px-2 rounded-full border-border text-muted-foreground bg-muted"
+                className="text-[9px] font-mono py-0 px-2 rounded-full text-accent border-accent/80"
             >
                 v0.1.0 - PRE-ALPHA
             </Badge>
