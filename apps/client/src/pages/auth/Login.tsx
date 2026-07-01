@@ -84,7 +84,7 @@ export const Login: React.FC = () => {
                         suffix={
                             <Link
                                 to="/forgot-password"
-                                className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-primary/80 transition-colors"
+                                className="!text-[10px] uppercase tracking-widest button button-link"
                             >
                                 Forgot Password?
                             </Link>
@@ -187,7 +187,7 @@ export const Login: React.FC = () => {
                     New to AD. Publish?{" "}
                     <Link
                         to="/register"
-                        className="font-black text-primary hover:text-primary/80 transition-colors"
+                        className="button button-link !text-xs"
                     >
                         Create an account
                     </Link>
