@@ -1,5 +1,3 @@
-name: posexei
-
 networks:
   app:
 
@@ -15,7 +13,6 @@ volumes:
   tempo-data:
 
 services:
-
   # =========================
   # Traefik reverse proxy
   # src: https://doc.traefik.io/traefik/getting-started/docker
@@ -36,18 +33,10 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./traefik/traefik.yaml:/etc/traefik/traefik.yml
-      # - "../certs:/certs:ro"
-      # - "./traefik/dynamic:/etc/traefik/dynamic:ro"
-      # labels:
-      #   - "traefik.enable=true"
-      #   - "traefik.http.routers.dashboard.rule=Host(`dashboard.docker.localhost`)"
-      #   - "traefik.http.routers.dashboard.entrypoints=websecure"
-      #   - "traefik.http.routers.dashboard.service=api@internal"
-      #   - "traefik.http.routers.dashboard.tls=true"
 
-      # =========================
-      # 🌐 FRONTEND
-      # =========================
+  # =========================
+  # 🌐 FRONTEND
+  # =========================
   client:
     build: ../client
     depends_on:
@@ -67,7 +56,7 @@ services:
       - "traefik.http.services.app.loadbalancer.server.port=3000"
 
   # =========================
-  # 🚪 GATEWAY
+  # ☁️ GATEWAY
   # =========================
   gateway:
     build:
@@ -129,7 +118,7 @@ services:
       - identity-db
       - redis
       - otel-collector
-    command: [ "uv", "run", "python", "worker.py" ]
+    command: ["uv", "run", "python", "worker.py"]
     networks:
       - app
 
@@ -145,7 +134,7 @@ services:
       - app
 
   # =========================
-  # Social Post Service
+  # ⚙️ Social Post Service
   # =========================
   social-post-service:
     build:
@@ -176,7 +165,7 @@ services:
       - social-post-db
       - redis
       - otel-collector
-    command: [ "uv", "run", "python", "worker.py" ]
+    command: ["uv", "run", "python", "worker.py"]
     networks:
       - app
 
@@ -192,7 +181,7 @@ services:
       - app
 
   # =========================
-  # Social Account Service
+  # ⚙️ Social Account Service
   # =========================
   social-account-service:
     build:
@@ -223,7 +212,7 @@ services:
       - social-account-db
       - redis
       - otel-collector
-    command: [ "uv", "run", "python", "worker.py" ]
+    command: ["uv", "run", "python", "worker.py"]
     networks:
       - app
 
@@ -239,7 +228,7 @@ services:
       - app
 
   # =========================
-  # Social Publish Service
+  # ⚙️ Social Publish Service
   # =========================
   social-publish-service:
     build:
@@ -267,12 +256,12 @@ services:
     depends_on:
       - redis
       - otel-collector
-    command: [ "uv", "run", "python", "worker.py" ]
+    command: ["uv", "run", "python", "worker.py"]
     networks:
       - app
 
   # =========================
-  # Redis Server
+  # 💾 Redis Server
   # =========================
   redis:
     image: redis:8.6.0-alpine3.23
@@ -290,7 +279,7 @@ services:
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.96.0
     container_name: otel-collector
-    command: [ "--config=/etc/otel-collector-config.yaml" ]
+    command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
       - ./observability/otel-collector-config.yaml:/etc/otel-collector-config.yaml
     networks:
@@ -342,7 +331,7 @@ services:
   tempo:
     image: grafana/tempo:2.4.0
     container_name: tempo
-    command: [ "-config.file=/etc/tempo.yaml" ]
+    command: ["-config.file=/etc/tempo.yaml"]
     volumes:
       - ./observability/tempo-config.yaml:/etc/tempo.yaml
       - tempo-data:/var/tempo
