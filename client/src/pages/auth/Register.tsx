@@ -1,10 +1,19 @@
-import * as React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { AuthLayout } from '@/layouts/AuthLayout';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Mail, Lock, User, Eye, EyeOff, ArrowRight, LoaderCircle } from 'lucide-react';
+import * as React from "react";
+import { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { AuthLayout } from "@/layouts/AuthLayout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+    Mail,
+    Lock,
+    User,
+    Eye,
+    EyeOff,
+    ArrowRight,
+    LoaderCircle,
+} from "lucide-react";
 
 /* ─── Password strength helper ───────────────────────────────── */
 type StrengthLevel = 0 | 1 | 2 | 3 | 4;
@@ -24,11 +33,11 @@ const STRENGTH_META: Record<
     StrengthLevel,
     { label: string; color: string; bars: number }
 > = {
-    0: { label: '', color: 'bg-zinc-800', bars: 0 },
-    1: { label: 'Weak', color: 'bg-red-500', bars: 1 },
-    2: { label: 'Fair', color: 'bg-orange-400', bars: 2 },
-    3: { label: 'Good', color: 'bg-yellow-400', bars: 3 },
-    4: { label: 'Strong', color: 'bg-emerald-400', bars: 4 },
+    0: { label: "", color: "bg-zinc-800", bars: 0 },
+    1: { label: "Weak", color: "bg-red-500", bars: 1 },
+    2: { label: "Fair", color: "bg-orange-400", bars: 2 },
+    3: { label: "Good", color: "bg-yellow-400", bars: 3 },
+    4: { label: "Strong", color: "bg-emerald-400", bars: 4 },
 };
 
 /* ─── Auth field ─────────────────────────────────────────────── */
@@ -64,18 +73,31 @@ export const Register: React.FC = () => {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = React.useState(false);
     const [showPassword, setShowPassword] = React.useState(false);
-    const [password, setPassword] = React.useState('');
+    const [password, setPassword] = React.useState("");
 
     const strength = getStrength(password);
     const meta = STRENGTH_META[strength];
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const createUser = async () => {
+        const res = await fetch("http://gateway.localhost/users");
+        console.log(await res.json())
+
+    }
+    
+    useEffect(() => {
+        createUser()
+    }, [])
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
+
         setTimeout(() => {
             setIsLoading(false);
             navigate('/verify-email');
         }, 1200);
+
+        // setIsLoading(false);
     };
 
     return (
@@ -111,7 +133,7 @@ export const Register: React.FC = () => {
                         <AuthField id="password" label="Password" icon={Lock}>
                             <Input
                                 id="password"
-                                type={showPassword ? 'text' : 'password'}
+                                type={showPassword ? "text" : "password"}
                                 required
                                 autoComplete="new-password"
                                 value={password}
@@ -122,7 +144,11 @@ export const Register: React.FC = () => {
                                 type="button"
                                 onClick={() => setShowPassword((p) => !p)}
                                 className="pr-3.5 pl-2 flex items-center self-stretch text-zinc-600 hover:text-zinc-400 transition-colors shrink-0"
-                                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                aria-label={
+                                    showPassword
+                                        ? "Hide password"
+                                        : "Show password"
+                                }
                             >
                                 {showPassword ? (
                                     <EyeOff className="w-4 h-4" />
@@ -140,23 +166,25 @@ export const Register: React.FC = () => {
                                         <div
                                             key={i}
                                             className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-                                                i <= meta.bars ? meta.color : 'bg-zinc-800'
+                                                i <= meta.bars
+                                                    ? meta.color
+                                                    : "bg-zinc-800"
                                             }`}
                                         />
                                     ))}
                                 </div>
                                 {meta.label && (
                                     <p className="text-[10px] font-semibold text-zinc-500">
-                                        Password strength:{' '}
+                                        Password strength:{" "}
                                         <span
                                             className={
                                                 strength <= 1
-                                                    ? 'text-red-400'
+                                                    ? "text-red-400"
                                                     : strength === 2
-                                                    ? 'text-orange-400'
-                                                    : strength === 3
-                                                    ? 'text-yellow-400'
-                                                    : 'text-emerald-400'
+                                                      ? "text-orange-400"
+                                                      : strength === 3
+                                                        ? "text-yellow-400"
+                                                        : "text-emerald-400"
                                             }
                                         >
                                             {meta.label}
@@ -187,20 +215,29 @@ export const Register: React.FC = () => {
                 </form>
 
                 <p className="text-center text-[11px] text-zinc-600 font-medium leading-relaxed">
-                    By creating an account you agree to our{' '}
-                    <Link to="#" className="font-black text-primary hover:text-primary/80 transition-colors">
+                    By creating an account you agree to our{" "}
+                    <Link
+                        to="#"
+                        className="font-black text-primary hover:text-primary/80 transition-colors"
+                    >
                         Terms of Service
-                    </Link>{' '}
-                    and{' '}
-                    <Link to="#" className="font-black text-primary hover:text-primary/80 transition-colors">
+                    </Link>{" "}
+                    and{" "}
+                    <Link
+                        to="#"
+                        className="font-black text-primary hover:text-primary/80 transition-colors"
+                    >
                         Privacy Policy
                     </Link>
                     .
                 </p>
 
                 <p className="text-center text-xs text-zinc-600 font-medium">
-                    Already have an account?{' '}
-                    <Link to="/login" className="font-black text-primary hover:text-primary/80 transition-colors">
+                    Already have an account?{" "}
+                    <Link
+                        to="/login"
+                        className="font-black text-primary hover:text-primary/80 transition-colors"
+                    >
                         Sign in
                     </Link>
                 </p>

@@ -7,10 +7,6 @@ volumes:
   social-account-db-data:
   social-publish-db-data:
   redis-data:
-  prometheus-data:
-  grafana-data:
-  loki-data:
-  tempo-data:
 
 services:
   # =========================
@@ -25,10 +21,8 @@ services:
       - app
     command:
       - "--configFile=/etc/traefik/traefik.yml"
-
     ports:
       - "80:80"
-      # - "443:443"
       - "8080:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -51,8 +45,6 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.app.rule=Host(`app.localhost`)"
       - "traefik.http.routers.app.entrypoints=web"
-      # - "traefik.http.routers.app.entrypoints=websecure"
-      # - "traefik.http.routers.app.tls=true"
       - "traefik.http.services.app.loadbalancer.server.port=3000"
 
   # =========================
@@ -60,11 +52,8 @@ services:
   # =========================
   gateway:
     build:
-      context: ..
-      dockerfile: gateway/app/Dockerfile
-    environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
-      - OTEL_SERVICE_NAME=gateway
+      context: ../gateway/app
+      dockerfile: Dockerfile
     volumes:
       - ../gateway/app:/app/gateway/app
       - ../services/shared:/app/services/shared
@@ -82,7 +71,6 @@ services:
       - "traefik.http.routers.gateway.entrypoints=web"
       - "traefik.http.services.gateway.loadbalancer.server.port=3001"
       - "traefik.http.routers.gateway.middlewares=gateway-cors@file"
-      - "logging=promtail"
 
   # =========================
   # 🔐 Identity Service
@@ -93,11 +81,6 @@ services:
       dockerfile: services/identity-service/Dockerfile
     env_file:
       - ../services/identity-service/.env
-    environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
-      - OTEL_SERVICE_NAME=identity-service
-    labels:
-      - "logging=promtail"
     depends_on:
       - identity-db
     networks:
@@ -109,15 +92,9 @@ services:
       dockerfile: services/identity-service/Dockerfile
     env_file:
       - ../services/identity-service/.env
-    environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
-      - OTEL_SERVICE_NAME=identity-worker
-    labels:
-      - "logging=promtail"
     depends_on:
       - identity-db
       - redis
-      - otel-collector
     command: ["uv", "run", "python", "worker.py"]
     networks:
       - app
@@ -142,10 +119,6 @@ services:
       dockerfile: services/social-post-service/Dockerfile
     environment:
       - DATABASE_URL=postgresql://social_post_user:social_post_pass@social-post-db:5432/social_post_db
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
-      - OTEL_SERVICE_NAME=social-post-service
-    labels:
-      - "logging=promtail"
     depends_on:
       - social-post-db
     networks:
@@ -157,14 +130,9 @@ services:
       dockerfile: services/social-post-service/Dockerfile
     environment:
       - DATABASE_URL=postgresql://social_post_user:social_post_pass@social-post-db:5432/social_post_db
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
-      - OTEL_SERVICE_NAME=social-post-worker
-    labels:
-      - "logging=promtail"
     depends_on:
       - social-post-db
       - redis
-      - otel-collector
     command: ["uv", "run", "python", "worker.py"]
     networks:
       - app
@@ -189,10 +157,6 @@ services:
       dockerfile: services/social-account-service/Dockerfile
     environment:
       - DATABASE_URL=postgresql://social_account_user:social_account_pass@social-account-db:5432/social_account_db
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
-      - OTEL_SERVICE_NAME=social-account-service
-    labels:
-      - "logging=promtail"
     depends_on:
       - social-account-db
     networks:
@@ -204,14 +168,9 @@ services:
       dockerfile: services/social-account-service/Dockerfile
     environment:
       - DATABASE_URL=postgresql://social_account_user:social_account_pass@social-account-db:5432/social_account_db
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
-      - OTEL_SERVICE_NAME=social-account-worker
-    labels:
-      - "logging=promtail"
     depends_on:
       - social-account-db
       - redis
-      - otel-collector
     command: ["uv", "run", "python", "worker.py"]
     networks:
       - app
@@ -234,11 +193,6 @@ services:
     build:
       context: ..
       dockerfile: services/social-publish-service/Dockerfile
-    environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
-      - OTEL_SERVICE_NAME=social-publish-service
-    labels:
-      - "logging=promtail"
     depends_on:
       - redis
     networks:
@@ -248,14 +202,8 @@ services:
     build:
       context: ..
       dockerfile: services/social-publish-service/Dockerfile
-    environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
-      - OTEL_SERVICE_NAME=social-publish-worker
-    labels:
-      - "logging=promtail"
     depends_on:
       - redis
-      - otel-collector
     command: ["uv", "run", "python", "worker.py"]
     networks:
       - app
@@ -272,79 +220,3 @@ services:
     networks:
       - app
     restart: always
-
-  # =========================
-  # 📊 OBSERVABILITY
-  # =========================
-  otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.96.0
-    container_name: otel-collector
-    command: ["--config=/etc/otel-collector-config.yaml"]
-    volumes:
-      - ./observability/otel-collector-config.yaml:/etc/otel-collector-config.yaml
-    networks:
-      - app
-    depends_on:
-      - prometheus
-      - loki
-      - tempo
-
-  prometheus:
-    image: prom/prometheus:v2.51.0
-    container_name: prometheus
-    command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--storage.tsdb.path=/prometheus"
-      - "--web.enable-lifecycle"
-      - "--web.enable-remote-write-receiver"
-    volumes:
-      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus-data:/prometheus
-    networks:
-      - app
-
-  grafana:
-    image: grafana/grafana:10.4.1
-    container_name: grafana
-    environment:
-      - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-      - GF_AUTH_DISABLE_LOGIN_FORM=true
-    volumes:
-      - ./grafana/provisioning:/etc/grafana/provisioning
-      - grafana-data:/var/lib/grafana
-    networks:
-      - app
-    ports:
-      - "3000:3000"
-
-  loki:
-    image: grafana/loki:2.9.4
-    container_name: loki
-    command: -config.file=/etc/loki/local-config.yaml
-    volumes:
-      - ./observability/loki-config.yaml:/etc/loki/local-config.yaml
-      - loki-data:/loki
-    networks:
-      - app
-
-  tempo:
-    image: grafana/tempo:2.4.0
-    container_name: tempo
-    command: ["-config.file=/etc/tempo.yaml"]
-    volumes:
-      - ./observability/tempo-config.yaml:/etc/tempo.yaml
-      - tempo-data:/var/tempo
-    networks:
-      - app
-
-  promtail:
-    image: grafana/promtail:2.9.4
-    container_name: promtail
-    command: -config.file=/etc/promtail/config.yml
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - ./observability/promtail-config.yaml:/etc/promtail/config.yml
-    networks:
-      - app

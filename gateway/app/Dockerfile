@@ -7,7 +7,7 @@ COPY gateway/app/pyproject.toml gateway/app/uv.lock /app/gateway/app/
 COPY services/shared/pyproject.toml /app/services/shared/
 
 WORKDIR /app/gateway/app
-RUN uv sync --frozen
+RUN if [ -f uv.lock ]; then uv sync --frozen; else uv sync; fi
 
 COPY gateway/app/ /app/gateway/app/
 COPY services/shared/ /app/services/shared/

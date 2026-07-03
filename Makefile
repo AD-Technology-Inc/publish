@@ -18,3 +18,18 @@ rebuild:
 
 ps:
 	docker compose -f infrastructure/docker-compose.yaml ps
+
+# ===========================================================================
+# Database Migrations (Alembic)
+# ===========================================================================
+service ?= identity-service
+msg ?= auto_migration
+
+db-revision:
+	docker compose -f infrastructure/docker-compose.yaml exec $(service) uv run alembic revision --autogenerate -m "$(msg)"
+
+db-migrate:
+	docker compose -f infrastructure/docker-compose.yaml exec $(service) uv run alembic upgrade head
+
+db-current:
+	docker compose -f infrastructure/docker-compose.yaml exec $(service) uv run alembic current

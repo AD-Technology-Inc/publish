@@ -8,7 +8,7 @@ COPY services/identity-service/pyproject.toml services/identity-service/uv.lock 
 COPY services/shared/ /app/services/shared/
 
 WORKDIR /app/services/identity-service
-RUN uv sync --frozen
+RUN if [ -f uv.lock ]; then uv sync --frozen; else uv sync; fi
 
 # Copy source code
 COPY services/identity-service/ /app/services/identity-service/

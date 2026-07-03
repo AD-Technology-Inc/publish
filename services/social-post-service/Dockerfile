@@ -7,7 +7,6 @@ COPY services/social-post-service/pyproject.toml services/social-post-service/uv
 COPY services/shared/ /app/services/shared/
 
 WORKDIR /app/services/social-post-service
-# We use a wildcard for uv.lock in case it doesn't exist yet
 RUN if [ -f uv.lock ]; then uv sync --frozen; else uv sync; fi
 
 COPY services/social-post-service/ /app/services/social-post-service/

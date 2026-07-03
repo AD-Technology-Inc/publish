@@ -7,10 +7,9 @@ requires-python = ">=3.12"
 dependencies = [
     "fastapi[standard]>=0.136.0",
     "shared",
-    "opentelemetry-distro>=0.50b0",
-    "opentelemetry-exporter-otlp>=1.29.0",
-    "opentelemetry-instrumentation-fastapi>=0.50b0",
-    "prometheus-fastapi-instrumentator>=7.1.0",
+    "sqlalchemy>=2.0.38",
+    "alembic>=1.14.1",
+    "asyncpg>=0.30.0",
 ]
 
 [tool.uv.sources]
