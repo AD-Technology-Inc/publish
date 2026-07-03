@@ -7,7 +7,7 @@ This walkthrough summarizes the full-stack integration connecting the React fron
 > [!IMPORTANT]
 > The system now features a complete, tightly coupled integration from the frontend React UI down to the backend Redis Streams queue and out to the Facebook Graph API.
 
-### 1. Frontend Integration (`apps/client`)
+### 1. Frontend Integration (`client`)
 - **API Client**: Implemented a typed Axios client pointing to the Gateway (`http://gateway.localhost`).
 - **React Hooks**:
   - `usePublishPost`: Wraps the `POST /social/posts` endpoint and manages the entire lifecycle (job ID assignment, polling, and error catching).

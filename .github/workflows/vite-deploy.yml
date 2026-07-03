@@ -32,23 +32,23 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: apps/client/package-lock.json
+          cache-dependency-path: client/package-lock.json
 
       - run: npm ci
-        working-directory: apps/client
+        working-directory: client
 
       - run: npm run build -- --base=/${{ github.event.repository.name }}/
-        working-directory: apps/client
+        working-directory: client
 
       - name: Create 404.html SPA fallback
         run: cp dist/index.html dist/404.html
-        working-directory: apps/client
+        working-directory: client
 
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: apps/client/dist
+          path: client/dist
 
   deploy:
     needs: build

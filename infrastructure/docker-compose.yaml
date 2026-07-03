@@ -49,12 +49,12 @@ services:
       # 🌐 FRONTEND
       # =========================
   client:
-    build: ../apps/client
+    build: ../client
     depends_on:
       - traefik
       - gateway
     volumes:
-      - ../apps/client:/app
+      - ../client:/app
       - /app/node_modules
     networks:
       - app
