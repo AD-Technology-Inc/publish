@@ -1,7 +1,8 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight, Check, Copy } from "lucide-react";
-import { Button, Badge } from "@/components/ui/core";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 const GithubIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4" {...props}>

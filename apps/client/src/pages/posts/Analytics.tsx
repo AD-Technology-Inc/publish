@@ -17,9 +17,9 @@ import {
     CardContent, 
     CardHeader, 
     CardTitle, 
-    CardDescription,
-    Button 
-} from '@/components/ui/core';
+    CardDescription
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useTitle } from '@/hooks/use-title';
 

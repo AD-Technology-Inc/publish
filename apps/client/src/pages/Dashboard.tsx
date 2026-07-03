@@ -18,7 +18,8 @@ import {
     Linkedin,
 } from "@/components/SocialIcons";
 import { AppLayout } from "@/layouts/AppLayout";
-import { Button, Badge } from "@/components/ui/core";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { mockUser, mockRecentActivities, mockDashboardStats } from "@/mocks";
 import { useTitle } from "@/hooks/use-title";

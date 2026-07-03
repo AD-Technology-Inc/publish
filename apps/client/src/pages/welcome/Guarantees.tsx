@@ -1,6 +1,6 @@
 import * as React from "react";
 import { ShieldCheck } from "lucide-react";
-import { Badge } from "@/components/ui/core";
+import { Badge } from "@/components/ui/badge";
 
 export const Guarantees: React.FC = () => {
     return (

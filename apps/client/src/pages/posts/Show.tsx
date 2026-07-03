@@ -14,15 +14,15 @@ import {
 } from 'lucide-react';
 import { Instagram, Twitter, Linkedin, Facebook } from '@/components/SocialIcons';
 import { AppLayout } from '@/layouts/AppLayout';
+import { Button } from '@/components/ui/button';
 import { 
-    Button, 
     Card, 
     CardContent, 
     CardHeader, 
     CardTitle, 
-    CardDescription,
-    Badge 
-} from '@/components/ui/core';
+    CardDescription
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useTitle } from '@/hooks/use-title';
 

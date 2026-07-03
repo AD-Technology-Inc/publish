@@ -2,7 +2,15 @@ import * as React from 'react';
 import { AppLayout } from '@/layouts/AppLayout';
 import { SettingsLayout } from '@/layouts/SettingsLayout';
 import { Heading } from '@/components/Heading';
-import { Button, Card, CardContent, CardHeader, CardTitle, CardDescription, Badge } from '@/components/ui/core';
+import { Button } from '@/components/ui/button';
+import { 
+    Card, 
+    CardContent, 
+    CardHeader, 
+    CardTitle, 
+    CardDescription 
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { 
     Check, 
     CreditCard, 

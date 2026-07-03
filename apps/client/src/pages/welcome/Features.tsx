@@ -7,7 +7,7 @@ import {
     Lock,
     Shield,
 } from "lucide-react";
-import { Badge } from "@/components/ui/core";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 const featuresList = [

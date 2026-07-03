@@ -1,6 +1,6 @@
 import * as React from "react";
 import { AlertTriangle, Lock, Clock, RefreshCw } from "lucide-react";
-import { Badge } from "@/components/ui/core";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 export const Problem: React.FC = () => {

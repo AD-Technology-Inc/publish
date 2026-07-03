@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthLayout } from '@/layouts/AuthLayout';
-import { Button } from '@/components/ui/core';
+import { Button } from '@/components/ui/button';
 import { ArrowRight, ArrowLeft, LoaderCircle, PartyPopper, RotateCcw } from 'lucide-react';
 
 const OTP_LENGTH = 6;

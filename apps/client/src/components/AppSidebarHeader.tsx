@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Badge } from "@/components/ui/core";
+import { Badge } from "@/components/ui/badge";
 import type { BreadcrumbItemType } from "@/types";
 
 interface Props {

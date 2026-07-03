@@ -1,7 +1,17 @@
 import * as React from 'react';
 import { AppLayout } from '@/layouts/AppLayout';
 import { SettingsLayout } from '@/layouts/SettingsLayout';
-import { Button, Input, Label, Card, CardContent, CardHeader, CardTitle, CardDescription, Separator } from '@/components/ui/core';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { 
+    Card, 
+    CardContent, 
+    CardHeader, 
+    CardTitle, 
+    CardDescription 
+} from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import { mockUser } from '@/mocks';
 import { useTitle } from '@/hooks/use-title';
 import { Camera, Check, User as UserIcon } from 'lucide-react';

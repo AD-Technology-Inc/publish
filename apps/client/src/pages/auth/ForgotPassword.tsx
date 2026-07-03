@@ -1,7 +1,9 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 import { AuthLayout } from '@/layouts/AuthLayout';
-import { Button, Input, Label } from '@/components/ui/core';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Mail, ArrowRight, ArrowLeft, LoaderCircle, MailCheck } from 'lucide-react';
 
 export const ForgotPassword: React.FC = () => {

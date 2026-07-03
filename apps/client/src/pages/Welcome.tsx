@@ -2,7 +2,8 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import { useTitle } from "@/hooks/use-title";
 import { AppLogo } from "@/components/AppLogo";
-import { Button, Badge } from "@/components/ui/core";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { InteractiveSimulator } from "@/components/InteractiveSimulator";
 
 import { Hero } from "./welcome/Hero";

@@ -7,7 +7,7 @@ import {
     DropdownMenuItem, 
     DropdownMenuSeparator, 
     DropdownMenuTrigger 
-} from '@/components/ui/core';
+} from '@/components/ui/dropdown-menu';
 import { mockUser } from '@/mocks';
 import { ChevronsUpDown, Settings, CreditCard, LogOut, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';

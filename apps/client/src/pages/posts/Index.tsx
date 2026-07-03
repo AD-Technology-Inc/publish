@@ -27,16 +27,16 @@ import {
 } from "@/components/SocialIcons";
 
 import { AppLayout } from "@/layouts/AppLayout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
-    Button,
-    Input,
-    Badge,
     DropdownMenu,
     DropdownMenuTrigger,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuSeparator,
-} from "@/components/ui/core";
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { mockPosts } from "@/mocks";
 import { useTitle } from "@/hooks/use-title";

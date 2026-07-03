@@ -2,7 +2,9 @@ import * as React from 'react';
 import { AppLayout } from '@/layouts/AppLayout';
 import { SettingsLayout } from '@/layouts/SettingsLayout';
 import { Heading } from '@/components/Heading';
-import { Button, Input, Label } from '@/components/ui/core';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useTitle } from '@/hooks/use-title';
 
 export const Password: React.FC = () => {

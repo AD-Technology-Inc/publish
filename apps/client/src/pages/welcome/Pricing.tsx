@@ -1,7 +1,8 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { Check, Star } from "lucide-react";
-import { Button, Badge } from "@/components/ui/core";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 export const Pricing: React.FC = () => {
     return (

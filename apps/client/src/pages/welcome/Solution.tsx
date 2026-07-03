@@ -1,6 +1,6 @@
 import * as React from "react";
 import { CheckCircle2 } from "lucide-react";
-import { Badge } from "@/components/ui/core";
+import { Badge } from "@/components/ui/badge";
 
 export const Solution: React.FC = () => {
     return (

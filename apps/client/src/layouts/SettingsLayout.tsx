@@ -1,7 +1,8 @@
 import * as React from "react";
 import { useLocation, Link } from "react-router-dom";
 import { Heading } from "@/components/Heading";
-import { Button, Separator } from "@/components/ui/core";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
 interface NavItem {

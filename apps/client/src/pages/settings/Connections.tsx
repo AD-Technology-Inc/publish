@@ -2,20 +2,19 @@ import * as React from 'react';
 import { AppLayout } from '@/layouts/AppLayout';
 import { SettingsLayout } from '@/layouts/SettingsLayout';
 import { Heading } from '@/components/Heading';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
-    Button,
-    Card,
-    CardContent,
-    Badge,
-    Input,
-    Label,
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
     DialogDescription,
     DialogFooter,
-} from '@/components/ui/core';
+} from '@/components/ui/dialog';
 import {
     Plus,
     CheckCircle2,

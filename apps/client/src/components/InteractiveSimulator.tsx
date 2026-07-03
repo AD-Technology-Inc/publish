@@ -9,7 +9,8 @@ import {
     AlertTriangle,
     Terminal,
 } from "lucide-react";
-import { Button, Badge } from "@/components/ui/core";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 export const InteractiveSimulator: React.FC = () => {

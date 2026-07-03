@@ -30,25 +30,27 @@ import {
 } from "@/components/SocialIcons";
 
 import { AppLayout } from "@/layouts/AppLayout";
-import {
-    Button,
-    Input,
-    Textarea,
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-    CardDescription,
-    Badge,
-    Label,
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-    DialogFooter,
-    DialogTrigger,
-} from "@/components/ui/core";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { 
+    Card, 
+    CardContent, 
+    CardHeader, 
+    CardTitle, 
+    CardDescription 
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { 
+    Dialog, 
+    DialogContent, 
+    DialogHeader, 
+    DialogTitle, 
+    DialogDescription, 
+    DialogFooter, 
+    DialogTrigger 
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useTitle } from "@/hooks/use-title";
 import { usePublishPost } from "@/hooks/usePublishPost";
