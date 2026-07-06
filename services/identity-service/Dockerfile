@@ -1,19 +1,22 @@
-FROM python:3.12-slim
+# Set base image
+FROM ghcr.io/astral-sh/uv:python3.12-trixie-slim
 
+# Set the working directory
 WORKDIR /app
-RUN pip install --no-cache-dir uv
 
-# Copy dependency files
-COPY services/identity-service/pyproject.toml services/identity-service/uv.lock /app/services/identity-service/
-COPY services/shared/ /app/services/shared/
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV UV_PROJECT_ENVIRONMENT=/app/.venv
 
-WORKDIR /app/services/identity-service
-RUN if [ -f uv.lock ]; then uv sync --frozen; else uv sync; fi
+# Install dependencies
+COPY pyproject.toml uv.lock ./
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked --no-dev
 
-# Copy source code
-COPY services/identity-service/ /app/services/identity-service/
+# Copy application
+COPY . .
 
-EXPOSE 3001
+# Run the app
+ENV PATH="/app/.venv/bin:$PATH"
 
-# Default CMD (API)
-CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "3001"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "3001"]

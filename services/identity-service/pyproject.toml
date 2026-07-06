@@ -1,16 +1,12 @@
 [project]
 name = "identity"
 version = "0.1.0"
-description = "posexei identity service"
+description = "AD. Publish identity service"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi[standard]>=0.136.0",
-    "shared",
-    "sqlalchemy>=2.0.38",
-    "alembic>=1.14.1",
-    "asyncpg>=0.30.0",
+    "sqlalchemy[asyncio]>=2.0.51",
+    "asyncpg>=0.31.0",
+    "alembic>=1.18.5",
 ]
-
-[tool.uv.sources]
-shared = { path = "../../services/shared" }

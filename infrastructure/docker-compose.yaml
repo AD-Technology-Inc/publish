@@ -27,20 +27,22 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./traefik/traefik.yaml:/etc/traefik/traefik.yml
+      - ./traefik/dynamic:/etc/traefik/dynamic:ro
 
   # =========================
   # 🌐 FRONTEND
   # =========================
   client:
     build: ../client
-    depends_on:
-      - traefik
-      - gateway
     volumes:
       - ../client:/app
       - /app/node_modules
     networks:
       - app
+    develop:
+      watch:
+        - action: rebuild
+          path: ../client/package.json
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.app.rule=Host(`app.localhost`)"
@@ -51,20 +53,21 @@ services:
   # ☁️ GATEWAY
   # =========================
   gateway:
-    build:
-      context: ../gateway/app
-      dockerfile: Dockerfile
+    build: ../gateway/app
     volumes:
-      - ../gateway/app:/app/gateway/app
-      - ../services/shared:/app/services/shared
+      - ../gateway/app:/app
+      - /app/.venv
     networks:
       - app
+    develop:
+      watch:
+        - action: rebuild
+          path: ../gateway/app/pyproject.toml
     depends_on:
-      - traefik
       - identity-service
-      - social-account-service
-      - social-post-service
-      - social-publish-service
+      # - social-account-service
+      # - social-post-service
+      # - social-publish-service
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.gateway.rule=Host(`gateway.localhost`)"
@@ -76,147 +79,151 @@ services:
   # 🔐 Identity Service
   # =========================
   identity-service:
-    build:
-      context: ..
-      dockerfile: services/identity-service/Dockerfile
-    env_file:
-      - ../services/identity-service/.env
-    depends_on:
-      - identity-db
+    build: ../services/identity-service
+    volumes:
+      - ../services/identity-service:/app
+      - /app/.venv
     networks:
       - app
+    develop:
+      watch:
+        - action: rebuild
+          path: ../services/identity-service/pyproject.toml
+    depends_on:
+      - identity-db
 
-  identity-worker:
-    build:
-      context: ..
-      dockerfile: services/identity-service/Dockerfile
-    env_file:
-      - ../services/identity-service/.env
-    depends_on:
-      - identity-db
-      - redis
-    command: ["uv", "run", "python", "worker.py"]
-    networks:
-      - app
+  # identity-worker:
+  #   build:
+  #     context: ..
+  #     dockerfile: services/identity-service/Dockerfile
+  #   env_file:
+  #     - ../services/identity-service/.env
+  #   depends_on:
+  #     - identity-db
+  #     - redis
+  #   command: ["uv", "run", "python", "worker.py"]
+  #   networks:
+  #     - app
 
   identity-db:
-    image: postgres:18-alpine
+    image: postgres:18-trixie
     environment:
       POSTGRES_DB: identity_db
       POSTGRES_USER: identity_user
       POSTGRES_PASSWORD: identity_pass
     volumes:
-      - identity-db-data:/var/lib/postgresql/data
+      - identity-db-data:/var/lib/postgresql
     networks:
       - app
+    restart: unless-stopped
 
-  # =========================
-  # ⚙️ Social Post Service
-  # =========================
-  social-post-service:
-    build:
-      context: ..
-      dockerfile: services/social-post-service/Dockerfile
-    environment:
-      - DATABASE_URL=postgresql://social_post_user:social_post_pass@social-post-db:5432/social_post_db
-    depends_on:
-      - social-post-db
-    networks:
-      - app
+  # # =========================
+  # # ⚙️ Social Post Service
+  # # =========================
+  # social-post-service:
+  #   build:
+  #     context: ..
+  #     dockerfile: services/social-post-service/Dockerfile
+  #   environment:
+  #     - DATABASE_URL=postgresql://social_post_user:social_post_pass@social-post-db:5432/social_post_db
+  #   depends_on:
+  #     - social-post-db
+  #   networks:
+  #     - app
 
-  social-post-worker:
-    build:
-      context: ..
-      dockerfile: services/social-post-service/Dockerfile
-    environment:
-      - DATABASE_URL=postgresql://social_post_user:social_post_pass@social-post-db:5432/social_post_db
-    depends_on:
-      - social-post-db
-      - redis
-    command: ["uv", "run", "python", "worker.py"]
-    networks:
-      - app
+  # social-post-worker:
+  #   build:
+  #     context: ..
+  #     dockerfile: services/social-post-service/Dockerfile
+  #   environment:
+  #     - DATABASE_URL=postgresql://social_post_user:social_post_pass@social-post-db:5432/social_post_db
+  #   depends_on:
+  #     - social-post-db
+  #     - redis
+  #   command: ["uv", "run", "python", "worker.py"]
+  #   networks:
+  #     - app
 
-  social-post-db:
-    image: postgres:18-alpine
-    environment:
-      POSTGRES_DB: social_post_db
-      POSTGRES_USER: social_post_user
-      POSTGRES_PASSWORD: social_post_pass
-    volumes:
-      - social-post-db-data:/var/lib/postgresql/data
-    networks:
-      - app
+  # social-post-db:
+  #   image: postgres:18-alpine
+  #   environment:
+  #     POSTGRES_DB: social_post_db
+  #     POSTGRES_USER: social_post_user
+  #     POSTGRES_PASSWORD: social_post_pass
+  #   volumes:
+  #     - social-post-db-data:/var/lib/postgresql/data
+  #   networks:
+  #     - app
 
-  # =========================
-  # ⚙️ Social Account Service
-  # =========================
-  social-account-service:
-    build:
-      context: ..
-      dockerfile: services/social-account-service/Dockerfile
-    environment:
-      - DATABASE_URL=postgresql://social_account_user:social_account_pass@social-account-db:5432/social_account_db
-    depends_on:
-      - social-account-db
-    networks:
-      - app
+  # # =========================
+  # # ⚙️ Social Account Service
+  # # =========================
+  # social-account-service:
+  #   build:
+  #     context: ..
+  #     dockerfile: services/social-account-service/Dockerfile
+  #   environment:
+  #     - DATABASE_URL=postgresql://social_account_user:social_account_pass@social-account-db:5432/social_account_db
+  #   depends_on:
+  #     - social-account-db
+  #   networks:
+  #     - app
 
-  social-account-worker:
-    build:
-      context: ..
-      dockerfile: services/social-account-service/Dockerfile
-    environment:
-      - DATABASE_URL=postgresql://social_account_user:social_account_pass@social-account-db:5432/social_account_db
-    depends_on:
-      - social-account-db
-      - redis
-    command: ["uv", "run", "python", "worker.py"]
-    networks:
-      - app
+  # social-account-worker:
+  #   build:
+  #     context: ..
+  #     dockerfile: services/social-account-service/Dockerfile
+  #   environment:
+  #     - DATABASE_URL=postgresql://social_account_user:social_account_pass@social-account-db:5432/social_account_db
+  #   depends_on:
+  #     - social-account-db
+  #     - redis
+  #   command: ["uv", "run", "python", "worker.py"]
+  #   networks:
+  #     - app
 
-  social-account-db:
-    image: postgres:18-alpine
-    environment:
-      POSTGRES_DB: social_account_db
-      POSTGRES_USER: social_account_user
-      POSTGRES_PASSWORD: social_account_pass
-    volumes:
-      - social-account-db-data:/var/lib/postgresql/data
-    networks:
-      - app
+  # social-account-db:
+  #   image: postgres:18-alpine
+  #   environment:
+  #     POSTGRES_DB: social_account_db
+  #     POSTGRES_USER: social_account_user
+  #     POSTGRES_PASSWORD: social_account_pass
+  #   volumes:
+  #     - social-account-db-data:/var/lib/postgresql/data
+  #   networks:
+  #     - app
 
-  # =========================
-  # ⚙️ Social Publish Service
-  # =========================
-  social-publish-service:
-    build:
-      context: ..
-      dockerfile: services/social-publish-service/Dockerfile
-    depends_on:
-      - redis
-    networks:
-      - app
+  # # =========================
+  # # ⚙️ Social Publish Service
+  # # =========================
+  # social-publish-service:
+  #   build:
+  #     context: ..
+  #     dockerfile: services/social-publish-service/Dockerfile
+  #   depends_on:
+  #     - redis
+  #   networks:
+  #     - app
 
-  social-publish-worker:
-    build:
-      context: ..
-      dockerfile: services/social-publish-service/Dockerfile
-    depends_on:
-      - redis
-    command: ["uv", "run", "python", "worker.py"]
-    networks:
-      - app
+  # social-publish-worker:
+  #   build:
+  #     context: ..
+  #     dockerfile: services/social-publish-service/Dockerfile
+  #   depends_on:
+  #     - redis
+  #   command: ["uv", "run", "python", "worker.py"]
+  #   networks:
+  #     - app
 
-  # =========================
-  # 💾 Redis Server
-  # =========================
-  redis:
-    image: redis:8.6.0-alpine3.23
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis-data:/data
-    networks:
-      - app
-    restart: always
+  # # =========================
+  # # 💾 Redis Server
+  # # =========================
+  # redis:
+  #   image: redis:8.6.0-alpine3.23
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis-data:/data
+  #   networks:
+  #     - app
+  #   restart: always

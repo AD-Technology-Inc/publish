@@ -1,35 +1,34 @@
+COMPOSE := docker compose -f infrastructure/docker-compose.yaml
+
+service ?=
+cmd ?=
+
 up:
-	docker compose -f infrastructure/docker-compose.yaml up -d
+	$(COMPOSE) up --watch
 
 build:
-	docker compose -f infrastructure/docker-compose.yaml build
+	$(COMPOSE) build
 
 down:
-	docker compose -f infrastructure/docker-compose.yaml down
+	$(COMPOSE) down
 
 logs:
-	docker compose -f infrastructure/docker-compose.yaml logs -f
+	$(COMPOSE) logs -f
 
 restart:
-	make down && make up
+	$(MAKE) down
+	$(MAKE) up
 
 rebuild:
-	make down && make build && make up
+	$(MAKE) down
+	$(MAKE) build
+	$(MAKE) up
 
 ps:
-	docker compose -f infrastructure/docker-compose.yaml ps
+	$(COMPOSE) ps
 
-# ===========================================================================
-# Database Migrations (Alembic)
-# ===========================================================================
-service ?= identity-service
-msg ?= auto_migration
+exec:
+	$(COMPOSE) exec $(service) $(cmd)
 
-db-revision:
-	docker compose -f infrastructure/docker-compose.yaml exec $(service) uv run alembic revision --autogenerate -m "$(msg)"
-
-db-migrate:
-	docker compose -f infrastructure/docker-compose.yaml exec $(service) uv run alembic upgrade head
-
-db-current:
-	docker compose -f infrastructure/docker-compose.yaml exec $(service) uv run alembic current
+run:
+	$(COMPOSE) run --rm $(service) $(cmd)
