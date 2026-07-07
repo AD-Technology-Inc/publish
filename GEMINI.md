@@ -126,17 +126,42 @@ Each domain owns its:
 
 ### FastAPI
 
-- Use dependency injection.
+- Use dependency injection with `typing.Annotated` for clear, type-safe annotations (e.g., `db: Annotated[AsyncSession, Depends(get_db)]`).
 - Prefer async endpoints.
-- Return typed response models.
-- Keep route handlers lightweight.
+- Return typed response models using Pydantic schemas.
+- Keep route handlers lightweight and delegate business logic to services.
 
 ### SQLAlchemy
 
-- Use SQLAlchemy 2.0 style APIs.
-- Prefer select() statements.
-- Avoid legacy query syntax.
-- Use async database sessions.
+- Use SQLAlchemy 2.0 style APIs and `select()` statements.
+- Use async database sessions (`AsyncSession` and `async_sessionmaker`) exclusively.
+- Implement the async database session factory pattern:
+  ```python
+  from collections.abc import AsyncGenerator
+  from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+
+  engine = create_async_engine(DATABASE_URL, pool_pre_ping=True)
+  async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
+
+  async def get_db() -> AsyncGenerator[AsyncSession, None]:
+      async with async_session_maker() as session:
+          yield session
+  ```
+
+### Configuration Management
+
+- Use `pydantic-settings` to specify configuration and environment variables explicitly.
+- Define settings classes inheriting from `BaseSettings`:
+  ```python
+  from pydantic_settings import BaseSettings, SettingsConfigDict
+
+  class Settings(BaseSettings):
+      model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+
+      database_url: str
+      secret_key: str
+  ```
+- Store settings objects in a single configuration entrypoint (e.g., `config.py`).
 
 ### Error Handling
 
@@ -176,6 +201,7 @@ Each domain owns its:
 - Always use Pydantic schemas.
 - Never expose ORM models directly.
 - Separate create, update, and response schemas.
+- Use Pydantic V2 config style via `model_config = ConfigDict(from_attributes=True)`.
 
 ### Validation
 
@@ -240,3 +266,4 @@ Each domain owns its:
 - DO NOT use global mutable state.
 - DO NOT expose internal database models in API responses.
 - DO NOT ignore type errors without justification.
+
