@@ -171,7 +171,7 @@ export const Welcome: React.FC = () => {
                         <ul className="space-y-3 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                             <li>
                                 <a
-                                    href="https://github.com/zerexei/posexei"
+                                    href="https://github.com/AD-Technology-Inc/publish"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="hover:text-foreground transition-colors"
@@ -214,7 +214,7 @@ export const Welcome: React.FC = () => {
                     </p>
                     <div className="flex items-center gap-6">
                         <a
-                            href="https://github.com/zerexei/posexei"
+                            href="https://github.com/AD-Technology-Inc/publish"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="hover:text-foreground transition-colors"

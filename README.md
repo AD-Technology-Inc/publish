@@ -161,8 +161,8 @@ Ensure Docker and Compose are installed:
 
 1. Clone the repository and navigate to the infrastructure directory:
    ```bash
-   git clone https://github.com/zerexei/posexei.git
-   cd posexei/infrastructure
+    git clone https://github.com/AD-Technology-Inc/publish.git
+    cd publish/infrastructure
    ```
 2. Build and launch the stack:
    ```bash

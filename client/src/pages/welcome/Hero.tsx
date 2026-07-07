@@ -57,7 +57,7 @@ export const Hero: React.FC = () => {
                             </Button>
                         </Link>
                         <a
-                            href="https://github.com/zerexei/posexei"
+                            href="https://github.com/AD-Technology-Inc/publish"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="w-full sm:w-auto"

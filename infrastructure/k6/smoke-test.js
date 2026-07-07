@@ -101,7 +101,7 @@ export function handleSummary(data) {
 // Minimal textSummary polyfill (k6 >= 0.38 has this built-in)
 function textSummary(data, _opts) {
   return `
-Posexei Smoke Test Results
+AD. Publish Smoke Test Results
 ==========================
 Requests: ${data.metrics.http_reqs ? data.metrics.http_reqs.values.count : 'n/a'}
 p95 latency: ${data.metrics.http_req_duration ? data.metrics.http_req_duration.values['p(95)'].toFixed(2) : 'n/a'}ms

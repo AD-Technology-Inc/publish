@@ -29,7 +29,7 @@ exporters:
   # Metrics → Prometheus (pull mode - expose scrape endpoint)
   prometheus:
     endpoint: "0.0.0.0:8889"
-    namespace: posexei
+    namespace: publish
 
   # Logs → Loki
   loki:

@@ -8,7 +8,7 @@
 - [ ] `infrastructure/observability/promtail-config.yaml`
 - [ ] `infrastructure/grafana/provisioning/datasources/datasources.yaml`
 - [ ] `infrastructure/grafana/provisioning/dashboards/dashboard-provider.yaml`
-- [ ] `infrastructure/grafana/provisioning/dashboards/posexei-overview.json`
+- [ ] `infrastructure/grafana/provisioning/dashboards/publish-overview.json`
 - [ ] `infrastructure/k6/smoke-test.js`
 - [ ] Update `infrastructure/docker-compose.yaml`
 

@@ -5,7 +5,7 @@ from routes.v1.identity import identity_router
 """
 TODO: route should always return structured response
 """
-app = FastAPI(title="Posexei Gateway")
+app = FastAPI(title="AD. Publish Gateway")
 
 # Register routes
 app.include_router(identity_router)

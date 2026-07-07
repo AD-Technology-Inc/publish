@@ -83,7 +83,7 @@ async def execute_job_steps(job):
 from opentelemetry import trace
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
-tracer = trace.get_tracer("posexei-worker")
+tracer = trace.get_tracer("publish-worker")
 
 with tracer.start_as_current_span("worker-job-execution") as span:
     span.set_attribute("job.id", job_id)

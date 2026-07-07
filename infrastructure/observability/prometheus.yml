@@ -8,8 +8,8 @@ scrape_configs:
     static_configs:
       - targets: ["otel-collector:8888"]
 
-  # OTel Collector Prometheus exporter (posexei app metrics)
-  - job_name: posexei-otel-metrics
+  # OTel Collector Prometheus exporter (publish app metrics)
+  - job_name: publish-otel-metrics
     static_configs:
       - targets: ["otel-collector:8889"]
 

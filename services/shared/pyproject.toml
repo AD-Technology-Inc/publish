@@ -1,7 +1,7 @@
 [project]
 name = "shared"
 version = "0.1.0"
-description = "Shared abstractions for posexei"
+description = "Shared abstractions for AD. Publish"
 requires-python = ">=3.12"
 dependencies = [
     "redis>=5.2.1",

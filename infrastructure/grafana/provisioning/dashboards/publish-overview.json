@@ -7,7 +7,7 @@
     { "type": "datasource", "id": "tempo", "name": "Tempo", "version": "1.0.0" }
   ],
   "annotations": { "list": [] },
-  "description": "Posexei async social publishing platform — HTTP, jobs, errors, and traces",
+  "description": "AD. Publish async social publishing platform — HTTP, jobs, errors, and traces",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -151,13 +151,13 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "histogram_quantile(0.95, sum(rate(posexei_job_duration_seconds_bucket[5m])) by (le, job_type))",
+          "expr": "histogram_quantile(0.95, sum(rate(publish_job_duration_seconds_bucket[5m])) by (le, job_type))",
           "legendFormat": "p95 {{job_type}}",
           "refId": "A"
         },
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "histogram_quantile(0.50, sum(rate(posexei_job_duration_seconds_bucket[5m])) by (le, job_type))",
+          "expr": "histogram_quantile(0.50, sum(rate(publish_job_duration_seconds_bucket[5m])) by (le, job_type))",
           "legendFormat": "p50 {{job_type}}",
           "refId": "B"
         }
@@ -179,7 +179,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum(increase(posexei_jobs_total[5m])) by (job_type, status)",
+          "expr": "sum(increase(publish_jobs_total[5m])) by (job_type, status)",
           "legendFormat": "{{job_type}} / {{status}}",
           "refId": "A"
         }
@@ -209,7 +209,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum(posexei_dlq_depth) by (stream)",
+          "expr": "sum(publish_dlq_depth) by (stream)",
           "legendFormat": "{{stream}}",
           "refId": "A"
         }
@@ -231,7 +231,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum(increase(posexei_job_retries_total[5m])) by (job_type)",
+          "expr": "sum(increase(publish_job_retries_total[5m])) by (job_type)",
           "legendFormat": "{{job_type}}",
           "refId": "A"
         }
@@ -260,11 +260,11 @@
       "targets": [
         {
           "datasource": { "type": "loki", "uid": "loki" },
-          "expr": "{project=\"posexei\"} |= ``",
+          "expr": "{project=\"publish\"} |= ``",
           "refId": "A"
         }
       ],
-      "title": "All Posexei Service Logs",
+      "title": "All AD. Publish Service Logs",
       "type": "logs"
     },
     {
@@ -296,11 +296,11 @@
   ],
   "refresh": "30s",
   "schemaVersion": 39,
-  "tags": ["posexei", "observability"],
+  "tags": ["publish", "observability"],
   "time": { "from": "now-1h", "to": "now" },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Posexei Overview",
-  "uid": "posexei-overview",
+  "title": "AD. Publish Overview",
+  "uid": "publish-overview",
   "version": 1
 }

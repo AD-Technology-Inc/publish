@@ -35,12 +35,12 @@ const mainNavItems: NavItem[] = [
 const footerNavItems: NavItem[] = [
     {
         title: "Github Repo",
-        href: "https://github.com/zerexei/posexei",
+        href: "https://github.com/AD-Technology-Inc/publish",
         icon: Folder,
     },
     {
         title: "Documentation",
-        href: "https://github.com/zerexei/posexei",
+        href: "https://github.com/AD-Technology-Inc/publish",
         icon: BookOpen,
     },
 ];
