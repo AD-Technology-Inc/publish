@@ -9,7 +9,7 @@ This project uses a **CSS-first design system** with Tailwind CSS v4. Reuse the 
 
 The project's design system is defined here:
 
-- <DESIGN_SYSTEM_PATH>
+- client/src/css/app.css
 
 If unavailable, locate the project's design system by inspecting existing CSS, components, and layouts.
 
