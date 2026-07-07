@@ -19,4 +19,4 @@ COPY . .
 # Run the app
 ENV PATH="/app/.venv/bin:$PATH"
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "3001"]
+CMD ["uvicorn", "main:app", "--reload", "--host", "0.0.0.0", "--port", "3001"]
