@@ -1,11 +1,25 @@
 from typing import Union
 
 import httpx
+import redis.asyncio as redis
+from config import settings
 from fastapi import Request
 from fastapi.responses import JSONResponse
+from resilient_http_client import (
+    CircuitOpenError,
+    FailureStore,
+    ResilientHttpClient,
+)
 
 # Define your allowed headers (always lowercase for safe comparison)
 ALLOWED_HEADERS = {"content-type", "authorization"}
+
+# Initialize global Redis client for FailureStore
+redis_client = redis.Redis(
+    host=settings.redis_host,
+    port=settings.redis_port,
+    decode_responses=True,
+)
 
 
 def _parse_response_data(res: httpx.Response) -> Union[dict, list, str]:
@@ -43,7 +57,7 @@ def _parse_error_data(res_data) -> tuple[str, list]:
     return message, errors
 
 
-async def _forward(method: str, url: str, request: Request | None = None, **kwargs):
+async def _forward(service_name: str, method: str, url: str, request: Request | None = None, **kwargs):
     """Forward a request to an internal service, restricting headers and surfacing errors."""
 
     if request is not None:
@@ -57,9 +71,11 @@ async def _forward(method: str, url: str, request: Request | None = None, **kwar
             if k.lower() in ALLOWED_HEADERS
         }
 
-    async with httpx.AsyncClient() as client:
+    store = FailureStore(redis=redis_client, service=service_name)
+
+    async with ResilientHttpClient(service=service_name, store=store) as client:
         try:
-            res = await client.request(method, url, timeout=10.0, **kwargs)
+            res = await client.request(method, url, **kwargs)
             res_data = _parse_response_data(res)
 
             if res.is_success:
@@ -73,7 +89,7 @@ async def _forward(method: str, url: str, request: Request | None = None, **kwar
                     status_code=res.status_code,
                 )
 
-            # Handle upstream error responses
+            # Handle upstream error responses (4xx)
             message, errors = _parse_error_data(res_data)
 
             return JSONResponse(
@@ -86,6 +102,29 @@ async def _forward(method: str, url: str, request: Request | None = None, **kwar
                 },
             )
 
+        except CircuitOpenError as e:
+            return JSONResponse(
+                status_code=503,
+                content={
+                    "data": None,
+                    "message": f"Service temporarily unavailable: {e}",
+                    "errors": [],
+                    "statusCode": 503,
+                },
+            )
+        except httpx.HTTPStatusError as e:
+            # Handle upstream 5xx errors raised by the resilient client
+            res_data = _parse_response_data(e.response)
+            message, errors = _parse_error_data(res_data)
+            return JSONResponse(
+                status_code=e.response.status_code,
+                content={
+                    "data": None,
+                    "message": message,
+                    "errors": errors,
+                    "statusCode": e.response.status_code,
+                },
+            )
         except httpx.RequestError as e:
             return JSONResponse(
                 status_code=503,

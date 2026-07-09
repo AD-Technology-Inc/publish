@@ -1,7 +1,12 @@
-from fastapi import FastAPI
+from enum import Enum
 
-from routes.v1.identity import identity_router
+from fastapi import FastAPI
 from openapi_merger import setup_openapi_merger
+from routes.v1.identity import identity_router
+
+
+class ServiceName(str, Enum):
+    IDENTITY = "identity"
 
 """
 TODO: route should always return structured response
