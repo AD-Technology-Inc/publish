@@ -80,6 +80,8 @@ services:
   # =========================
   identity-service:
     build: ../services/identity-service
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://identity_user:identity_pass@identity-db:5432/identity_db
     volumes:
       - ../services/identity-service:/app
       - /app/.venv
@@ -107,6 +109,8 @@ services:
 
   identity-db:
     image: postgres:18-trixie
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_DB: identity_db
       POSTGRES_USER: identity_user
