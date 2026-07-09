@@ -1,32 +1,33 @@
+import bcrypt
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+
 from app.users.models import User
 from app.users.schemas import UserCreate
 
-async def get_all_users(db: AsyncSession) -> list[dict]:
+
+async def get_all_users(db: AsyncSession) -> list[User]:
     result = await db.execute(select(User))
-    users = result.scalars().all()
-    # Map users to match UserResponse schema which expects a 'name' field
-    # !FIXME: can map to pydantic?
-    return [{"id": u.id, "name": u.email.split("@")[0], "email": u.email} for u in users] or []
+    return list(result.scalars().all())
 
-async def get_user_by_id(db: AsyncSession, user_id: int) -> dict | None:
+async def get_user_by_id(db: AsyncSession, user_id: int) -> User | None:
     result = await db.execute(select(User).where(User.id == user_id))
-    u = result.scalar_one_or_none()
-    if u:
-        return {"id": u.id, "name": u.email.split("@")[0], "email": u.email}
-    if user_id == 1:
-        return {"id": 1, "name": "Alice", "email": "alice@example.com"}
-    return None
+    return result.scalar_one_or_none()
 
-# !FIXME: create user is sync but send email verification is async
-async def create_user_job(db: AsyncSession, user_in: UserCreate) -> dict:
-    # Insert new user record asynchronously
+# !FIXME: async: send email verification
+async def create_user(db: AsyncSession, user: UserCreate) -> User:
+    # Hash password using bcrypt
+    salt = bcrypt.gensalt()
+    hashed_password = bcrypt.hashpw(user.password.encode("utf-8"), salt).decode("utf-8")
+
     new_user = User(
-        email=user_in.email or f"user_{user_in.name}@example.com",
-        password=user_in.password,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        email=user.email,
+        password=hashed_password,
     )
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
-    return {"status": "enqueued", "job_id": str(new_user.id)}
+    # send email verification
+    return new_user

@@ -1,6 +1,5 @@
 import * as React from "react";
-import { useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { AuthLayout } from "@/layouts/AuthLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +13,7 @@ import {
     ArrowRight,
     LoaderCircle,
 } from "lucide-react";
+import axios from "axios";
 
 /* ─── Password strength helper ───────────────────────────────── */
 type StrengthLevel = 0 | 1 | 2 | 3 | 4;
@@ -70,34 +70,40 @@ const AuthField = ({
 
 /* ─── Register page ──────────────────────────────────────────── */
 export const Register: React.FC = () => {
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
     const [isLoading, setIsLoading] = React.useState(false);
     const [showPassword, setShowPassword] = React.useState(false);
     const [password, setPassword] = React.useState("");
+    const [password_confirmation, setPasswordConfirmation] = React.useState("");
+    const [showPasswordConfirmation, setShowPasswordConfirmation] =
+        React.useState(false);
+    const [validationError, setValidationError] = React.useState<string | null>(
+        null,
+    );
 
     const strength = getStrength(password);
     const meta = STRENGTH_META[strength];
 
-    const createUser = async () => {
-        const res = await fetch("http://gateway.localhost/users");
-        console.log(await res.json())
-
-    }
-    
-    useEffect(() => {
-        createUser()
-    }, [])
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsLoading(true);
+        setValidationError(null);
 
-        setTimeout(() => {
+        if (password !== password_confirmation) {
+            setValidationError("Passwords do not match.");
+            return;
+        }
+
+        try {
+            setIsLoading(true);
+            const formData = new FormData(e.target as HTMLFormElement);
+            const payload = Object.fromEntries(formData.entries());
+            const res = await axios.post("http://gateway.localhost/users", payload);
+            console.log(res);
+        } catch (error) {
+            setValidationError(error.response?.data?.message || error.message);
+        } finally {
             setIsLoading(false);
-            navigate('/verify-email');
-        }, 1200);
-
-        // setIsLoading(false);
+        }
     };
 
     return (
@@ -107,13 +113,26 @@ export const Register: React.FC = () => {
         >
             <div className="space-y-6">
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <AuthField id="name" label="Full name" icon={User}>
+                    <AuthField id="firstName" label="First name" icon={User}>
                         <Input
-                            id="name"
+                            id="firstName"
+                            name="first_name"
                             type="text"
-                            placeholder="Jane Doe"
+                            placeholder="Jane"
                             required
-                            autoComplete="name"
+                            autoComplete="given-name"
+                            className="h-full flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 px-3 shadow-none rounded-none text-sm text-white placeholder:text-zinc-600"
+                        />
+                    </AuthField>
+
+                    <AuthField id="lastName" label="Last name" icon={User}>
+                        <Input
+                            id="lastName"
+                            name="last_name"
+                            type="text"
+                            placeholder="Doe"
+                            required
+                            autoComplete="family-name"
                             className="h-full flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 px-3 shadow-none rounded-none text-sm text-white placeholder:text-zinc-600"
                         />
                     </AuthField>
@@ -121,6 +140,7 @@ export const Register: React.FC = () => {
                     <AuthField id="email" label="Email address" icon={Mail}>
                         <Input
                             id="email"
+                            name="email"
                             type="email"
                             placeholder="name@example.com"
                             required
@@ -133,6 +153,7 @@ export const Register: React.FC = () => {
                         <AuthField id="password" label="Password" icon={Lock}>
                             <Input
                                 id="password"
+                                name="password"
                                 type={showPassword ? "text" : "password"}
                                 required
                                 autoComplete="new-password"
@@ -194,6 +215,51 @@ export const Register: React.FC = () => {
                             </div>
                         )}
                     </div>
+
+                    <AuthField
+                        id="password_confirmation"
+                        label="Confirm password"
+                        icon={Lock}
+                    >
+                        <Input
+                            id="password_confirmation"
+                            name="password_confirmation"
+                            type={
+                                showPasswordConfirmation ? "text" : "password"
+                            }
+                            required
+                            autoComplete="new-password"
+                            value={password_confirmation}
+                            onChange={(e) =>
+                                setPasswordConfirmation(e.target.value)
+                            }
+                            className="h-full flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 px-3 shadow-none rounded-none text-sm text-white"
+                        />
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setShowPasswordConfirmation((p) => !p)
+                            }
+                            className="pr-3.5 pl-2 flex items-center self-stretch text-zinc-600 hover:text-zinc-400 transition-colors shrink-0"
+                            aria-label={
+                                showPasswordConfirmation
+                                    ? "Hide password"
+                                    : "Show password"
+                            }
+                        >
+                            {showPasswordConfirmation ? (
+                                <EyeOff className="w-4 h-4" />
+                            ) : (
+                                <Eye className="w-4 h-4" />
+                            )}
+                        </button>
+                    </AuthField>
+
+                    {validationError && (
+                        <p className="text-red-500 text-xs font-semibold px-0.5 mt-1">
+                            {validationError}
+                        </p>
+                    )}
 
                     <Button
                         type="submit"

@@ -13,4 +13,5 @@ dependencies = [
     "pytest-asyncio>=1.4.0",
     "ruff>=0.15.20",
     "mypy>=2.1.0",
+    "bcrypt>=5.0.0",
 ]

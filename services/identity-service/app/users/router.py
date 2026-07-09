@@ -1,10 +1,11 @@
 from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.users.schemas import UserCreate, UserResponse
 from app.users import service
+from app.users.schemas import UserCreate, UserResponse
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -22,6 +23,6 @@ async def get_user(user_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
         )
     return user
 
-@router.post("")
+@router.post("", response_model=UserResponse)
 async def create_user(user: UserCreate, db: Annotated[AsyncSession, Depends(get_db)]):
-    return await service.create_user_job(db, user)
+    return await service.create_user(db, user)
