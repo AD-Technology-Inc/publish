@@ -1,20 +1,19 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from http_client import _forward
 
 identity_router = APIRouter(prefix="/users", tags=["identity"])
 
 
-@identity_router.get("/")
+@identity_router.get("")
 async def get_users():
     return await _forward("GET", "http://identity-service:3001/users")
 
 
 @identity_router.get("/{user_id}")
-async def get_user(user_id: int):
+async def get_user(user_id: str):
     return await _forward("GET", f"http://identity-service:3001/users/{user_id}")
 
 
-
-@identity_router.post("/")
-async def create_user(user: dict):
-    return await _forward("POST", "http://identity-service:3001/users", json=user)
+@identity_router.post("")
+async def create_user(request: Request):
+    return await _forward("POST", "http://identity-service:3001/users", request)
