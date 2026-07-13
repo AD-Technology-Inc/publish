@@ -9,9 +9,29 @@ dependencies = [
     "sqlalchemy[asyncio]>=2.0.51",
     "asyncpg>=0.31.0",
     "alembic>=1.18.5",
+    "redis>=8.0.1",
+]
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.411",
     "pytest>=9.1.1",
     "pytest-asyncio>=1.4.0",
-    "ruff>=0.15.20",
-    "mypy>=2.1.0",
-    "bcrypt>=5.0.0",
+    "ruff>=0.15.21",
 ]
+
+[tool.pyright]
+include = ["app"]
+exclude = [".venv"]
+typeCheckingMode = "standard"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 80
+
+[tool.ruff.lint]
+select = ["E", "F", "I","E501"]

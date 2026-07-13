@@ -5,7 +5,31 @@ description = "AD. Publish gateway"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "ad-tech-inc-resilient-http>=0.2.2",
     "fastapi[standard]>=0.136.0",
+    "ad-tech-inc-resilient-http>=0.2.2",
     "redis>=8.0.1",
 ]
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.411",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "ruff>=0.15.21",
+]
+
+[tool.pyright]
+include = ["app"]
+exclude = [".venv"]
+typeCheckingMode = "standard"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 80
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "E501"]
