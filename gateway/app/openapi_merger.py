@@ -53,7 +53,7 @@ def setup_openapi_merger(app: FastAPI):
                                     for tag in original_tags
                                 ] or [service_name]
 
-                            # Overwrite or add path (giving full models 
+                            # Overwrite or add path (giving full models
                             # visibility to gateway paths)
                             openapi_schema["paths"][path] = path_item
                 except httpx.RequestError:
