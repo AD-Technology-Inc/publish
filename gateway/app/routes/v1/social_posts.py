@@ -1,13 +1,15 @@
 # TODO: validate
 
 
+from typing import List, Optional
 
 from fastapi import APIRouter
 from pydantic import BaseModel
-from typing import Optional, List
+
 from http_client import _forward
 
 social_posts_router = APIRouter(prefix="/social/posts", tags=["social-posts"])
+
 
 class PostRequest(BaseModel):
     page_id: str

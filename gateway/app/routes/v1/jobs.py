@@ -3,10 +3,12 @@
 # ! FIXME: gateway should be forwarder only, no business logic
 
 from fastapi import APIRouter
+
 # from redis import Redis
 
 jobs_router = APIRouter(prefix="/jobs", tags=["jobs"])
 # redis_client = Redis(host="redis", port=6379, db=0)
+
 
 @jobs_router.get("/{job_id}")
 def get_job_status(job_id: str):

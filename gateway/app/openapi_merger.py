@@ -6,6 +6,7 @@ SERVICES = {
     "identity": "http://identity-service:3001/openapi.json",
 }
 
+
 def setup_openapi_merger(app: FastAPI):
     def custom_openapi():
         # Return cached schema if it has already been generated
@@ -31,19 +32,29 @@ def setup_openapi_merger(app: FastAPI):
                     resp = client.get(openapi_url, timeout=5.0)
                     if resp.status_code == 200:
                         service_schema = resp.json()
-                        
+
                         # Merge components (Pydantic models)
-                        service_components = service_schema.get("components", {}).get("schemas", {})
-                        openapi_schema["components"]["schemas"].update(service_components)
+                        service_components = service_schema.get(
+                            "components", {}
+                        ).get("schemas", {})
+                        openapi_schema["components"]["schemas"].update(
+                            service_components
+                        )
 
                         # Merge paths
-                        for path, path_item in service_schema.get("paths", {}).items():
+                        for path, path_item in service_schema.get(
+                            "paths", {}
+                        ).items():
                             for method, operation in path_item.items():
                                 original_tags = operation.get("tags", [])
                                 # Group under the service name in Swagger
-                                operation["tags"] = [f"{service_name}: {tag}" for tag in original_tags] or [service_name]
-                            
-                            # Overwrite or add path (giving full models visibility to gateway paths)
+                                operation["tags"] = [
+                                    f"{service_name}: {tag}"
+                                    for tag in original_tags
+                                ] or [service_name]
+
+                            # Overwrite or add path (giving full models 
+                            # visibility to gateway paths)
                             openapi_schema["paths"][path] = path_item
                 except httpx.RequestError:
                     pass

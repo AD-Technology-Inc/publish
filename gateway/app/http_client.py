@@ -2,7 +2,6 @@ from typing import Union
 
 import httpx
 import redis.asyncio as redis
-from config import settings
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from resilient_http_client import (
@@ -10,6 +9,8 @@ from resilient_http_client import (
     FailureStore,
     ResilientHttpClient,
 )
+
+from config import settings
 
 # Define your allowed headers (always lowercase for safe comparison)
 ALLOWED_HEADERS = {"content-type", "authorization"}
@@ -36,14 +37,17 @@ def _parse_error_data(res_data) -> tuple[str, list]:
     if isinstance(res_data, dict):
         detail = res_data.get("detail", res_data)
 
-        # If the detail is a stringified JSON (common in upstream validation errors), parse it
+        # If the detail is a stringified JSON 
+        # (common in upstream validation errors), parse it
         if isinstance(detail, str) and detail.strip().startswith(("{", "[")):
             try:
                 import json
 
                 loaded = json.loads(detail)
                 detail = (
-                    loaded.get("detail", loaded) if isinstance(loaded, dict) else loaded
+                    loaded.get("detail", loaded)
+                    if isinstance(loaded, dict)
+                    else loaded
                 )
             except (ValueError, AttributeError):
                 pass
@@ -57,8 +61,17 @@ def _parse_error_data(res_data) -> tuple[str, list]:
     return message, errors
 
 
-async def _forward(service_name: str, method: str, url: str, request: Request | None = None, **kwargs):
-    """Forward a request to an internal service, restricting headers and surfacing errors."""
+async def _forward(
+    service_name: str,
+    method: str,
+    url: str,
+    request: Request | None = None,
+    **kwargs,
+):
+    """
+    Forward a request to an internal service,
+    restricting headers and surfacing errors.
+    """
 
     if request is not None:
         kwargs["content"] = await request.body()
