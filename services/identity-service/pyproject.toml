@@ -10,6 +10,7 @@ dependencies = [
     "asyncpg>=0.31.0",
     "alembic>=1.18.5",
     "redis>=8.0.1",
+    "pwdlib[argon2]>=0.3.0",
 ]
 
 [dependency-groups]

@@ -1,4 +1,3 @@
-import bcrypt
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -18,11 +17,11 @@ async def get_user_by_id(db: AsyncSession, user_id: int) -> User | None:
 
 # !FIXME: async: send email verification
 async def create_user(db: AsyncSession, user: UserCreate) -> User:
-    # Hash password using bcrypt
-    salt = bcrypt.gensalt()
-    hashed_password = bcrypt.hashpw(user.password.encode("utf-8"), salt).decode(
-        "utf-8"
-    )
+    # Hash password
+    from pwdlib import PasswordHash
+
+    password_hash = PasswordHash.recommended()
+    hashed_password = password_hash.hash(user.password)
 
     new_user = User(
         first_name=user.first_name,
