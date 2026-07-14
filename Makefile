@@ -4,7 +4,7 @@ service ?=
 cmd ?=
 
 up:
-	$(COMPOSE) up --watch
+	$(COMPOSE) up -d
 
 build:
 	$(COMPOSE) build

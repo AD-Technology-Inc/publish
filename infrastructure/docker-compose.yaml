@@ -59,10 +59,10 @@ services:
       - /app/.venv
     networks:
       - app
-    develop:
-      watch:
-        - action: rebuild
-          path: ../gateway/app/pyproject.toml
+    # develop:
+    #   watch:
+    #     - action: rebuild
+    #       path: ../gateway/app/pyproject.toml
     depends_on:
       - identity-service
       # - social-account-service
