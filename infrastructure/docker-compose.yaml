@@ -28,6 +28,13 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./traefik/traefik.yaml:/etc/traefik/traefik.yml
       - ./traefik/dynamic:/etc/traefik/dynamic:ro
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256m
+        reservations:
+          memory: 128m
 
   # =========================
   # 🌐 FRONTEND
@@ -48,6 +55,13 @@ services:
       - "traefik.http.routers.app.rule=Host(`app.localhost`)"
       - "traefik.http.routers.app.entrypoints=web"
       - "traefik.http.services.app.loadbalancer.server.port=3000"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512m
+        reservations:
+          memory: 256m
 
   # =========================
   # ☁️ GATEWAY
@@ -74,6 +88,13 @@ services:
       - "traefik.http.routers.gateway.entrypoints=web"
       - "traefik.http.services.gateway.loadbalancer.server.port=3001"
       - "traefik.http.routers.gateway.middlewares=gateway-cors@file"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256m
+        reservations:
+          memory: 128m
 
   # =========================
   # 🔐 Identity Service
@@ -93,6 +114,13 @@ services:
           path: ../services/identity-service/pyproject.toml
     depends_on:
       - identity-db
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256m
+        reservations:
+          memory: 128m
 
   # identity-worker:
   #   build:
@@ -120,6 +148,13 @@ services:
     networks:
       - app
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256m
+        reservations:
+          memory: 128m
 
   # # =========================
   # # ⚙️ Social Post Service
@@ -231,3 +266,10 @@ services:
     networks:
       - app
     restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256m
+        reservations:
+          memory: 128m
