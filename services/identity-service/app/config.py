@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     )
 
     database_url: str = "postgresql+asyncpg://identity_user:identity_pass@localhost:5432/identity_db"
+    app_key: str = ""
 
 
 settings = Settings()

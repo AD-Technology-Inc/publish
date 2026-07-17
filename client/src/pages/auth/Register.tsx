@@ -97,7 +97,7 @@ export const Register: React.FC = () => {
             setIsLoading(true);
             const formData = new FormData(e.target as HTMLFormElement);
             const payload = Object.fromEntries(formData.entries());
-            const res = await axios.post("http://gateway.localhost/users", payload);
+            const res = await axios.post("http://gateway.localhost/identity/register", payload);
             console.log(res);
         } catch (error) {
             setValidationError(error.response?.data?.message || error.message);
