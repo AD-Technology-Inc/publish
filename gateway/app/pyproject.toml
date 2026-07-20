@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi[standard]>=0.136.0",
-    "ad-tech-inc-resilient-http>=0.2.3",
+    "ad-tech-inc-resilient-http>=0.3.0",
     "redis>=8.0.1",
 ]
 
