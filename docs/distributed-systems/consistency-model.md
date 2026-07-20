@@ -24,7 +24,7 @@ Clients polling `/jobs/{job_id}` read eventually consistent state snapshots unti
 ```mermaid
 graph TD;
     subgraph Client View
-        Client["HTTP Client / UI"] -->|Poll GET /jobs/{id}| Gateway["Gateway / Redis Key"]
+        Client["HTTP Client / UI"] -->|"Poll GET /jobs/{id}"| Gateway["Gateway / Redis Key"]
     end
 
     subgraph Worker State Execution
