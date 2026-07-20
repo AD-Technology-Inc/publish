@@ -1,0 +1,19 @@
+graph TD;
+    subgraph Ingestion Proxy
+        Gateway["FastAPI Gateway"] --> Stream[("Redis Stream: jobs:social-publish<br>(maxlen=10000)")]
+    end
+
+    subgraph Consumer Group: workers
+        Stream --> Consumer1["Worker Instance 1<br>(consumer_name: hostname-1)"]
+        Stream --> Consumer2["Worker Instance 2<br>(consumer_name: hostname-2)"]
+        Stream --> Consumer3["Worker Instance 3<br>(consumer_name: hostname-3)"]
+    end
+
+    subgraph Lock & State Store
+        Consumer1 --> RedisKV[("Redis Locks & State Store")]
+        Consumer2 --> RedisKV
+        Consumer3 --> RedisKV
+        Consumer1 --> Postgres[("PostgreSQL StateStore")]
+        Consumer2 --> Postgres
+        Consumer3 --> Postgres
+    end

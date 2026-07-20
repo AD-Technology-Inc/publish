@@ -1,0 +1,15 @@
+graph TD;
+    Client["Clients / Browser"] --> Traefik["Traefik Proxy (Port 80)"];
+    Traefik --> Gateway["FastAPI Gateway (Ingestion Proxy)"];
+    
+    Gateway --> IdentityService["Identity Service"];
+    Gateway --> AccountService["Social Account Service"];
+    Gateway --> PostService["Social Post Service"];
+
+    PostService --> Streams["Redis Streams (Job Transport Layer)"];
+    AccountService --> Streams;
+    
+    Streams --> Workers["Worker Execution Layer (Consumer Group)"];
+    Workers --> Idempotency["Idempotency Store (Redis SET NX)"];
+    Workers --> StateManager["State Store (PostgreSQL / Redis)"];
+    Workers --> DLQ["DLQ Streams (jobs:service:dlq)"];

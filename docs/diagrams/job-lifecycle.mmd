@@ -1,0 +1,18 @@
+stateDiagram-v2
+    [*] --> Pending: Client HTTP Ingestion (XADD)
+    Pending --> Processing: Worker Read (XREADGROUP)
+    
+    state Processing {
+        [*] --> CheckIdempotency: SET idempotency:key NX
+        CheckIdempotency --> CheckStep: StateManager.get_last_step()
+        CheckStep --> ExecuteStep: Run Handler Business Logic
+        ExecuteStep --> SaveStep: StateManager.save_step()
+    }
+
+    Processing --> Completed: All Steps Finish
+    Processing --> DelayedRetry: Transient Failure (attempt < 5)
+    Processing --> DLQ: NonRetryableError OR attempt >= 5
+
+    DelayedRetry --> Pending: ZSET Timeout Expired -> Re-enqueue XADD
+    DLQ --> Pending: Operator POST /dlq/{service}/{id}/replay
+    Completed --> [*]: XACK & XDEL

@@ -1,0 +1,24 @@
+flowchart TD
+    Start([Worker Starts Job]) --> Exec[Execute Handler Logic]
+    
+    Exec --> Result{Execution Result?}
+    
+    Result -- Success --> Ack[XACK & XDEL Main Stream Message]
+    Result -- NonRetryableError --> DLQ[Write to DLQ Stream & XACK]
+    
+    Result -- Transient Error --> CheckAttempt{Attempt < 5?}
+    
+    CheckAttempt -- No --> DLQ
+    CheckAttempt -- Yes --> Calc[Calculate Backoff: base * 5^attempt-1]
+    
+    Calc --> ZAdd[ZADD jobs:service:delayed execute_at payload]
+    ZAdd --> AckOriginal[XACK & XDEL Original Stream Message]
+    
+    subgraph Delayed Queue Loop
+        ZAdd --> Wait[Wait in ZSET until execute_at timestamp]
+        Wait --> LoopCheck[Worker checks ZRANGEBYSCORE 0 now]
+        LoopCheck --> ReEnqueue[XADD jobs:service payload]
+        ReEnqueue --> ZRem[ZREM jobs:service:delayed payload]
+    end
+
+    ReEnqueue --> Start

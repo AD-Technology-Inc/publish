@@ -1,0 +1,22 @@
+stateDiagram-v2
+    [*] --> Ingested: Gateway Enqueue (XADD)
+    
+    Ingested --> PendingInPEL: XREADGROUP by Worker
+    
+    state PendingInPEL {
+        [*] --> LeaseHeartbeat: Worker Acquires Active Lock (SET job_lease:{id})
+        LeaseHeartbeat --> ExecutingHandler: Check Idempotency & State Checkpoint
+    }
+
+    ExecutingHandler --> Succeeded: Handler Completes Successfully
+    ExecutingHandler --> ScheduledRetry: Catch Retryable Error (Attempt < 5)
+    ExecutingHandler --> DLQIsolated: Catch NonRetryableError OR Attempt >= 5
+
+    Succeeded --> AckedAndRemoved: Worker XACK & XDEL
+    
+    ScheduledRetry --> Ingested: ZADD delayed ZSET -> Re-inject XADD when ready
+    
+    DLQIsolated --> Replayed: Admin POST /dlq/{service}/{id}/replay
+    Replayed --> Ingested: XADD Main Stream (attempt_count=0)
+    
+    AckedAndRemoved --> [*]

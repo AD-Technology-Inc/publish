@@ -1,0 +1,24 @@
+sequenceDiagram
+    autonumber
+    participant MainWorker as Primary Worker
+    participant Heartbeat as Heartbeat Thread
+    participant Redis as Redis Storage
+    participant PeerWorker as Peer Recovery Worker
+
+    MainWorker->>MainWorker: Read message (msg_id) via XREADGROUP
+    MainWorker->>Heartbeat: Add msg_id to self.active_jobs
+    
+    loop Every 30 seconds
+        Heartbeat->>Redis: SET job_lease:{msg_id} "1" EX 120
+    end
+
+    Note over MainWorker: Worker Process Crashes (SIGKILL)
+    Note over Heartbeat: Heartbeat Loop Terminates
+    Note over Redis: Key job_lease:{msg_id} Expires after 120s
+
+    Note over PeerWorker: 5 minutes later (min_idle_time = 300000ms)
+    PeerWorker->>Redis: XAUTOCLAIM min_idle=300000 count=10
+    Redis-->>PeerWorker: Return [msg_id, payload]
+    PeerWorker->>Redis: EXISTS job_lease:{msg_id}
+    Redis-->>PeerWorker: 0 (Lease Expired)
+    PeerWorker->>PeerWorker: Re-execute & resume from last step

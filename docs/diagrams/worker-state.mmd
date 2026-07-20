@@ -1,0 +1,21 @@
+stateDiagram-v2
+    [*] --> Idle: Worker Start
+    
+    Idle --> ReadingStream: Check Delayed ZSET & XAUTOCLAIM
+    ReadingStream --> ProcessingJob: XREADGROUP Returns Message
+    
+    state ProcessingJob {
+        [*] --> RegisterActive: self.active_jobs.add(msg_id)
+        RegisterActive --> StartHeartbeat: Background Thread Refreshes job_lease:id (30s)
+        StartHeartbeat --> RunHandler: Invoke Job Handler
+    }
+
+    ProcessingJob --> AckAndDel: Handler Success
+    ProcessingJob --> ScheduleDelayed: Catch Retryable Error
+    ProcessingJob --> RouteDLQ: Catch NonRetryableError
+
+    AckAndDel --> Cleanup: XACK & XDEL + Remove Lease
+    ScheduleDelayed --> Cleanup: ZADD Delayed ZSET + XACK/XDEL
+    RouteDLQ --> Cleanup: XADD DLQ + XACK/XDEL
+    
+    Cleanup --> Idle: Loop Continues

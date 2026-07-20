@@ -1,0 +1,18 @@
+flowchart TD
+    Start([Worker Starts Re-claimed Job]) --> ReadStep["StateManager.get_last_step(job_id)"]
+    
+    ReadStep --> StepCheck{Last Recorded Step?}
+    
+    StepCheck -- None --> RunStep1["Step 1: Validate Payload & DB Store"]
+    RunStep1 --> SaveStep1["StateManager.save_step(job_id, 'db_stored')"]
+    SaveStep1 --> RunStep2
+    
+    StepCheck -- "started" --> RunStep1
+    
+    StepCheck -- "db_stored" --> RunStep2["Step 2: Dispatch Publish Event / Retrieve Token"]
+    RunStep2 --> SaveStep2["StateManager.save_step(job_id, 'token_retrieved')"]
+    SaveStep2 --> RunStep3
+    
+    StepCheck -- "token_retrieved" --> RunStep3["Step 3: Call External Platform API Adapter"]
+    RunStep3 --> SaveStep3["StateManager.save_step(job_id, 'completed')"]
+    SaveStep3 --> Done([Job Successfully Completed])

@@ -1,0 +1,34 @@
+sequenceDiagram
+    autonumber
+    actor User
+    participant Gateway
+    participant PostService as Social Post Service
+    participant PostWorker as Social Post Worker
+    participant PublishWorker as Social Publish Worker
+    participant PlatformAdapter as Social Platform Adapter
+    participant ExternalAPI as Facebook / LinkedIn API
+
+    User->>Gateway: POST /social/posts {page_id, provider, message}
+    Gateway->>PostService: Forward Request
+    PostService->>PostService: Check XLEN jobs:social-post <= 10000
+    PostService->>Gateway: Return {"status": "enqueued", "job_id": "..."}
+    Gateway->>User: Return {"status": "enqueued", "job_id": "..."}
+
+    PostService->>PostWorker: XADD jobs:social-post
+
+    PostWorker->>PostWorker: Check idempotency & StateManager.get_last_step()
+    PostWorker->>PostWorker: Save post in DB -> StateManager.save_step("db_stored")
+    PostWorker->>PublishWorker: XADD jobs:social-publish {type: "publish_post"}
+    PostWorker->>PostWorker: XACK & XDEL jobs:social-post
+
+    PublishWorker->>PublishWorker: Check idempotency & StateManager.get_last_step()
+    PublishWorker->>PublishWorker: Fetch access token -> StateManager.save_step("token_retrieved")
+    PublishWorker->>PlatformAdapter: publish(page_id, message, token)
+    PlatformAdapter->>ExternalAPI: HTTP POST /v19.0/{page_id}/feed
+    ExternalAPI-->>PlatformAdapter: Return {id: "post_12345"}
+    PlatformAdapter-->>PublishWorker: Return "post_12345"
+
+    PublishWorker->>PublishWorker: StateManager.save_step("completed")
+    PublishWorker->>PublishWorker: SET job_state:{id} "completed"
+    PublishWorker->>PublishWorker: SET job_result:{id} "post_12345"
+    PublishWorker->>PublishWorker: XACK & XDEL jobs:social-publish

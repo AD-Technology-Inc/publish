@@ -1,0 +1,27 @@
+graph TD;
+    subgraph Host Infrastructure
+        subgraph Public Entrypoint
+            Traefik["Traefik v3.6.8 Proxy<br>(Ports 80, 8080)"];
+        end
+
+        subgraph Docker Network: app
+            Client["client Container<br>(Node/React, Port 3000)<br>Limit: 0.5 CPU, 512MB"]
+            Gateway["gateway Container<br>(FastAPI, Port 3001)<br>Limit: 0.25 CPU, 256MB"]
+            IdentityService["identity-service Container<br>(FastAPI, Port 3001)<br>Limit: 0.25 CPU, 256MB"]
+            IdentityDB[("identity-db Container<br>(PostgreSQL 18)<br>Port 5432<br>Limit: 0.25 CPU, 256MB")]
+            Redis[("redis Container<br>(Redis 8.6)<br>Port 6379<br>Limit: 0.25 CPU, 256MB")]
+        end
+
+        subgraph Observability Stack
+            Prometheus["Prometheus"]
+            Loki["Loki"]
+            Tempo["Tempo"]
+            Grafana["Grafana (Port 3000)"]
+        end
+    end
+
+    Traefik -- "Host(app.localhost)" --> Client
+    Traefik -- "Host(gateway.localhost)" --> Gateway
+    Gateway -- "http://identity-service:3001" --> IdentityService
+    IdentityService -- "postgresql://identity-db:5432" --> IdentityDB
+    Gateway -- "redis:6379" --> Redis
