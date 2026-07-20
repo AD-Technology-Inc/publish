@@ -20,9 +20,9 @@ graph LR;
 
 | Endpoint / Component | Target Metric | Metric Type | Validation Method |
 | :--- | :--- | :--- | :--- |
-| **`GET /health`** | $< 200$ ms | $p(95)$ Response Latency | k6 Smoke Test (`smoke-test.js`) |
-| **`GET /accounts`** | $< 200$ ms | $p(95)$ Response Latency | k6 Smoke Test (`smoke-test.js`) |
-| **`POST /social/posts`** | $< 300$ ms | $p(95)$ Enqueue Latency | k6 Smoke Test (`job_enqueue_duration`) |
-| **API Ingestion Rate** | $> 500$ req/sec | Peak Throughput | k6 Load Test Scenario |
-| **Worker Execution Latency** | $1.0\text{s} - 1.5\text{s}$ | Average Job Duration | OTel Span Duration (`job.publish_post`) |
-| **Error Rate** | $< 1.0\%$ | Total Request Failures | k6 `errors` Rate Metric |
+| **`GET /health`** | < 200ms | p(95) Response Latency | k6 Smoke Test (`smoke-test.js`) |
+| **`GET /accounts`** | < 200ms | p(95) Response Latency | k6 Smoke Test (`smoke-test.js`) |
+| **`POST /social/posts`** | < 300ms | p(95) Enqueue Latency | k6 Smoke Test (`job_enqueue_duration`) |
+| **API Ingestion Rate** | > 500 req/sec | Peak Throughput | k6 Load Test Scenario |
+| **Worker Execution Latency** | 1.0s - 1.5s | Average Job Duration | OTel Span Duration (`job.publish_post`) |
+| **Error Rate** | < 1.0% | Total Request Failures | k6 `errors` Rate Metric |

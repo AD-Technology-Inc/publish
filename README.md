@@ -88,7 +88,7 @@ graph TD;
 
 ### Retry Strategy
 * **Problem**: Downstream outages or transient network dropouts cause processing failures. Immediate retries saturate downstream systems, causing cascading failure loops.
-* **Solution**: Implements a jittered exponential backoff ($1\text{s} \to 5\text{s} \to 25\text{s} \to 125\text{s}$) managed via a Redis Sorted Set (`ZSET`). Failed jobs are acknowledged on the stream to prevent blocking, and re-enqueued dynamically when their backoff expires.
+* **Solution**: Implements a jittered exponential backoff (1s -> 5s -> 25s -> 125s) managed via a Redis Sorted Set (`ZSET`). Failed jobs are acknowledged on the stream to prevent blocking, and re-enqueued dynamically when their backoff expires.
 * **Tradeoff**: Delayed execution schedules introduce temporary eventual consistency.
 
 ### Idempotency Model
@@ -107,7 +107,7 @@ graph TD;
 * **Tradeoff**: Requires manual inspection and code fixes to resolve root failures.
 
 ### Partial Recovery (Checkpointing)
-* **Problem**: Multi-stage operations (auth check $\to$ media storage upload $\to$ API publish) that crash at the final stage waste bandwidth and cause duplication if restarted from scratch.
+* **Problem**: Multi-stage operations (auth check -> media storage upload -> API publish) that crash at the final stage waste bandwidth and cause duplication if restarted from scratch.
 * **Solution**: The `StateManager` tracks successful step completions. The worker records milestones to PostgreSQL. On retry, the worker reads the last step checkpoint and skips completed steps.
 * **Tradeoff**: PostgreSQL writes introduce minor performance latency to the execution path.
 

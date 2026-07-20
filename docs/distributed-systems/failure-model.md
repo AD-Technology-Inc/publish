@@ -75,4 +75,4 @@ class RateLimitExceeded(Exception):
 | `httpx.HTTPStatusError` (4xx)| **No** (`False`) | `jobs:{service}:dlq` | Invalid token, deleted page, bad media URL. |
 | `httpx.HTTPStatusError` (5xx)| **Yes** (`True`) | `jobs:{service}:delayed` | Facebook Graph API 500/503 internal error. |
 | `httpx.RequestError` | **Yes** (`True`) | `jobs:{service}:delayed` | DNS lookup failure, TCP connection timeout. |
-| Unhandled Worker Exception | **Yes** (`True` until count=5) | `jobs:{service}:delayed` $\rightarrow$ DLQ | Transient DB connection drop, unexpected crash. |
+| Unhandled Worker Exception | **Yes** (`True` until count=5) | `jobs:{service}:delayed` -> DLQ | Transient DB connection drop, unexpected crash. |

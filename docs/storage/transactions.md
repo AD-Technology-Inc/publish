@@ -43,5 +43,5 @@ async def integrity_error_handler(request, exc: IntegrityError):
 
 ## Transaction Boundary Safety Rules
 
-1. **No Distributed Transactions Across Services**: Cross-service operations (e.g. Social Post $\rightarrow$ Social Publish) DO NOT share a database transaction. Isolation is maintained via Redis Stream event payloads and idempotency keys.
+1. **No Distributed Transactions Across Services**: Cross-service operations (e.g. Social Post -> Social Publish) DO NOT share a database transaction. Isolation is maintained via Redis Stream event payloads and idempotency keys.
 2. **Explicit Session Rollbacks**: In async microservice routes, any unhandled error triggers an automatic rollback of the active `AsyncSession` before raising the HTTP exception.

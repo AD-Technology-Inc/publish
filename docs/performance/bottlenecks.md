@@ -21,7 +21,7 @@ graph TD;
 ### 1. Synchronous `psycopg2` Connection Overhead in `StateManager`
 - **Location**: `services/shared/shared/utils.py`
 - **Impact**: On every step save (`started`, `db_stored`, `completed`), `StateManager` opens a synchronous PostgreSQL connection using `psycopg2.connect()`.
-- **Constraint**: Under high concurrency ($> 50$ worker instances), creating synchronous TCP connections to PostgreSQL saturates PostgreSQL's `max_connections` limit.
+- **Constraint**: Under high concurrency (> 50 worker instances), creating synchronous TCP connections to PostgreSQL saturates PostgreSQL's `max_connections` limit.
 - **Mitigation**: `StateManager` catches PostgreSQL exceptions and falls back to Redis key writes (`job_state:{job_id}`).
 
 ### 2. Single Redis Broker Instance

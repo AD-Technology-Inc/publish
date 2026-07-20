@@ -57,7 +57,7 @@ graph TD;
         Gateway --> PostService["Social Post Service (:3001)"];
     end
 
-    subgraph Messaging & Coordination Layer
+    subgraph MessagingCoord ["Messaging & Coordination Layer"]
         RedisStreams[("Redis 8.6<br>(Streams & KV Store)")];
         PostgresDB[("PostgreSQL 18<br>(identity_db & State Store)")];
     end
@@ -109,7 +109,7 @@ graph TD;
 ### Distributed Execution Parameters (`services/shared/shared/worker.py`)
 - **Worker Consumer Group**: `"workers"`.
 - **Max Retries**: Default 5 attempts.
-- **Backoff Formula**: $\text{base\_backoff} \times (\text{backoff\_multiplier}^{(\text{attempt} - 1)})$ where `base_backoff=1.0` and `multiplier=5.0` (Schedules: 1s, 5s, 25s, 125s).
+- **Backoff Formula**: `base_backoff * (backoff_multiplier ^ (attempt - 1))` where `base_backoff=1.0` and `multiplier=5.0` (Schedules: 1s, 5s, 25s, 125s).
 - **Lease Heartbeat**: 30-second interval refreshing `job_lease:{message_id}` key with 120s TTL (`ex=120`).
 - **Autoclaim Interval**: 60-second periodic poll using `XAUTOCLAIM` with a 5-minute idle threshold (`300000` ms).
 

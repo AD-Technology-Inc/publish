@@ -69,7 +69,7 @@ def _heartbeat_loop(self):
 ```
 - **Interval**: Runs every 30 seconds.
 - **TTL Duration**: Sets `job_lease:{message_id}` to expire in 120 seconds (`ex=120`).
-- **Heartbeat Margin**: Provides a 90-second safety window ($120\text{s} - 30\text{s}$) to absorb transient network glitches or short thread delays.
+- **Heartbeat Margin**: Provides a 90-second safety window (120s - 30s) to absorb transient network glitches or short thread delays.
 
 ### 2. Lease Verification During Recovery (`_claim_stalled_jobs`)
 ```python

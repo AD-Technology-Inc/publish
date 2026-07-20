@@ -9,7 +9,7 @@ This document provides diagnostic playbooks for resolving common failure modes, 
 
 | Symptom | Probable Root Cause | Verification Command | Resolution Action |
 | :--- | :--- | :--- | :--- |
-| **HTTP 503 `circuit_open` from Gateway** | Downstream service failing $> 50\%$ of calls in 10s window. | `docker-compose logs gateway` | Inspect downstream microservice logs; fix underlying 500 error; wait 30s for circuit cooldown. |
+| **HTTP 503 `circuit_open` from Gateway** | Downstream service failing > 50% of calls in 10s window. | `docker-compose logs gateway` | Inspect downstream microservice logs; fix underlying 500 error; wait 30s for circuit cooldown. |
 | **HTTP 429 `Queue overload`** | Redis Stream length exceeded 10,000 items. | `redis-cli XLEN jobs:social-post` | Check worker container status (`docker-compose ps`); scale up worker instances to consume backlog. |
 | **Jobs stuck in `pending` status** | Worker daemon process crashed or stopped. | `docker-compose ps` | Restart worker container (`docker-compose restart identity-service`). Stalled PEL items auto-reclaim after 5m. |
 | **`NonRetryableError` in logs** | Invalid payload parameters or 4xx API response. | `curl http://gateway.localhost/dlq/{service}` | Inspect DLQ payload; update invalid client request parameters or fix social platform OAuth credentials. |

@@ -7,7 +7,7 @@ This document specifies the progress persistence mechanism (`StateManager`), mil
 
 ## The Partial Pipeline Recovery Problem
 
-Multi-step job execution (e.g., Validate Payload $\rightarrow$ Store Post Record $\rightarrow$ Retrieve Token $\rightarrow$ Call Facebook API $\rightarrow$ Write Result) is vulnerable to mid-pipeline crashes. If a job fails or restarts at Step 4, executing from Step 1 wastes bandwidth, duplicates database entries, and risks duplicate external API calls.
+Multi-step job execution (e.g., Validate Payload -> Store Post Record -> Retrieve Token -> Call Facebook API -> Write Result) is vulnerable to mid-pipeline crashes. If a job fails or restarts at Step 4, executing from Step 1 wastes bandwidth, duplicates database entries, and risks duplicate external API calls.
 
 ---
 

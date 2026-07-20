@@ -19,7 +19,7 @@ flowchart TD
     InitSuccess -- No (Exception) --> FallbackRedis[Active Engine: Redis Key-Value]
     CheckConfig -- No --> FallbackRedis
 
-    subgraph Operation: save_step(job_id, step_name)
+    subgraph OperationSaveStep ["Operation: save_step(job_id, step_name)"]
         SaveCall[save_step Call] --> IsPGActive{Active Engine PostgreSQL?}
         IsPGActive -- Yes --> ExecUPSERT[Execute SQL UPSERT in psycopg2 connection]
         ExecUPSERT -- Success --> Done1([Saved to Postgres])

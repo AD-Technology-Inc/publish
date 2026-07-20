@@ -53,7 +53,7 @@ sequenceDiagram
 
 The backoff duration is calculated in `Worker.calculate_backoff()`:
 
-$$\text{Backoff Seconds} = \text{base\_backoff} \times (\text{backoff\_multiplier}^{(\text{attempt} - 1)})$$
+`Backoff Seconds = base_backoff * (backoff_multiplier ^ (attempt - 1))`
 
 ### Default Worker Parameters:
 - `base_backoff` = `1.0` second
@@ -65,10 +65,10 @@ $$\text{Backoff Seconds} = \text{base\_backoff} \times (\text{backoff\_multiplie
 | Attempt Number | Formula Calculation | Delay Before Next Attempt | Cumulative Elapsed Time |
 | :--- | :--- | :--- | :--- |
 | **Attempt 1 (Initial)** | N/A (Immediate) | 0 seconds | 0 seconds |
-| **Attempt 2 (Retry 1)** | $1.0 \times 5^0$ | **1 second** | 1 second |
-| **Attempt 3 (Retry 2)** | $1.0 \times 5^1$ | **5 seconds** | 6 seconds |
-| **Attempt 4 (Retry 3)** | $1.0 \times 5^2$ | **25 seconds** | 31 seconds |
-| **Attempt 5 (Retry 4)** | $1.0 \times 5^3$ | **125 seconds** (~2.1 min) | 156 seconds (~2.6 min) |
+| **Attempt 2 (Retry 1)** | `1.0 * (5 ^ 0)` | **1 second** | 1 second |
+| **Attempt 3 (Retry 2)** | `1.0 * (5 ^ 1)` | **5 seconds** | 6 seconds |
+| **Attempt 4 (Retry 3)** | `1.0 * (5 ^ 2)` | **25 seconds** | 31 seconds |
+| **Attempt 5 (Retry 4)** | `1.0 * (5 ^ 3)` | **125 seconds** (~2.1 min) | 156 seconds (~2.6 min) |
 | **Exceeded (Attempt > 5)**| Retries Exhausted | **Routed to DLQ** | Sent to `jobs:{service}:dlq` |
 
 ---

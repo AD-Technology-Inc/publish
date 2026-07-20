@@ -25,9 +25,9 @@ This document details the PostgreSQL indexing strategy and Redis key lookup patt
 
 | Key Pattern | Data Structure | Operation | Complexity | Optimization Rationale |
 | :--- | :--- | :--- | :--- | :--- |
-| `idempotency:{key}` | String | `SET key 1 NX EX` | $\mathcal{O}(1)$ | Sub-millisecond atomic lock assertion. |
-| `job_lease:{message_id}`| String | `SET key 1 EX 120` | $\mathcal{O}(1)$ | Rapid heartbeat lease update every 30s. |
-| `jobs:{service}` | Stream | `XREADGROUP` / `XADD` | $\mathcal{O}(1)$ per read | Efficient stream append and group iteration. |
-| `jobs:{service}:delayed`| Sorted Set (ZSET)| `ZRANGEBYSCORE 0 now`| $\mathcal{O}(\log(N) + M)$ | Fast range query for ready retries. |
-| `accounts:all` | JSON String Array| `GET` / `SET` | $\mathcal{O}(N)$ | In-memory account list lookup. |
-| `token:{provider}:{page_id}`| String | `GET` | $\mathcal{O}(1)$ | Fast internal access token retrieval. |
+| `idempotency:{key}` | String | `SET key 1 NX EX` | `O(1)` | Sub-millisecond atomic lock assertion. |
+| `job_lease:{message_id}`| String | `SET key 1 EX 120` | `O(1)` | Rapid heartbeat lease update every 30s. |
+| `jobs:{service}` | Stream | `XREADGROUP` / `XADD` | `O(1)` per read | Efficient stream append and group iteration. |
+| `jobs:{service}:delayed`| Sorted Set (ZSET)| `ZRANGEBYSCORE 0 now`| `O(log(N) + M)` | Fast range query for ready retries. |
+| `accounts:all` | JSON String Array| `GET` / `SET` | `O(N)` | In-memory account list lookup. |
+| `token:{provider}:{page_id}`| String | `GET` | `O(1)` | Fast internal access token retrieval. |

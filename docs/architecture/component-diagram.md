@@ -8,54 +8,54 @@ This document specifies the exact structural relationships, component boundaries
 ## Component Boundaries
 
 ```mermaid
-componentDiagram
-    package "Edge Ingestion Layer" {
-        [Traefik Proxy] --> [FastAPI Gateway]
-        [FastAPI Gateway] --> [ResilientHttpClient]
-        [ResilientHttpClient] --> [FailureStore]
-        [FastAPI Gateway] --> [OpenAPIMerger]
-    }
+graph TD
+    subgraph Edge Ingestion Layer
+        Traefik["Traefik Proxy"] --> Gateway["FastAPI Gateway"]
+        Gateway --> ResilientClient["ResilientHttpClient"]
+        ResilientClient --> FailureStore["FailureStore"]
+        Gateway --> OpenAPIMerger["OpenAPIMerger"]
+    end
 
-    package "Microservices Layer" {
-        [Identity Service]
-        [Social Account Service]
-        [Social Post Service]
-        [Social Publish Service]
-    }
+    subgraph Microservices Layer
+        IdentityService["Identity Service"]
+        AccountService["Social Account Service"]
+        PostService["Social Post Service"]
+        PublishService["Social Publish Service"]
+    end
 
-    package "Shared Core Library" {
-        [Worker Daemon]
-        [RedisQueue]
-        [StateManager]
-        [IdempotencyMiddleware]
-        [RateLimiter]
-        [FailureSimulator]
-    }
+    subgraph Shared Core Library
+        Worker["Worker Daemon"]
+        Queue["RedisQueue"]
+        StateMgr["StateManager"]
+        Idem["IdempotencyMiddleware"]
+        RateLim["RateLimiter"]
+        FailureSim["FailureSimulator"]
+    end
 
-    package "State & Message Infrastructure" {
-        database "PostgreSQL (identity_db)" as IdentityDB
-        database "PostgreSQL (State Store)" as StateDB
-        database "Redis (Streams & KV)" as RedisStore
-    }
+    subgraph StateMessageInfra ["State & Message Infrastructure"]
+        IdentityDB[("PostgreSQL: identity_db")]
+        StateDB[("PostgreSQL: State Store")]
+        RedisStore[("Redis: Streams & KV")]
+    end
 
-    [FastAPI Gateway] ..> [Identity Service] : HTTP Forward
-    [FastAPI Gateway] ..> [Social Account Service] : HTTP Forward
-    [FastAPI Gateway] ..> [Social Post Service] : HTTP Forward
+    Gateway -. HTTP Forward .-> IdentityService
+    Gateway -. HTTP Forward .-> AccountService
+    Gateway -. HTTP Forward .-> PostService
 
-    [Social Account Service] --> [RedisQueue]
-    [Social Post Service] --> [RedisQueue]
-    [Social Publish Service] --> [RedisQueue]
+    AccountService --> Queue
+    PostService --> Queue
+    PublishService --> Queue
 
-    [Worker Daemon] --> [RedisQueue]
-    [Worker Daemon] --> [StateManager]
-    [Worker Daemon] --> [IdempotencyMiddleware]
+    Worker --> Queue
+    Worker --> StateMgr
+    Worker --> Idem
 
-    [FailureStore] --> RedisStore
-    [IdempotencyMiddleware] --> RedisStore
-    [RedisQueue] --> RedisStore
-    [StateManager] --> StateDB
-    [StateManager] ..> RedisStore : Fallback
-    [Identity Service] --> IdentityDB
+    FailureStore --> RedisStore
+    Idem --> RedisStore
+    Queue --> RedisStore
+    StateMgr --> StateDB
+    StateMgr -. Fallback .-> RedisStore
+    IdentityService --> IdentityDB
 ```
 
 ---
@@ -69,7 +69,7 @@ componentDiagram
 - **`routes/v1/dlq.py`**: Provides direct administrative access to inspect (`GET /dlq/{service_name}`) and replay (`POST /dlq/{service_name}/{message_id}/replay`) dead-lettered messages in Redis Streams.
 
 ### 2. Core Worker Engine (`services/shared/shared/`)
-- **`Worker` (`worker.py`)**: Stateless daemon class responsible for polling Redis Streams via `XREADGROUP`, maintaining active heartbeat leases in Redis (`job_lease:{message_id}`), handling retry exponential backoffs ($1\text{s} \to 5\text{s} \to 25\text{s} \to 125\text{s}$), and claiming orphan messages via `XAUTOCLAIM`.
+- **`Worker` (`worker.py`)**: Stateless daemon class responsible for polling Redis Streams via `XREADGROUP`, maintaining active heartbeat leases in Redis (`job_lease:{message_id}`), handling retry exponential backoffs (1s -> 5s -> 25s -> 125s), and claiming orphan messages via `XAUTOCLAIM`.
 - **`RedisQueue` (`queue.py`)**: Wraps low-level Redis Stream commands (`xgroup_create`, `xadd`, `xreadgroup`, `xack`, `xdel`). Handles DLQ stream routing (`jobs:{service}:dlq`).
 - **`StateManager` (`utils.py`)**: Microservice progress persistence manager. Manages SQL upsert into `job_execution_state` using `psycopg2`. Automatically falls back to Redis key `job_state:{job_id}` if PostgreSQL is unreachable.
 - **`IdempotencyMiddleware` (`utils.py`)**: Atomic lock middleware executing `SET idempotency:{key} 1 NX EX 86400`.
@@ -86,13 +86,13 @@ componentDiagram
 ## Data Flow Across Components
 
 1. **Ingestion Flow**:
-   Client $\xrightarrow{\text{HTTP POST}}$ Traefik $\xrightarrow{\text{Forward}}$ Gateway $\xrightarrow{\text{Circuit Breaker}}$ Service API $\xrightarrow{\text{XADD}}$ Redis Stream `jobs:{service}`.
+   Client -> Traefik -> Gateway -> Circuit Breaker -> Service API -> Redis Stream `jobs:{service}`.
 
 2. **Execution Flow**:
-   Worker Daemon $\xrightarrow{\text{XREADGROUP}}$ Redis Stream $\xrightarrow{\text{SET NX}}$ Idempotency Check $\xrightarrow{\text{Heartbeat Thread}}$ Refresh `job_lease:{id}` $\xrightarrow{\text{Read/Write}}$ `StateManager` (PostgreSQL/Redis) $\xrightarrow{\text{API Call}}$ Social Platform Adapter $\xrightarrow{\text{XACK \& XDEL}}$ Redis Stream.
+   Worker Daemon -> XREADGROUP -> Redis Stream -> SET NX Idempotency Check -> Heartbeat Thread Refresh `job_lease:{id}` -> Read/Write `StateManager` (PostgreSQL/Redis) -> Call Social Platform Adapter -> XACK & XDEL Redis Stream.
 
 3. **Retry Flow**:
-   Worker catches retryable exception $\rightarrow$ calculates backoff duration $\rightarrow$ `ZADD` payload into `jobs:{service}:delayed` with timestamp score $\rightarrow$ `XACK` original message $\rightarrow$ background loop `ZRANGEBYSCORE` re-enqueues payload to main stream when ready.
+   Worker catches retryable exception -> calculates backoff duration -> `ZADD` payload into `jobs:{service}:delayed` with timestamp score -> `XACK` original message -> background loop `ZRANGEBYSCORE` re-enqueues payload to main stream when ready.
 
 ---
 

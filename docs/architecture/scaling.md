@@ -15,13 +15,13 @@ graph TD;
         Gateway["FastAPI Gateway"] --> Stream[("Redis Stream: jobs:social-publish<br>(maxlen=10000)")]
     end
 
-    subgraph Consumer Group: workers
+    subgraph ConsumerGroupWorkers ["Consumer Group: workers"]
         Stream --> Consumer1["Worker Instance 1<br>(consumer_name: hostname-1)"]
         Stream --> Consumer2["Worker Instance 2<br>(consumer_name: hostname-2)"]
         Stream --> Consumer3["Worker Instance 3<br>(consumer_name: hostname-3)"]
     end
 
-    subgraph Lock & State Store
+    subgraph LockStateStore ["Lock & State Store"]
         Consumer1 --> RedisKV[("Redis Locks & State Store")]
         Consumer2 --> RedisKV
         Consumer3 --> RedisKV
@@ -53,10 +53,10 @@ graph TD;
   ON CONFLICT (job_id) DO UPDATE 
   SET last_step = EXCLUDED.last_step, updated_at = EXCLUDED.updated_at;
   ```
-- **Concurrency Scaling Bound**: Under high worker horizontal scaling ($N > 50$ workers), direct `psycopg2.connect()` calls introduce PostgreSQL connection overhead. If PostgreSQL connection capacity is saturated, `StateManager` automatically falls back to Redis key `job_state:{job_id}` without failing the job.
+- **Concurrency Scaling Bound**: Under high worker horizontal scaling (N > 50 workers), direct `psycopg2.connect()` calls introduce PostgreSQL connection overhead. If PostgreSQL connection capacity is saturated, `StateManager` automatically falls back to Redis key `job_state:{job_id}` without failing the job.
 
 ### 3. Redis Single-Threaded Key Lock Contention
-- Atomic key creation (`SET NX`) for idempotency (`idempotency:{key}`) and leases (`job_lease:{message_id}`) executes in $\mathcal{O}(1)$ time.
+- Atomic key creation (`SET NX`) for idempotency (`idempotency:{key}`) and leases (`job_lease:{message_id}`) executes in `O(1)` time.
 - Redis memory is bounded by stream trimming (`maxlen=10000`) and 24-hour key TTLs (`ex=86400`).
 
 ---

@@ -14,7 +14,7 @@ graph TD;
             Traefik["Traefik v3.6.8 Proxy<br>(Ports 80, 8080)"];
         end
 
-        subgraph Docker Network: app
+        subgraph DockerNetworkApp ["Docker Network: app"]
             Client["client Container<br>(Node/React, Port 3000)<br>Limit: 0.5 CPU, 512MB"]
             Gateway["gateway Container<br>(FastAPI, Port 3001)<br>Limit: 0.25 CPU, 256MB"]
             IdentityService["identity-service Container<br>(FastAPI, Port 3001)<br>Limit: 0.25 CPU, 256MB"]

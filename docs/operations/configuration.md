@@ -27,7 +27,7 @@ This document provides a comprehensive configuration matrix for environment vari
 | `group_name` | `Worker` & `RedisQueue` | `"workers"` | Redis Stream consumer group name. |
 | `max_retries` | `Worker` (`worker.py`) | `5` | Maximum retry attempts before sending job to DLQ. |
 | `base_backoff` | `Worker` (`worker.py`) | `1.0` s | Base duration for exponential backoff calculations. |
-| `backoff_multiplier` | `Worker` (`worker.py`) | `5.0` | Multiplier for exponential backoff ($1\text{s} \to 5\text{s} \to 25\text{s} \to 125\text{s}$). |
+| `backoff_multiplier` | `Worker` (`worker.py`) | `5.0` | Multiplier for exponential backoff (1s -> 5s -> 25s -> 125s). |
 | `lease_ttl` | `Worker._heartbeat_loop` | `120` s | TTL for Redis worker lock key (`job_lease:{message_id}`). |
 | `heartbeat_interval` | `Worker._heartbeat_loop` | `30` s | Interval between background lease refresh calls. |
 | `autoclaim_min_idle` | `Worker._claim_stalled_jobs` | `300000` ms | Min idle time (5 minutes) before claiming PEL messages. |

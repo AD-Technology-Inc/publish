@@ -13,7 +13,7 @@ When a client submits a post or account connection request:
 1. The Gateway synchronously returns `status: "enqueued"` with a generated `job_id`.
 2. The initial job state in Redis is set to `job_state:{job_id} = "pending"`.
 3. Worker daemons asynchronously process the stream item, updating state through discrete milestones:
-   `pending` $\rightarrow$ `processing` $\rightarrow$ `started` $\rightarrow$ `db_stored` $\rightarrow$ `token_retrieved` $\rightarrow$ `completed` (or `failed`).
+   `pending` -> `processing` -> `started` -> `db_stored` -> `token_retrieved` -> `completed` (or `failed`).
 
 Clients polling `/jobs/{job_id}` read eventually consistent state snapshots until execution reaches a terminal state (`completed` or `failed`).
 

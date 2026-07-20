@@ -21,7 +21,7 @@ This documentation serves as an authoritative technical reference for backend, i
 * [Idempotency Model](distributed-systems/idempotency.md) — `IdempotencyMiddleware` implementation using Redis `SET NX EX`.
 * [Worker Leasing](distributed-systems/leasing.md) — Active heartbeats, 120s TTL leases, and split-brain prevention.
 * [State Checkpointing](distributed-systems/checkpointing.md) — `StateManager` milestone persistence (`job_execution_state`) in PostgreSQL/Redis.
-* [Retry Strategy](distributed-systems/retry-strategy.md) — Exponential backoff ($1\text{s} \to 5\text{s} \to 25\text{s} \to 125\text{s}$) with Redis ZSET.
+* [Retry Strategy](distributed-systems/retry-strategy.md) — Exponential backoff (1s -> 5s -> 25s -> 125s) with Redis ZSET.
 * [Backpressure](distributed-systems/backpressure.md) — Queue length monitoring, rate limiting, and HTTP client circuit breaking.
 * [Failure Model](distributed-systems/failure-model.md) — Exception hierarchy (`NonRetryableError` vs retryable exceptions).
 * [Recovery Behavior](distributed-systems/recovery.md) — Autobreaker recovery via `XAUTOCLAIM` for crashed workers.

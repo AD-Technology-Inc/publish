@@ -70,10 +70,10 @@ const jobEnqueueTrend = new Trend('job_enqueue_duration', true);
 ```
 
 ### Performance Threshold Targets:
-- **`http_req_duration{test_type:smoke}`**: $p(95) < 200\text{ ms}$ for health check endpoints.
-- **`http_req_duration{test_type:load}`**: $p(95) < 500\text{ ms}$ under ramping VUs (20 concurrent virtual users).
-- **`job_enqueue_duration`**: $p(95) < 300\text{ ms}$ for POST requests to `/social/posts`.
-- **`errors`**: Total error rate $< 1.0\%$.
+- **`http_req_duration{test_type:smoke}`**: p(95) < 200ms for health check endpoints.
+- **`http_req_duration{test_type:load}`**: p(95) < 500ms under ramping VUs (20 concurrent virtual users).
+- **`job_enqueue_duration`**: p(95) < 300ms for POST requests to `/social/posts`.
+- **`errors`**: Total error rate < 1.0%.
 
 ---
 

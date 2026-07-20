@@ -46,4 +46,4 @@ stateDiagram-v2
 | **Retry Backoff** | `ZADD` | `jobs:{service}:delayed` | Adds payload with score = `execute_at` timestamp. |
 | **Stream Cleanup** | `XACK` & `XDEL` | `jobs:{service}` | Removes entry from PEL and stream storage. |
 | **DLQ Isolation** | `XADD` | `jobs:{service}:dlq` | Appends payload, error string, and attempt count to DLQ stream. |
-| **Autoclaim** | `XAUTOCLAIM` | `jobs:{service}` | Reclaims orphaned PEL items idle for $> 5$ minutes. |
+| **Autoclaim** | `XAUTOCLAIM` | `jobs:{service}` | Reclaims orphaned PEL items idle for > 5 minutes. |

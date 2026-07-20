@@ -4,7 +4,7 @@
 Documenting the decision to enforce step-level progress persistence across multi-stage worker execution pipelines.
 
 ## Context
-Multi-step job execution (e.g. payload validation $\rightarrow$ DB record creation $\rightarrow$ event dispatch $\rightarrow$ platform publish) can crash mid-pipeline. Restarting execution from Step 1 duplicates database records and wastes network bandwidth.
+Multi-step job execution (e.g. payload validation -> DB record creation -> event dispatch -> platform publish) can crash mid-pipeline. Restarting execution from Step 1 duplicates database records and wastes network bandwidth.
 
 ## Decision
 Implement `StateManager` in `services/shared/shared/utils.py` to persist milestone step progress (`started`, `db_stored`, `token_retrieved`, `completed`) to PostgreSQL table `job_execution_state`, with transparent fallback to Redis key `job_state:{job_id}`.

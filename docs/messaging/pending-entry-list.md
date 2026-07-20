@@ -45,11 +45,11 @@ stateDiagram-v2
 Messages are removed from the PEL using `XACK`:
 
 1. **Successful Execution**:
-   Worker completes processing $\rightarrow$ calls `self.queue.ack_job(message_id)` $\rightarrow$ executes `XACK stream_name group_name message_id` and `XDEL stream_name message_id`.
+   Worker completes processing -> calls `self.queue.ack_job(message_id)` -> executes `XACK stream_name group_name message_id` and `XDEL stream_name message_id`.
 2. **Exponential Backoff Retry**:
-   Worker encounters retryable exception $\rightarrow$ adds payload to delayed ZSET $\rightarrow$ calls `self.queue.ack_job(message_id)` to remove original item from PEL.
+   Worker encounters retryable exception -> adds payload to delayed ZSET -> calls `self.queue.ack_job(message_id)` to remove original item from PEL.
 3. **Dead Letter Routing**:
-   Worker encounters `NonRetryableError` or max retries (5) $\rightarrow$ writes item to `jobs:{service}:dlq` $\rightarrow$ calls `self.queue.ack_job(message_id)` to clear original item from PEL.
+   Worker encounters `NonRetryableError` or max retries (5) -> writes item to `jobs:{service}:dlq` -> calls `self.queue.ack_job(message_id)` to clear original item from PEL.
 
 ---
 
