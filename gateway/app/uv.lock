@@ -9,7 +9,7 @@ resolution-markers = [
 
 [[package]]
 name = "ad-tech-inc-resilient-http"
-version = "0.2.3"
+version = "0.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "fastapi" },
@@ -19,9 +19,9 @@ dependencies = [
     { name = "redis" },
     { name = "ruff" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2a/7c/25e71195a86fffe1ae098d74d0a9c6a6a8390d9c279f0841876e628e3049/ad_tech_inc_resilient_http-0.2.3.tar.gz", hash = "sha256:ef6c8dbf85b9a0beae83381697c24dbabb04b9c38efc4f5fd877efa666aa9c4a", size = 373229, upload-time = "2026-07-13T14:35:18.993Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2b/a4/8404fb26cb86c754c8c67f08ec2c3ee3833901c22dc5f82b497e78a2cedc/ad_tech_inc_resilient_http-0.3.0.tar.gz", hash = "sha256:6929b7c4b9722fce7cd600aa3ca03375d768be2116bc7aa603991e83c165c1db", size = 589873, upload-time = "2026-07-20T03:02:00.091Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/93/b4/5ecc93c1c787358008d073b9a325891ef0e7757a2daf8b5c22121b088979/ad_tech_inc_resilient_http-0.2.3-py3-none-any.whl", hash = "sha256:c2afaccd6fd61f571b92b035b0e1ab06cc268da200598bfae008b5f7f45be821", size = 11604, upload-time = "2026-07-13T14:35:17.781Z" },
+    { url = "https://files.pythonhosted.org/packages/ca/e2/d835647c15059c294374438bc0422a791e42694df59c4d01d6b48eeb78cc/ad_tech_inc_resilient_http-0.3.0-py3-none-any.whl", hash = "sha256:d753094bae33b63e178ffbd595f570e5bab505028a843ee691d5d1fc0f50e617", size = 16596, upload-time = "2026-07-20T03:01:58.987Z" },
 ]
 
 [[package]]
@@ -267,7 +267,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "ad-tech-inc-resilient-http", specifier = ">=0.2.3" },
+    { name = "ad-tech-inc-resilient-http", specifier = ">=0.3.0" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.136.0" },
     { name = "redis", specifier = ">=8.0.1" },
 ]

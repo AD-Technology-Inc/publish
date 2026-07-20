@@ -5,13 +5,25 @@ description = "Social post service"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi[standard]>=0.136.0",
-    "httpx>=0.28.1",
-    "pydantic>=2.10.6",
-    "shared",
-    "sqlalchemy>=2.0.38",
-    "alembic>=1.14.1",
-    "asyncpg>=0.30.0",
+    "sqlalchemy[asyncio]>=2.0.51",
+    "asyncpg>=0.31.0",
+    "alembic>=1.18.5",
+    "structlog>=26.1.0",
 ]
 
-[tool.uv.sources]
-shared = { path = "../../services/shared" }
+[dependency-groups]
+dev = ["pytest>=9.1.1", "pytest-asyncio>=1.4.0", "ruff>=0.15.21", "ty>=0.0.59"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 80
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "N", "RUF"]
+
+[tool.ty]
+
