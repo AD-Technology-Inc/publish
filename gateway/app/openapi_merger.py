@@ -45,7 +45,7 @@ def setup_openapi_merger(app: FastAPI):
                         for path, path_item in service_schema.get(
                             "paths", {}
                         ).items():
-                            for method, operation in path_item.items():
+                            for _method, operation in path_item.items():
                                 original_tags = operation.get("tags", [])
                                 # Group under the service name in Swagger
                                 operation["tags"] = [

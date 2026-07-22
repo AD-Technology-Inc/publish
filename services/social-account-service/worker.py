@@ -1,9 +1,14 @@
 import httpx
 import structlog
 from redis import Redis
+from shared.telemetry import get_tracer, init_telemetry, setup_logging
+from shared.utils import (
+    IdempotencyMiddleware,
+    NonRetryableError,
+    RateLimiter,
+    RateLimitExceeded,
+)
 from shared.worker import Worker
-from shared.utils import IdempotencyMiddleware, NonRetryableError, RateLimiter, RateLimitExceeded
-from shared.telemetry import setup_logging, init_telemetry, get_tracer
 
 SERVICE_NAME = "social-account-worker"
 setup_logging(SERVICE_NAME)
@@ -30,7 +35,9 @@ def handle_account_link(payload: dict):
     if not rate_limiter.is_allowed(f"api:{provider}"):
         raise RateLimitExceeded(f"Rate limit exceeded for {provider}")
 
-    logger.info(f"Validating account {account_id} for provider {provider}, page {page_id}")
+    logger.info(
+        f"Validating account {account_id} for provider {provider}, page {page_id}"
+    )
 
     # Fetch stored token from social-account-service
     try:
@@ -57,8 +64,12 @@ def handle_account_link(payload: dict):
                 )
                 if graph_resp.status_code in (400, 401, 403):
                     # Mark account as expired
-                    redis_client.hset(f"accounts:{account_id}", "status", "expired")
-                    raise NonRetryableError(f"Invalid Facebook token: {graph_resp.text}")
+                    redis_client.hset(
+                        f"accounts:{account_id}", "status", "expired"
+                    )
+                    raise NonRetryableError(
+                        f"Invalid Facebook token: {graph_resp.text}"
+                    )
                 graph_resp.raise_for_status()
                 logger.info(f"Facebook token valid for page {page_id}")
             except httpx.RequestError as e:

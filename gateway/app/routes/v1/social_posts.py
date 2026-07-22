@@ -1,8 +1,6 @@
 # TODO: validate
 
 
-from typing import List, Optional
-
 from fastapi import APIRouter
 from pydantic import BaseModel
 
@@ -15,8 +13,8 @@ class PostRequest(BaseModel):
     page_id: str
     provider: str
     message: str
-    media_url: Optional[str] = None
-    platforms: Optional[List[str]] = None
+    media_url: str | None = None
+    platforms: list[str] | None = None
 
 
 @social_posts_router.post("")

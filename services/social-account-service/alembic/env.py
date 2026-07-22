@@ -28,11 +28,15 @@ sys.path.append(os.getcwd())
 try:
     from config import DATABASE_URL
 except ImportError:
-    DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:pass@localhost/dbname")
+    DATABASE_URL = os.getenv(
+        "DATABASE_URL", "postgresql://user:pass@localhost/dbname"
+    )
 
 # Format database URL for asyncpg if it starts with postgresql://
 if DATABASE_URL.startswith("postgresql://"):
-    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+    DATABASE_URL = DATABASE_URL.replace(
+        "postgresql://", "postgresql+asyncpg://", 1
+    )
 
 config.set_main_option("sqlalchemy.url", DATABASE_URL)
 

@@ -62,4 +62,3 @@ async def forward(
             headers=r.headers,
             media_type=r.headers.get("content-type"),
         )
-

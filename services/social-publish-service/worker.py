@@ -1,11 +1,12 @@
 import os
+from abc import ABC, abstractmethod
+
 import httpx
 import structlog
 from redis import Redis
-from abc import ABC, abstractmethod
-from shared.worker import Worker
+from shared.telemetry import get_tracer, init_telemetry, setup_logging
 from shared.utils import IdempotencyMiddleware, NonRetryableError, StateManager
-from shared.telemetry import setup_logging, init_telemetry, get_tracer
+from shared.worker import Worker
 
 SERVICE_NAME = "social-publish-worker"
 setup_logging(SERVICE_NAME)
@@ -23,17 +24,34 @@ state_manager = StateManager(redis_client)
 # ---------------------------------------------------------------------------
 class SocialPlatformAdapter(ABC):
     @abstractmethod
-    def publish(self, page_id: str, message: str, token: str, job_id: str, media_url: str = None) -> str:
+    def publish(
+        self,
+        page_id: str,
+        message: str,
+        token: str,
+        job_id: str,
+        media_url: str | None = None,
+    ) -> str:
         pass
 
 
 class FacebookAdapter(SocialPlatformAdapter):
-    def publish(self, page_id: str, message: str, token: str, job_id: str, media_url: str = None) -> str:
-        base_url = os.getenv("GRAPH_API_BASE_URL", "https://graph.facebook.com/v19.0")
+    def publish(
+        self,
+        page_id: str,
+        message: str,
+        token: str,
+        job_id: str,
+        media_url: str | None = None,
+    ) -> str:
+        base_url = os.getenv(
+            "GRAPH_API_BASE_URL", "https://graph.facebook.com/v19.0"
+        )
         url = f"{base_url}/{page_id}/feed"
 
         if token == "mocked_token":
             import time
+
             logger.info("[MOCK] Simulating Facebook publish (no real token)")
             time.sleep(1)
             return f"{page_id}_{job_id[:8]}_mock"
@@ -49,19 +67,28 @@ class FacebookAdapter(SocialPlatformAdapter):
         except httpx.HTTPStatusError as e:
             if e.response.status_code in (400, 401, 403, 404):
                 redis_client.set(f"job_state:{job_id}", "failed", ex=86400)
-                raise NonRetryableError(f"Facebook API error: {e.response.text}")
+                raise NonRetryableError(
+                    f"Facebook API error: {e.response.text}"
+                )
             raise Exception(f"Facebook transient error: {e.response.text}")
         except httpx.RequestError as e:
             raise Exception(f"Network error posting to Facebook: {e}")
 
 
 class LinkedInAdapter(SocialPlatformAdapter):
-    def publish(self, page_id: str, message: str, token: str, job_id: str, media_url: str = None) -> str:
+    def publish(
+        self,
+        page_id: str,
+        message: str,
+        token: str,
+        job_id: str,
+        media_url: str | None = None,
+    ) -> str:
         url = "https://api.linkedin.com/v2/ugcPosts"
         headers = {
             "Authorization": f"Bearer {token}",
             "X-Restli-Protocol-Version": "2.0.0",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
         payload = {
             "author": f"urn:li:organization:{page_id}",
@@ -69,20 +96,25 @@ class LinkedInAdapter(SocialPlatformAdapter):
             "specificContent": {
                 "com.linkedin.ugc.ShareContent": {
                     "shareCommentary": {"text": message},
-                    "shareMediaCategory": "NONE"
+                    "shareMediaCategory": "NONE",
                 }
             },
-            "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"}
+            "visibility": {
+                "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"
+            },
         }
-        
+
         if media_url:
-            payload["specificContent"]["com.linkedin.ugc.ShareContent"]["shareMediaCategory"] = "ARTICLE"
-            payload["specificContent"]["com.linkedin.ugc.ShareContent"]["media"] = [
-                {"status": "READY", "originalUrl": media_url}
-            ]
+            payload["specificContent"]["com.linkedin.ugc.ShareContent"][
+                "shareMediaCategory"
+            ] = "ARTICLE"
+            payload["specificContent"]["com.linkedin.ugc.ShareContent"][
+                "media"
+            ] = [{"status": "READY", "originalUrl": media_url}]
 
         if token == "mocked_token":
             import time
+
             time.sleep(1)
             return f"urn:li:share:{page_id[:8]}_mock"
 
@@ -93,22 +125,36 @@ class LinkedInAdapter(SocialPlatformAdapter):
         except httpx.HTTPStatusError as e:
             if e.response.status_code in (400, 401, 403, 404):
                 redis_client.set(f"job_state:{job_id}", "failed", ex=86400)
-                raise NonRetryableError(f"LinkedIn API error: {e.response.text}")
+                raise NonRetryableError(
+                    f"LinkedIn API error: {e.response.text}"
+                )
             raise Exception(f"LinkedIn transient error: {e.response.text}")
         except httpx.RequestError as e:
             raise Exception(f"Network error posting to LinkedIn: {e}")
 
 
 class InstagramAdapter(SocialPlatformAdapter):
-    def publish(self, page_id: str, message: str, token: str, job_id: str, media_url: str = None) -> str:
+    def publish(
+        self,
+        page_id: str,
+        message: str,
+        token: str,
+        job_id: str,
+        media_url: str | None = None,
+    ) -> str:
         if not media_url:
             redis_client.set(f"job_state:{job_id}", "failed", ex=86400)
-            raise NonRetryableError("Instagram requires a media_url to publish.")
+            raise NonRetryableError(
+                "Instagram requires a media_url to publish."
+            )
 
-        base_url = os.getenv("GRAPH_API_BASE_URL", "https://graph.facebook.com/v19.0")
-        
+        base_url = os.getenv(
+            "GRAPH_API_BASE_URL", "https://graph.facebook.com/v19.0"
+        )
+
         if token == "mocked_token":
             import time
+
             time.sleep(1)
             return f"ig_{page_id[:8]}_mock"
 
@@ -116,8 +162,12 @@ class InstagramAdapter(SocialPlatformAdapter):
             # Step 1: Create Container
             container_resp = httpx.post(
                 f"{base_url}/{page_id}/media",
-                data={"image_url": media_url, "caption": message, "access_token": token},
-                timeout=10.0
+                data={
+                    "image_url": media_url,
+                    "caption": message,
+                    "access_token": token,
+                },
+                timeout=10.0,
             )
             container_resp.raise_for_status()
             creation_id = container_resp.json().get("id")
@@ -126,36 +176,54 @@ class InstagramAdapter(SocialPlatformAdapter):
             publish_resp = httpx.post(
                 f"{base_url}/{page_id}/media_publish",
                 data={"creation_id": creation_id, "access_token": token},
-                timeout=10.0
+                timeout=10.0,
             )
             publish_resp.raise_for_status()
             return publish_resp.json().get("id", "unknown")
         except httpx.HTTPStatusError as e:
             if e.response.status_code in (400, 401, 403, 404):
                 redis_client.set(f"job_state:{job_id}", "failed", ex=86400)
-                raise NonRetryableError(f"Instagram API error: {e.response.text}")
+                raise NonRetryableError(
+                    f"Instagram API error: {e.response.text}"
+                )
             raise Exception(f"Instagram transient error: {e.response.text}")
         except httpx.RequestError as e:
             raise Exception(f"Network error posting to Instagram: {e}")
 
 
 class ThreadsAdapter(SocialPlatformAdapter):
-    def publish(self, page_id: str, message: str, token: str, job_id: str, media_url: str = None) -> str:
-        base_url = os.getenv("THREADS_API_BASE_URL", "https://graph.threads.net/v1.0")
-        
+    def publish(
+        self,
+        page_id: str,
+        message: str,
+        token: str,
+        job_id: str,
+        media_url: str | None = None,
+    ) -> str:
+        base_url = os.getenv(
+            "THREADS_API_BASE_URL", "https://graph.threads.net/v1.0"
+        )
+
         if token == "mocked_token":
             import time
+
             time.sleep(1)
             return f"threads_{page_id[:8]}_mock"
 
         try:
             # Step 1: Create Container
-            data = {"media_type": "TEXT", "text": message, "access_token": token}
+            data = {
+                "media_type": "TEXT",
+                "text": message,
+                "access_token": token,
+            }
             if media_url:
                 data["media_type"] = "IMAGE"
                 data["image_url"] = media_url
 
-            container_resp = httpx.post(f"{base_url}/{page_id}/threads", data=data, timeout=10.0)
+            container_resp = httpx.post(
+                f"{base_url}/{page_id}/threads", data=data, timeout=10.0
+            )
             container_resp.raise_for_status()
             creation_id = container_resp.json().get("id")
 
@@ -163,7 +231,7 @@ class ThreadsAdapter(SocialPlatformAdapter):
             publish_resp = httpx.post(
                 f"{base_url}/{page_id}/threads_publish",
                 data={"creation_id": creation_id, "access_token": token},
-                timeout=10.0
+                timeout=10.0,
             )
             publish_resp.raise_for_status()
             return publish_resp.json().get("id", "unknown")
@@ -207,8 +275,10 @@ def handle_publish_post(payload: dict):
         if last_step == "started":
             if not page_id or not message:
                 redis_client.set(f"job_state:{job_id}", "failed", ex=86400)
-                raise NonRetryableError("Invalid payload: page_id and message are required")
-            
+                raise NonRetryableError(
+                    "Invalid payload: page_id and message are required"
+                )
+
             # Step 2: Retrieve access token from social-account-service
             try:
                 token_resp = httpx.get(
@@ -217,18 +287,24 @@ def handle_publish_post(payload: dict):
                 )
                 if token_resp.status_code == 404:
                     # Fall back to ENV for legacy / dev use
-                    token = os.getenv("FACEBOOK_PAGE_ACCESS_TOKEN", "mocked_token")
+                    token = os.getenv(
+                        "FACEBOOK_PAGE_ACCESS_TOKEN", "mocked_token"
+                    )
                 else:
                     token_resp.raise_for_status()
-                    token = token_resp.json().get("access_token", "mocked_token")
+                    token = token_resp.json().get(
+                        "access_token", "mocked_token"
+                    )
             except httpx.RequestError:
                 # social-account-service unavailable — fall back to ENV
                 token = os.getenv("FACEBOOK_PAGE_ACCESS_TOKEN", "mocked_token")
 
             if not token:
                 redis_client.set(f"job_state:{job_id}", "failed", ex=86400)
-                raise NonRetryableError("No access token available for this page")
-                
+                raise NonRetryableError(
+                    "No access token available for this page"
+                )
+
             state_manager.save_step(job_id, "token_retrieved")
             # Cache the token in Redis to pass it to the next step since we don't save the payload
             redis_client.set(f"job_token:{job_id}", token, ex=3600)
@@ -236,14 +312,16 @@ def handle_publish_post(payload: dict):
 
         if last_step == "token_retrieved":
             token = redis_client.get(f"job_token:{job_id}").decode("utf-8")
-            
+
             # Step 3: Call the platform API via the Adapter
             adapter = ADAPTERS.get(provider)
             if not adapter:
                 redis_client.set(f"job_state:{job_id}", "failed", ex=86400)
                 raise NonRetryableError(f"Unsupported provider: {provider}")
 
-            post_id = adapter.publish(page_id, message, token, job_id, media_url=media_url)
+            post_id = adapter.publish(
+                page_id, message, token, job_id, media_url=media_url
+            )
 
             # Step 4: Store result
             state_manager.save_step(job_id, "completed")

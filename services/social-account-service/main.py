@@ -1,12 +1,12 @@
-from fastapi import FastAPI, HTTPException, Request, Response
-from pydantic import BaseModel
-from typing import List
-import structlog
-import uuid
 import json
-import time
+import uuid
+from datetime import UTC
+
+import structlog
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 from shared.queue import RedisQueue
-from shared.telemetry import setup_logging, init_telemetry
+from shared.telemetry import init_telemetry, setup_logging
 
 SERVICE_NAME = "social-account-service"
 setup_logging(SERVICE_NAME)
@@ -33,10 +33,10 @@ PROVIDER_LABELS = {
 
 
 class ConnectAccountRequest(BaseModel):
-    provider: str          # "facebook" | "instagram" | "twitter" | "linkedin"
-    name: str              # display name / page name
-    page_id: str           # platform-specific page/profile id
-    access_token: str      # Page Access Token or OAuth token
+    provider: str  # "facebook" | "instagram" | "twitter" | "linkedin"
+    name: str  # display name / page name
+    page_id: str  # platform-specific page/profile id
+    access_token: str  # Page Access Token or OAuth token
 
 
 class AccountOut(BaseModel):
@@ -44,11 +44,11 @@ class AccountOut(BaseModel):
     provider: str
     name: str
     page_id: str
-    status: str            # "connected" | "expired"
+    status: str  # "connected" | "expired"
     connected_at: str
 
 
-def _all_accounts() -> List[dict]:
+def _all_accounts() -> list[dict]:
     ids_raw = redis_client.get("accounts:all")
     if not ids_raw:
         return []
@@ -70,7 +70,10 @@ def _save_account(account: dict):
         ids.append(aid)
     redis_client.set("accounts:all", json.dumps(ids))
     # Also persist the access token separately (lookup by provider:page_id)
-    redis_client.set(f"token:{account['provider']}:{account['page_id']}", account["access_token"])
+    redis_client.set(
+        f"token:{account['provider']}:{account['page_id']}",
+        account["access_token"],
+    )
 
 
 def _delete_account(account_id: str):
@@ -89,7 +92,8 @@ def _delete_account(account_id: str):
 # Endpoints
 # ---------------------------------------------------------------------------
 
-@app.get("/accounts", response_model=List[AccountOut])
+
+@app.get("/accounts", response_model=list[AccountOut])
 def list_accounts():
     return _all_accounts()
 
@@ -97,19 +101,25 @@ def list_accounts():
 @app.post("/accounts", response_model=AccountOut, status_code=201)
 def connect_account(req: ConnectAccountRequest):
     if req.provider not in PROVIDER_LABELS:
-        raise HTTPException(status_code=400, detail=f"Unsupported provider: {req.provider}")
+        raise HTTPException(
+            status_code=400, detail=f"Unsupported provider: {req.provider}"
+        )
 
     # Check for duplicate (same provider + page_id)
-    existing = [a for a in _all_accounts()
-                if a["provider"] == req.provider and a["page_id"] == req.page_id]
+    existing = [
+        a
+        for a in _all_accounts()
+        if a["provider"] == req.provider and a["page_id"] == req.page_id
+    ]
     if existing:
         raise HTTPException(
             status_code=409,
-            detail=f"Account already connected for {req.provider} / {req.page_id}"
+            detail=f"Account already connected for {req.provider} / {req.page_id}",
         )
 
     account_id = str(uuid.uuid4())
-    from datetime import datetime, timezone
+    from datetime import datetime
+
     account = {
         "id": account_id,
         "provider": req.provider,
@@ -117,19 +127,21 @@ def connect_account(req: ConnectAccountRequest):
         "page_id": req.page_id,
         "access_token": req.access_token,
         "status": "connected",
-        "connected_at": datetime.now(timezone.utc).strftime("%b %d, %Y"),
+        "connected_at": datetime.now(UTC).strftime("%b %d, %Y"),
     }
     _save_account(account)
 
     # Enqueue an async job to validate the token with the platform
     idem_key = f"link:{account_id}"
-    job_id = queue.enqueue({
-        "type": "account_link",
-        "account_id": account_id,
-        "provider": req.provider,
-        "page_id": req.page_id,
-        "idempotency_key": idem_key,
-    })
+    job_id = queue.enqueue(
+        {
+            "type": "account_link",
+            "account_id": account_id,
+            "provider": req.provider,
+            "page_id": req.page_id,
+            "idempotency_key": idem_key,
+        }
+    )
     logger.info(f"Account {account_id} queued for validation. job_id={job_id}")
 
     return account

@@ -85,9 +85,7 @@ async def test_circuit_breaker_sliding_window(redis_client):
             "resilient_http_client.http.HttpExecutor.send",
             new=AsyncMock(side_effect=mock_send),
         ),
-        patch(
-            "resilient_http_client.retry.asyncio.sleep", new=AsyncMock()
-        ),
+        patch("resilient_http_client.retry.asyncio.sleep", new=AsyncMock()),
     ):
         async with ResilientHttpClient(
             service=service_name, store=store, config=config
