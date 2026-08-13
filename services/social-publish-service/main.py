@@ -27,13 +27,14 @@ class PublishRequest(BaseModel):
     )
 
 
+# /api/v1/
 @app.post("/publish")
 def publish_post(req: PublishRequest):
     idem_key = str(uuid.uuid4())
     job_id = queue.enqueue(
         {
             "type": "publish_post",
-            "page_id": req.page_id,
+            "account_id": req.account_id,
             "provider": req.provider,
             "message": req.message,
             "media_url": req.media_url,

@@ -45,6 +45,7 @@ class EmailVerification(Base):
             user_id=user_id,
             code_hash=code_hash,
             expires_at=datetime.now(tz=UTC) + timedelta(minutes=15),
+            updated_at=datetime.now(tz=UTC),
         )
         return verification, code
 

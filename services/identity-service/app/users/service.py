@@ -1,5 +1,5 @@
 import asyncio
-from datetime import UTC
+from datetime import UTC, datetime
 
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -28,28 +28,31 @@ async def create_user(db: AsyncSession, user: UserCreate) -> User:
     # Hash password
     from pwdlib import PasswordHash
 
-    password_hash = PasswordHash.recommended()
-    hashed_password = password_hash.hash(user.password)
+    password_hash: PasswordHash = PasswordHash.recommended()
+    hashed_password: str = password_hash.hash(user.password)
 
-    new_user = User(
-        first_name=user.first_name,
-        last_name=user.last_name,
-        email=user.email,
-        password=hashed_password,
-    )
+    async with db.begin():
+        new_user = User(
+            first_name=user.first_name,
+            last_name=user.last_name,
+            email=user.email,
+            password=hashed_password,
+            # updated_at=datetime.now(tz=UTC)
+        )
+        db.add(instance=new_user)
 
-    db.add(new_user)
-    await db.flush()  # Populates new_user.id
+        # Flush so the DB assigns new_user.id before it's referenced below
+        await db.flush()
 
-    # TODO: validate if can move to separate function
-    # Create email verification record
-    email_verification, code = EmailVerification.create_for_user(
-        new_user.id, settings.app_key
-    )
-    db.add(email_verification)
+        # TODO: validate if can move to separate function
+        # Create email verification record
+        email_verification, code = EmailVerification.create_for_user(
+            new_user.id, settings.app_key
+        )
 
-    await db.commit()
-    await db.refresh(new_user)
+        db.add(email_verification)
+
+        await db.refresh(new_user)
 
     # Dispatch email sending in the background
     asyncio.create_task(send_verify_email(new_user.email, code))
@@ -61,7 +64,6 @@ async def create_user(db: AsyncSession, user: UserCreate) -> User:
 async def verify_email(db: AsyncSession, token: str) -> bool:
     import hashlib
     import hmac
-    from datetime import datetime
 
     from fastapi import HTTPException, status
 
