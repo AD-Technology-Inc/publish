@@ -8,12 +8,27 @@ import {
     DropdownMenuSeparator, 
     DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { mockUser } from '@/mocks';
 import { ChevronsUpDown, Settings, CreditCard, LogOut, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { identityApi } from '@/api/client';
+import type { User } from '@/api/types';
 
 export const NavUser: React.FC = () => {
-    const user = mockUser;
+    const [user, setUser] = React.useState<User | null>(null);
+
+    React.useEffect(() => {
+        identityApi.me().then(setUser).catch(() => setUser(null));
+    }, []);
+
+    if (!user) {
+        return (
+            <SidebarMenu>
+                <SidebarMenuItem>
+                    <div className="h-12 rounded-2xl bg-muted/40 animate-pulse mx-2" />
+                </SidebarMenuItem>
+            </SidebarMenu>
+        );
+    }
 
     return (
         <SidebarMenu>

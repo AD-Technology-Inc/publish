@@ -7,26 +7,44 @@ import {
     SidebarMenuItem,
     SidebarMenuButton,
 } from '@/components/ui/sidebar';
-import { mockSubscription } from '@/mocks';
+import type { Subscription } from '@/types';
+
+// Subscription data is not yet exposed via the API.
+// This component renders a sensible placeholder until the billing endpoint
+// is available. Replace the `subscription` constant with an API call then.
+const PLACEHOLDER: Subscription = {
+    plan: 'Pro',
+    status: 'active',
+    days_remaining: 0,
+    renews_at: '',
+    is_trial: false,
+};
 
 export const NavSubscription: React.FC = () => {
-    const subscription = mockSubscription;
-    const progress = Math.max(0, Math.min(100, (subscription.days_remaining / 30) * 100));
+    // TODO: replace with real API call when billing endpoint is ready
+    // e.g. billingApi.subscription().then(setSubscription).catch(...)
+    const subscription = PLACEHOLDER;
+    const hasDays = subscription.days_remaining > 0;
+    const progress = hasDays
+        ? Math.max(0, Math.min(100, (subscription.days_remaining / 30) * 100))
+        : null;
 
     return (
         <SidebarGroup className="group-data-[collapsible=icon]:hidden px-2 py-4">
-            <div className="px-3 mb-4">
-                <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-50">Subscription</span>
-                    <span className="text-[9px] font-black text-primary uppercase tracking-tighter">{subscription.days_remaining} days left</span>
+            {hasDays && (
+                <div className="px-3 mb-4">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-50">Subscription</span>
+                        <span className="text-[9px] font-black text-primary uppercase tracking-tighter">{subscription.days_remaining} days left</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                        <div
+                            className="h-full bg-primary transition-all duration-1000 shadow-lg shadow-primary/20"
+                            style={{ width: `${progress}%` }}
+                        />
+                    </div>
                 </div>
-                <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                    <div
-                        className="h-full bg-primary transition-all duration-1000 shadow-lg shadow-primary/20"
-                        style={{ width: `${progress}%` }}
-                    ></div>
-                </div>
-            </div>
+            )}
 
             <SidebarMenu>
                 <SidebarMenuItem>

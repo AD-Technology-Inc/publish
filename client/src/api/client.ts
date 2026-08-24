@@ -6,12 +6,24 @@ import type {
   DlqResponse,
   Account,
   ConnectAccountRequest,
+  User,
+  Post,
 } from './types';
 
 export const apiClient = axios.create({
   baseURL: 'http://gateway.localhost',
   headers: { 'Content-Type': 'application/json' },
 });
+
+// ---------------------------------------------------------------------------
+// Identity / User
+// ---------------------------------------------------------------------------
+export const identityApi = {
+  me: async (): Promise<User> => {
+    const { data } = await apiClient.get<User>('/identity/me');
+    return data;
+  },
+};
 
 // ---------------------------------------------------------------------------
 // Accounts
@@ -33,7 +45,17 @@ export const accountsApi = {
 };
 
 // ---------------------------------------------------------------------------
-// Social posts
+// Posts
+// ---------------------------------------------------------------------------
+export const postsApi = {
+  list: async (): Promise<Post[]> => {
+    const { data } = await apiClient.get<Post[]>('/social/posts');
+    return data;
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Publish (enqueue)
 // ---------------------------------------------------------------------------
 export const socialApi = {
   publishPost: async (payload: PublishPostRequest): Promise<EnqueueResponse> => {

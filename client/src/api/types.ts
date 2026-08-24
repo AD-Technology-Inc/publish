@@ -1,4 +1,6 @@
+// ---------------------------------------------------------------------------
 // Job types
+// ---------------------------------------------------------------------------
 export interface EnqueueResponse {
   status: string;
   job_id: string;
@@ -10,7 +12,9 @@ export interface JobStatusResponse {
   result?: string | null;
 }
 
+// ---------------------------------------------------------------------------
 // Account types
+// ---------------------------------------------------------------------------
 export interface Account {
   id: string;
   provider: 'facebook' | 'instagram' | 'twitter' | 'linkedin';
@@ -27,16 +31,50 @@ export interface ConnectAccountRequest {
   access_token: string;
 }
 
+// ---------------------------------------------------------------------------
 // Post types
+// ---------------------------------------------------------------------------
+export type PostStatus = 'published' | 'scheduled' | 'draft' | 'failed';
+export type PostType   = 'text' | 'image' | 'video';
+
+export interface Post {
+  id: string;
+  title: string;
+  content: string;
+  platforms: string[];
+  status: PostStatus;
+  type: PostType;
+  date: string;
+  reach?: string;
+  engagement?: string;
+  created_at: string;
+}
+
+// ---------------------------------------------------------------------------
+// Publish types
+// ---------------------------------------------------------------------------
 export interface PublishPostRequest {
   page_id: string;
   provider: string;
   message: string;
   media_url?: string;
   platforms?: string[];
+  idempotency_key?: string;
 }
 
+// ---------------------------------------------------------------------------
+// Identity / User types
+// ---------------------------------------------------------------------------
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+}
+
+// ---------------------------------------------------------------------------
 // DLQ types
+// ---------------------------------------------------------------------------
 export interface DlqJob {
   message_id: string;
   payload: string;
