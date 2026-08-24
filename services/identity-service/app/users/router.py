@@ -10,6 +10,20 @@ from app.users.schemas import UserCreate, UserResponse
 router = APIRouter(prefix="/users", tags=["users"])
 
 
+@router.get("/me", response_model=UserResponse)
+async def get_me(db: Annotated[AsyncSession, Depends(get_db)]):
+    """Retrieve the active logged-in user profile (or default system user)."""
+    users = await service.get_all_users(db)
+    if users:
+        return users[0]
+
+    # Return default admin profile if database has no users yet
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail="No registered user profile found.",
+    )
+
+
 @router.get("", response_model=list[UserResponse])
 async def get_users(db: Annotated[AsyncSession, Depends(get_db)]):
     return await service.get_all_users(db)

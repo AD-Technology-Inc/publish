@@ -1,15 +1,19 @@
+from collections.abc import Callable
 import json
-import time
+import random
 import socket
 import threading
+import time
+from typing import Any
+
 import structlog
-from typing import Callable, Dict, Optional
 from redis import Redis
+
 from .queue import RedisQueue
 from .telemetry import (
     get_tracer,
-    record_job_success,
     record_job_failure,
+    record_job_success,
 )
 
 try:
@@ -27,10 +31,12 @@ class Worker:
         redis_client: Redis,
         stream_name: str,
         group_name: str = "workers",
-        consumer_name: Optional[str] = None,
+        consumer_name: str | None = None,
         max_retries: int = 5,
-        base_backoff: float = 1.0,  # 1s -> 5s -> 25s
+        base_backoff: float = 1.0,  # 1s -> 5s -> 25s -> 125s
         backoff_multiplier: float = 5.0,
+        lease_duration: int = 120,  # 2 minutes lease
+        claim_min_idle_ms: int = 60000,  # 60 seconds min idle time for XAUTOCLAIM
     ):
         self.redis = redis_client
         self.queue = RedisQueue(redis_client, stream_name, group_name)
@@ -38,41 +44,59 @@ class Worker:
         self.max_retries = max_retries
         self.base_backoff = base_backoff
         self.backoff_multiplier = backoff_multiplier
-        self.handlers: Dict[str, Callable] = {}
+        self.lease_duration = lease_duration
+        self.claim_min_idle_ms = claim_min_idle_ms
+        self.handlers: dict[str, Callable[[dict[str, Any]], Any]] = {}
         self.running = False
-        self.active_jobs = set()
-        self.heartbeat_thread = None
+        self.active_jobs: set[str] = set()
+        self.heartbeat_thread: threading.Thread | None = None
+        self.last_claim_time: float = 0.0
+        self.last_autoclaim_id: str = "0-0"
 
-    def _heartbeat_loop(self):
+    def _heartbeat_loop(self) -> None:
+        """Background thread renewing leases for all currently active jobs."""
         while self.running:
             try:
                 for message_id in list(self.active_jobs):
                     lease_key = f"job_lease:{message_id}"
-                    self.redis.set(lease_key, "1", ex=120)  # 2 min lease
+                    self.redis.set(lease_key, self.consumer_name, ex=self.lease_duration)
             except Exception as e:
-                logger.error(f"Heartbeat error: {e}")
+                logger.error("Heartbeat error", error=str(e))
             time.sleep(30)
 
-    def register_handler(self, job_type: str, handler: Callable):
+    def register_handler(self, job_type: str, handler: Callable[[dict[str, Any]], Any]) -> None:
         self.handlers[job_type] = handler
 
     def calculate_backoff(self, attempt: int) -> float:
-        # e.g. 1s -> 5s -> 25s -> 125s (approx 2min)
-        return self.base_backoff * (self.backoff_multiplier ** (attempt - 1))
+        """Calculates exponential backoff with full jitter to avoid thundering herds."""
+        base = self.base_backoff * (self.backoff_multiplier ** (attempt - 1))
+        # Add jitter: between 80% and 120% of base
+        jitter = random.uniform(0.8, 1.2)
+        return round(base * jitter, 2)
 
-    def _process_message(self, message_id: str, data: Dict[str, bytes]):
-        payload_str = data.get(b"payload", b"{}").decode("utf-8")
+    def _process_message(self, message_id: str, data: dict[bytes, bytes] | dict[str, Any]) -> None:
+        raw_payload = data.get(b"payload") or data.get("payload", b"{}")
+        if isinstance(raw_payload, bytes):
+            payload_str = raw_payload.decode("utf-8")
+        else:
+            payload_str = str(raw_payload)
+
         try:
             payload = json.loads(payload_str)
-        except json.JSONDecodeError:
-            logger.error(f"Failed to decode payload for {message_id}: {payload_str}")
+        except json.JSONDecodeError as exc:
+            logger.error("Failed to decode payload", message_id=message_id, payload=payload_str, error=str(exc))
+            self.queue.dlq_job(payload_str, f"JSONDecodeError: {exc}", 0)
             self.queue.ack_job(message_id)
             return
 
+        job_id = payload.get("job_id") or payload.get("idempotency_key")
         job_type = payload.get("type")
+
         if not job_type or job_type not in self.handlers:
-            logger.warning(f"No handler found for job type: {job_type}")
-            # Consider this a non-retryable failure if no handler exists
+            logger.warning("No handler found for job type", job_type=job_type, message_id=message_id)
+            if job_id:
+                self.redis.set(f"job_state:{job_id}", "failed", ex=86400)
+                self.redis.set(f"job_error:{job_id}", f"No handler registered for type {job_type}", ex=86400)
             self.queue.dlq_job(payload_str, f"No handler for type {job_type}", 0)
             self.queue.ack_job(message_id)
             return
@@ -81,71 +105,84 @@ class Worker:
         payload["attempt_count"] = attempt
         payload["last_attempt_timestamp"] = time.time()
 
+        t0 = time.monotonic()
+        tracer = get_tracer()
+        _span_kind = SpanKind.INTERNAL if SpanKind is not None else None
+
         try:
-            # Execute the handler inside an OTel span
-            tracer = get_tracer()
-            t0 = time.monotonic()
-            _span_kind = SpanKind.INTERNAL if SpanKind is not None else None
             with tracer.start_as_current_span(
                 f"job.{job_type}",
                 kind=_span_kind,
             ) as span:
-                span.set_attribute("job.type", job_type)
-                span.set_attribute("job.id", message_id)
-                span.set_attribute("job.attempt", attempt)
+                if span is not None and hasattr(span, "set_attribute"):
+                    span.set_attribute("job.type", str(job_type))
+                    span.set_attribute("job.id", str(message_id))
+                    span.set_attribute("job.attempt", attempt)
 
                 logger.info(
-                    f"Processing job {job_type} (id: {message_id}, attempt: {attempt})"
+                    "Processing job",
+                    job_type=job_type,
+                    message_id=message_id,
+                    job_id=job_id,
+                    attempt=attempt,
                 )
                 self.handlers[job_type](payload)
 
             duration = time.monotonic() - t0
             record_job_success(job_type, duration)
-            logger.info(f"Job {job_type} processed successfully")
+            logger.info("Job processed successfully", job_type=job_type, message_id=message_id, duration_s=duration)
             self.queue.ack_job(message_id)
 
         except Exception as e:
             duration = time.monotonic() - t0
             error_msg = str(e)
-            logger.error(f"Job {job_type} failed: {error_msg}")
+            logger.error("Job failed", job_type=job_type, message_id=message_id, error=error_msg, attempt=attempt)
 
-            # Record full exception info on the active span so Tempo surfaces
-            # the stack trace alongside the failed trace.
             try:
-                span.record_exception(e)
-                if StatusCode is not None:
-                    span.set_status(StatusCode.ERROR, error_msg)
+                if 'span' in locals() and span is not None:
+                    span.record_exception(e)
+                    if StatusCode is not None:
+                        span.set_status(StatusCode.ERROR, error_msg)
             except Exception:
-                pass  # span may already be a DummySpan — safe to ignore
+                pass
 
             is_retryable = getattr(e, "retryable", True)
             record_job_failure(job_type, duration, is_retryable)
 
             if not is_retryable or attempt >= self.max_retries:
                 logger.warning(
-                    f"Sending job to DLQ. Retryable: {is_retryable}, Attempt: {attempt}"
+                    "Sending job to DLQ",
+                    job_type=job_type,
+                    retryable=is_retryable,
+                    attempt=attempt,
+                    max_retries=self.max_retries,
                 )
-                self.queue.dlq_job(payload_str, error_msg, attempt)
+                if job_id:
+                    self.redis.set(f"job_state:{job_id}", "failed", ex=86400)
+                    self.redis.set(f"job_error:{job_id}", error_msg, ex=86400)
+
+                self.queue.dlq_job(json.dumps(payload), error_msg, attempt)
                 self.queue.ack_job(message_id)
             else:
                 # Schedule retry using delayed queue (ZSET)
                 backoff = self.calculate_backoff(attempt)
                 execute_at = time.time() + backoff
                 logger.info(
-                    f"Scheduling retry in {backoff} seconds via delayed queue..."
+                    "Scheduling job retry via delayed ZSET",
+                    job_type=job_type,
+                    attempt=attempt,
+                    backoff_seconds=backoff,
                 )
 
                 delayed_key = f"{self.queue.stream_name}:delayed"
                 self.redis.zadd(delayed_key, {json.dumps(payload): execute_at})
-
                 self.queue.ack_job(message_id)
 
-    def _process_delayed_jobs(self):
-        """Move ready jobs from delayed ZSET to the main stream"""
+    def _process_delayed_jobs(self) -> None:
+        """Move matured retry jobs from delayed ZSET back to the main stream."""
         delayed_key = f"{self.queue.stream_name}:delayed"
         now = time.time()
 
-        # Get ready jobs
         ready_jobs = self.redis.zrangebyscore(delayed_key, 0, now)
         if not ready_jobs:
             return
@@ -155,52 +192,67 @@ class Worker:
                 payload = json.loads(payload_bytes.decode("utf-8"))
                 self.queue.enqueue(payload)
                 self.redis.zrem(delayed_key, payload_bytes)
-                logger.info(
-                    f"Moved delayed job back to stream {self.queue.stream_name}"
-                )
+                logger.info("Moved delayed job back to stream", stream=self.queue.stream_name)
             except Exception as e:
-                logger.error(f"Failed to process delayed job: {e}")
+                logger.error("Failed to re-enqueue delayed job", error=str(e))
                 self.redis.zrem(delayed_key, payload_bytes)
 
-    def _claim_stalled_jobs(self):
-        """Claim jobs that have been stuck in the PEL for over 5 minutes (worker crashed)."""
+    def _claim_stalled_jobs(self) -> None:
+        """
+        Recover stalled jobs from dead/dropped workers via XAUTOCLAIM.
+        Respects active worker lease locks before taking ownership.
+        """
         try:
-            # 300000 ms = 5 minutes idle time
             response = self.redis.xautoclaim(
                 self.queue.stream_name,
                 self.queue.group_name,
                 self.consumer_name,
-                300000,
-                start_id="0-0",
+                min_idle_time=self.claim_min_idle_ms,
+                start_id=self.last_autoclaim_id,
                 count=10,
             )
-            if response and len(response) >= 2:
-                messages = response[1]
-                if not messages:
-                    return
-                for msg in messages:
-                    if len(msg) == 2:
-                        message_id, data = msg
-                        message_id_str = (
-                            message_id.decode("utf-8")
-                            if isinstance(message_id, bytes)
-                            else message_id
-                        )
+            if not response or len(response) < 2:
+                return
 
-                        # Check lease
-                        lease_key = f"job_lease:{message_id_str}"
-                        if self.redis.exists(lease_key):
-                            logger.info(
-                                f"Job {message_id_str} has active lease. Skipping autoclaim."
-                            )
-                            continue
+            next_id = response[0]
+            self.last_autoclaim_id = next_id.decode("utf-8") if isinstance(next_id, bytes) else str(next_id)
+            if self.last_autoclaim_id == "0-0" or not self.last_autoclaim_id:
+                self.last_autoclaim_id = "0-0"
 
-                        logger.info(f"Recovered stalled job {message_id_str}")
+            messages = response[1]
+            if not messages:
+                return
+
+            for msg in messages:
+                if len(msg) == 2:
+                    message_id, data = msg
+                    message_id_str = (
+                        message_id.decode("utf-8")
+                        if isinstance(message_id, bytes)
+                        else str(message_id)
+                    )
+
+                    lease_key = f"job_lease:{message_id_str}"
+                    current_lease = self.redis.get(lease_key)
+                    if current_lease and current_lease.decode("utf-8") != self.consumer_name:
+                        logger.debug("Job has active lease held by another worker, skipping", message_id=message_id_str)
+                        continue
+
+                    # Claim and execute
+                    logger.info("Autoclaimed stalled job from PEL", message_id=message_id_str)
+                    self.active_jobs.add(message_id_str)
+                    self.redis.set(lease_key, self.consumer_name, ex=self.lease_duration)
+                    try:
                         self._process_message(message_id_str, data)
-        except Exception as e:
-            logger.error(f"Error claiming stalled jobs: {e}")
+                    finally:
+                        self.active_jobs.discard(message_id_str)
+                        self.redis.delete(lease_key)
 
-    def run(self):
+        except Exception as e:
+            if "NOGROUP" not in str(e) and "ERR no such key" not in str(e):
+                logger.error("Error claiming stalled jobs", error=str(e))
+
+    def run(self) -> None:
         self.running = True
         self.last_claim_time = time.time()
 
@@ -210,33 +262,41 @@ class Worker:
         self.heartbeat_thread.start()
 
         logger.info(
-            f"Worker {self.consumer_name} started listening on {self.queue.stream_name}"
+            "Worker started listening",
+            consumer_name=self.consumer_name,
+            stream=self.queue.stream_name,
         )
         while self.running:
             try:
-                # Process delayed jobs
+                # Process delayed retries
                 self._process_delayed_jobs()
 
-                # Periodically claim stalled jobs
-                if time.time() - self.last_claim_time > 60:
+                # Periodically claim abandoned jobs
+                if time.time() - self.last_claim_time > 30:
                     self._claim_stalled_jobs()
                     self.last_claim_time = time.time()
 
-                # Read 1 message, block for 5 seconds
+                # Read 1 message from stream, block for 5 seconds
                 messages = self.queue.read_jobs(self.consumer_name, count=1, block=5000)
                 if not messages:
                     continue
 
                 for stream, msgs in messages:
                     for message_id, data in msgs:
-                        message_id_str = message_id.decode("utf-8")
+                        message_id_str = (
+                            message_id.decode("utf-8")
+                            if isinstance(message_id, bytes)
+                            else str(message_id)
+                        )
                         self.active_jobs.add(message_id_str)
+                        lease_key = f"job_lease:{message_id_str}"
+                        self.redis.set(lease_key, self.consumer_name, ex=self.lease_duration)
                         try:
                             self._process_message(message_id_str, data)
                         finally:
                             self.active_jobs.discard(message_id_str)
-                            self.redis.delete(f"job_lease:{message_id_str}")
+                            self.redis.delete(lease_key)
 
             except Exception as e:
-                logger.error(f"Error in worker loop: {e}")
-                time.sleep(5)
+                logger.error("Error in worker loop", error=str(e))
+                time.sleep(2)

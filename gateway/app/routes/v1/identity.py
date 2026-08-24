@@ -5,17 +5,19 @@ from http_client import forward
 
 identity_router = APIRouter(prefix="/identity", tags=["identity"])
 
-# POST   /register
-# POST   /login
-# POST   /logout
-# GET    /me
-# POST   /verify-email
-# POST   /resend-verification
-
 
 # -------------------------
-# Authentication
+# Authentication & User Profile
 # -------------------------
+@identity_router.get(path="/me")
+async def get_me():
+    return await forward(
+        service_name=ServiceName.IDENTITY,
+        method="GET",
+        url="http://identity-service:3001/users/me",
+    )
+
+
 @identity_router.post(path="/register")
 async def create_user(request: Request):
     return await forward(

@@ -22,7 +22,7 @@ datasources:
     jsonData:
       derivedFields:
         - datasourceUid: tempo
-          matcherRegex: '"traceId"\s*:\s*"([a-f0-9]{32})"'
+          matcherRegex: '"trace_id"\s*:\s*"([a-f0-9]{32})"'
           name: TraceID
           url: "$${__value.raw}"
           urlDisplayLabel: "Open in Tempo"

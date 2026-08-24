@@ -1,7 +1,9 @@
-import os
-import time
-import random
 import logging
+import os
+import random
+import time
+from typing import Optional
+
 from redis import Redis
 
 try:
@@ -13,55 +15,61 @@ logger = logging.getLogger(__name__)
 
 
 class NonRetryableError(Exception):
-    def __init__(self, message="Non-retryable error"):
+    """Exception indicating that an error is permanent and should immediately route to DLQ."""
+    def __init__(self, message: str = "Non-retryable error"):
         self.message = message
         self.retryable = False
         super().__init__(self.message)
 
 
 class RateLimitExceeded(Exception):
-    def __init__(self, message="Rate limit exceeded"):
+    """Exception indicating that an external API rate limit was encountered."""
+    def __init__(self, message: str = "Rate limit exceeded"):
         self.message = message
         self.retryable = True
         super().__init__(self.message)
 
 
 class IdempotencyMiddleware:
+    """
+    Enforces atomic idempotency guards across distributed workers using Redis SET NX.
+    Prevents duplicate side-effects under at-least-once delivery guarantees.
+    """
     def __init__(self, redis_client: Redis, ttl_seconds: int = 86400):
         self.redis = redis_client
         self.ttl = ttl_seconds
 
-    def check_and_set(self, key: str) -> bool:
+    def check_and_set(self, key: Optional[str]) -> bool:
         """
         Atomically claim an idempotency key via Redis SET NX.
 
-        Returns True if the key was successfully set (job not yet processed).
-        Returns False if the key already exists (duplicate — skip execution).
-
-        Raises ValueError if *key* is empty or None — workers must always
-        supply an idempotency key; silently skipping the guard would allow
-        duplicate side-effects under at-least-once delivery.
+        Returns True if the key was successfully set (first execution).
+        Returns False if the key already exists (duplicate — skip side-effects).
         """
-        if not key:
+        if not key or not str(key).strip():
             raise ValueError(
                 "idempotency_key is required but was not provided. "
                 "Refusing to execute without a deduplication guard."
             )
 
         redis_key = f"idempotency:{key}"
-        # SET NX returns True if set, False if key already exists.
         result = self.redis.set(redis_key, "1", nx=True, ex=self.ttl)
         return bool(result)
 
-    def clear(self, key: str):
-        """
-        Clears the idempotency key so a failed job can be retried.
-        """
+    def is_processed(self, key: Optional[str]) -> bool:
+        """Check if an idempotency key has already been claimed."""
+        if not key:
+            return False
+        return bool(self.redis.exists(f"idempotency:{key}"))
+
+    def clear(self, key: Optional[str]) -> None:
+        """Clear the idempotency key so a failed job can be re-run if needed."""
         if key:
             self.redis.delete(f"idempotency:{key}")
 
 
 class RateLimiter:
+    """Sliding-window / counter rate limiter backed by Redis."""
     def __init__(self, redis_client: Redis, max_requests: int, window_seconds: int):
         self.redis = redis_client
         self.max_requests = max_requests
@@ -69,33 +77,27 @@ class RateLimiter:
 
     def is_allowed(self, key: str) -> bool:
         redis_key = f"ratelimit:{key}"
-
-        # Simple implementation using INCR and EXPIRE
         current = self.redis.incr(redis_key)
         if current == 1:
             self.redis.expire(redis_key, self.window_seconds)
 
-        if current > self.max_requests:
-            return False
-        return True
+        return current <= self.max_requests
 
 
 class FailureSimulator:
-    """Utility to inject failures in development"""
+    """Utility to inject controlled chaos in development and testing."""
 
     @staticmethod
-    def simulate_failure(chance: float = 0.3):
-        """Randomly raise errors or sleep based on chance"""
-        roll = random.random()
-        if roll > chance:
+    def simulate_failure(chance: float = 0.3) -> None:
+        """Randomly raise errors or sleep based on probability."""
+        if random.random() > chance:
             return
 
-        # Determine type of failure
         failure_type = random.choice(["latency", "retryable", "non_retryable"])
 
         if failure_type == "latency":
-            sleep_time = random.uniform(1.0, 5.0)
-            logger.info(f"[SIMULATOR] Injecting latency: {sleep_time:.2f}s")
+            sleep_time = random.uniform(1.0, 3.0)
+            logger.info("[SIMULATOR] Injecting latency: %.2fs", sleep_time)
             time.sleep(sleep_time)
         elif failure_type == "retryable":
             logger.info("[SIMULATOR] Injecting retryable 500 error")
@@ -106,19 +108,30 @@ class FailureSimulator:
 
 
 class StateManager:
-    """Manages state for partial failure handling using Postgres (fallback to Redis)"""
+    """
+    Manages durable state checkpoints for partial failure recovery.
+    Persists step milestones to PostgreSQL with resilient fallback to Redis.
+    """
 
     def __init__(self, redis_client: Redis, ttl_seconds: int = 86400):
         self.redis = redis_client
         self.ttl = ttl_seconds
         self.db_url = os.getenv("DATABASE_URL")
+        self._table_initialized = False
         self._init_db()
 
-    def _init_db(self):
+    def _get_connection(self):
         if not self.db_url or not psycopg2:
+            return None
+        # Convert asyncpg/sqlalchemy urls to standard postgresql if needed
+        conn_url = self.db_url.replace("postgresql+asyncpg://", "postgresql://")
+        return psycopg2.connect(conn_url, connect_timeout=3)
+
+    def _init_db(self) -> None:
+        if not self.db_url or not psycopg2 or self._table_initialized:
             return
         try:
-            with psycopg2.connect(self.db_url) as conn:
+            with self._get_connection() as conn:
                 with conn.cursor() as cur:
                     cur.execute("""
                         CREATE TABLE IF NOT EXISTS job_execution_state (
@@ -128,16 +141,25 @@ class StateManager:
                         );
                     """)
                 conn.commit()
+            self._table_initialized = True
         except Exception as e:
-            logger.warning(
-                f"Failed to initialize Postgres state table: {e}. Falling back to Redis."
-            )
-            self.db_url = None
+            logger.warning("Failed to initialize PostgreSQL state table: %s. Will retry on demand.", e)
 
     def save_step(self, job_id: str, step_name: str) -> None:
-        if self.db_url:
+        """
+        Record a milestone checkpoint for a job.
+        Writes to PostgreSQL and mirrors to Redis.
+        """
+        # Always write to Redis checkpoint key for fast access
+        redis_key = f"job_checkpoint:{job_id}"
+        self.redis.set(redis_key, step_name, ex=self.ttl)
+
+        if self.db_url and psycopg2:
             try:
-                with psycopg2.connect(self.db_url) as conn:
+                if not self._table_initialized:
+                    self._init_db()
+
+                with self._get_connection() as conn:
                     with conn.cursor() as cur:
                         cur.execute(
                             """
@@ -145,24 +167,22 @@ class StateManager:
                             VALUES (%s, %s, CURRENT_TIMESTAMP)
                             ON CONFLICT (job_id) DO UPDATE 
                             SET last_step = EXCLUDED.last_step, updated_at = EXCLUDED.updated_at;
-                        """,
+                            """,
                             (job_id, step_name),
                         )
                     conn.commit()
                 return
             except Exception as e:
-                logger.error(f"Failed to save step to Postgres: {e}")
+                logger.error("Failed to save step checkpoint to Postgres: %s. Redis fallback active.", e)
 
-        # Fallback to Redis — use a dedicated prefix so we never clobber
-        # the job_state:{job_id} key that workers use for status strings
-        # ("pending", "processing", "completed", "failed").
-        redis_key = f"job_checkpoint:{job_id}"
-        self.redis.set(redis_key, step_name, ex=self.ttl)
-
-    def get_last_step(self, job_id: str) -> str | None:
-        if self.db_url:
+    def get_last_step(self, job_id: str) -> Optional[str]:
+        """
+        Retrieve the latest completed step milestone for a job.
+        Checks PostgreSQL first, falling back to Redis if unavailable.
+        """
+        if self.db_url and psycopg2:
             try:
-                with psycopg2.connect(self.db_url) as conn:
+                with self._get_connection() as conn:
                     with conn.cursor() as cur:
                         cur.execute(
                             "SELECT last_step FROM job_execution_state WHERE job_id = %s;",
@@ -172,9 +192,9 @@ class StateManager:
                         if row:
                             return row[0]
             except Exception as e:
-                logger.error(f"Failed to get step from Postgres: {e}")
+                logger.error("Failed to fetch step from Postgres: %s. Using Redis checkpoint.", e)
 
-        # Fallback to Redis — read from the dedicated checkpoint prefix.
+        # Fallback to Redis checkpoint
         redis_key = f"job_checkpoint:{job_id}"
         val = self.redis.get(redis_key)
         return val.decode("utf-8") if val else None

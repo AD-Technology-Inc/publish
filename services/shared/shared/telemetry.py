@@ -7,9 +7,12 @@ Wires:
   - LoggerProvider  → OTLPLogExporter (gRPC) for OTLP log shipping
   - structlog       → injects trace_id / span_id into every JSON record so
                       Grafana Loki can link directly to Tempo traces.
+  - stdlib logging  → injects trace_id / span_id into logging.LogRecord so standard
+                      log records correlate seamlessly with Grafana Loki.
+  - FastAPI         → auto-instrumentation for route latency and tracing.
 
 All exporters read OTEL_EXPORTER_OTLP_ENDPOINT from the environment
-(default: http://localhost:4317).  Set OTEL_SDK_DISABLED=true to revert
+(default: http://localhost:4317). Set OTEL_SDK_DISABLED=true to revert
 to no-op mode (e.g. unit tests without a collector).
 """
 
@@ -56,10 +59,32 @@ except ImportError:
 # ---------------------------------------------------------------------------
 # Module-level state
 # ---------------------------------------------------------------------------
+_tracer_provider: Any = None
 _tracer: Any = None
 _meter: Any = None
 _job_duration_histogram: Any = None
 _job_counter: Any = None
+
+
+# ---------------------------------------------------------------------------
+# Standard library logging filter: inject trace_id & span_id into LogRecord
+# ---------------------------------------------------------------------------
+class _TraceContextFilter(logging.Filter):
+    """Logging filter that injects active OTel trace and span IDs into LogRecords."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        if _OTEL_AVAILABLE and not _OTEL_DISABLED:
+            span = trace.get_current_span()
+            ctx = span.get_span_context()
+            if ctx and ctx.is_valid:
+                record.trace_id = format(ctx.trace_id, "032x")
+                record.span_id = format(ctx.span_id, "016x")
+                record.trace_flags = format(ctx.trace_flags, "02x")
+                return True
+        record.trace_id = ""
+        record.span_id = ""
+        record.trace_flags = ""
+        return True
 
 
 # ---------------------------------------------------------------------------
@@ -121,22 +146,34 @@ def setup_logging(service_name: str, level: str = "INFO") -> None:
         cache_logger_on_first_use=True,
     )
 
-    # Also wire stdlib logging so third-party libraries (httpx, uvicorn…)
-    # flow through the same JSON pipeline.
-    logging.basicConfig(
-        format="%(message)s",
-        level=log_level_int,
+    # Wire stdlib logging so third-party libraries (httpx, uvicorn…)
+    # flow through the same pipeline and carry trace context.
+    root_logger = logging.getLogger()
+    root_logger.setLevel(log_level_int)
+    
+    # Remove existing handlers to avoid duplicate logs
+    for handler in list(root_logger.handlers):
+        root_logger.removeHandler(handler)
+        
+    handler = logging.StreamHandler()
+    handler.setLevel(log_level_int)
+    handler.addFilter(_TraceContextFilter())
+    formatter = logging.Formatter(
+        '{"timestamp": "%(asctime)s", "level": "%(levelname)s", "name": "%(name)s", "message": "%(message)s", "trace_id": "%(trace_id)s", "span_id": "%(span_id)s"}'
     )
+    handler.setFormatter(formatter)
+    root_logger.addHandler(handler)
 
 
-def init_telemetry(service_name: str) -> None:
+def init_telemetry(service_name: str, app: Any = None) -> None:
     """
     Bootstrap the OTel SDK: tracer, meter, and logger providers.
+    Optionally instruments a FastAPI application if provided.
 
     Reads OTEL_EXPORTER_OTLP_ENDPOINT (default: http://localhost:4317).
     Set OTEL_SDK_DISABLED=true to skip initialisation (useful in tests).
     """
-    global _tracer, _meter, _job_duration_histogram, _job_counter
+    global _tracer_provider, _tracer, _meter, _job_duration_histogram, _job_counter
 
     if _OTEL_DISABLED or not _OTEL_AVAILABLE:
         _tracer = _DummyTracer()
@@ -150,11 +187,11 @@ def init_telemetry(service_name: str) -> None:
     # ------------------------------------------------------------------
     # Traces
     # ------------------------------------------------------------------
-    tracer_provider = TracerProvider(resource=resource)
-    tracer_provider.add_span_processor(
+    _tracer_provider = TracerProvider(resource=resource)
+    _tracer_provider.add_span_processor(
         BatchSpanProcessor(OTLPSpanExporter(endpoint=endpoint, insecure=True))
     )
-    trace.set_tracer_provider(tracer_provider)
+    trace.set_tracer_provider(_tracer_provider)
     _tracer = trace.get_tracer(service_name)
 
     # ------------------------------------------------------------------
@@ -183,13 +220,34 @@ def init_telemetry(service_name: str) -> None:
     # ------------------------------------------------------------------
     # Logs (OTLP)
     # ------------------------------------------------------------------
-    logger_provider = LoggerProvider(resource=resource)
-    logger_provider.add_log_record_processor(
-        BatchLogRecordProcessor(
-            OTLPLogExporter(endpoint=endpoint, insecure=True)
+    try:
+        logger_provider = LoggerProvider(resource=resource)
+        logger_provider.add_log_record_processor(
+            BatchLogRecordProcessor(
+                OTLPLogExporter(endpoint=endpoint, insecure=True)
+            )
         )
-    )
-    set_logger_provider(logger_provider)
+        set_logger_provider(logger_provider)
+    except Exception as e:
+        # Non-fatal log provider init error
+        logging.getLogger(__name__).debug("LoggerProvider init skipped: %s", e)
+
+    # ------------------------------------------------------------------
+    # FastAPI Auto-Instrumentation
+    # ------------------------------------------------------------------
+    if app is not None:
+        instrument_fastapi(app)
+
+
+def instrument_fastapi(app: Any) -> None:
+    """Auto-instrument a FastAPI application instance with OpenTelemetry."""
+    if _OTEL_DISABLED or not _OTEL_AVAILABLE:
+        return
+    try:
+        from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+        FastAPIInstrumentor.instrument_app(app, tracer_provider=_tracer_provider)
+    except Exception as e:
+        logging.getLogger(__name__).warning("Failed to instrument FastAPI app: %s", e)
 
 
 def get_tracer() -> Any:

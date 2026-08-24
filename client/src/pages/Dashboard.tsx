@@ -10,6 +10,8 @@ import {
     ExternalLink,
     Zap,
     ArrowUpRight,
+    Layers,
+    Share2,
 } from "lucide-react";
 import {
     Instagram,
@@ -21,10 +23,9 @@ import { AppLayout } from "@/layouts/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { mockUser, mockRecentActivities, mockDashboardStats } from "@/mocks";
 import { useTitle } from "@/hooks/use-title";
-import { accountsApi } from "@/api/client";
-import type { Account } from "@/api/types";
+import { accountsApi, identityApi, postsApi } from "@/api/client";
+import type { Account, Post } from "@/api/types";
 
 /* ─── Platform helpers ───────────────────────────────────────── */
 const getPlatformIcon = (provider: string) => {
@@ -77,89 +78,32 @@ const getPlatformBrand = (provider: string) => {
     }
 };
 
-/* ─── Sparkline ──────────────────────────────────────────────── */
-const BAR_DATA = [40, 55, 35, 70, 50, 85, 60, 90, 45, 75, 95, 55, 80, 100];
-
-const Sparkline: React.FC = () => {
-    const [hovered, setHovered] = React.useState<number | null>(null);
-
-    return (
-        <div className="h-[200px] w-full flex items-end gap-1.5 px-1">
-            {BAR_DATA.map((pct, i) => (
-                <div
-                    key={i}
-                    className="flex-1 relative group flex flex-col justify-end"
-                    style={{ height: "100%" }}
-                    onMouseEnter={() => setHovered(i)}
-                    onMouseLeave={() => setHovered(null)}
-                >
-                    {/* Tooltip */}
-                    {hovered === i && (
-                        <div className="absolute -top-9 left-1/2 -translate-x-1/2 bg-foreground text-background text-[10px] font-black py-1 px-2.5 rounded-lg whitespace-nowrap shadow-xl z-20 pointer-events-none">
-                            {Math.round(pct * 12.5).toLocaleString()} reach
-                        </div>
-                    )}
-                    {/* Bar */}
-                    <div
-                        className={cn(
-                            "w-full rounded-t-lg transition-all duration-300",
-                            i === BAR_DATA.length - 1
-                                ? "bg-primary"
-                                : hovered === i
-                                  ? "bg-primary/60"
-                                  : "bg-muted-foreground/10 hover:bg-primary/30",
-                        )}
-                        style={{ height: `${pct}%` }}
-                    />
-                </div>
-            ))}
-        </div>
-    );
-};
-
-/* ─── Stat card ──────────────────────────────────────────────── */
+/* ─── StatCard ───────────────────────────────────────────────── */
 interface StatCardProps {
     label: string;
-    value: string;
+    value: string | number;
     change: string;
-    icon: React.ElementType;
-    color: string;
-    bg: string;
+    isPositive: boolean;
 }
 
 const StatCard: React.FC<StatCardProps> = ({
     label,
     value,
     change,
-    icon: Icon,
-    color,
-    bg,
+    isPositive,
 }) => {
-    const isPositive = change.startsWith("+");
     return (
-        <div className="rounded-2xl border border-border bg-card p-6 flex flex-col gap-4 hover:border-primary/20 transition-all duration-300 group text-left">
+        <div className="rounded-2xl border border-border bg-card p-5 space-y-3 text-left transition-all hover:border-primary/20">
             <div className="flex items-center justify-between">
-                <div
-                    className={cn(
-                        "p-2.5 rounded-xl transition-transform duration-300 group-hover:scale-110",
-                        bg,
-                    )}
-                >
-                    <Icon className={cn("w-4 h-4", color)} />
-                </div>
                 <span
                     className={cn(
                         "inline-flex items-center gap-1 text-[10px] font-black rounded-full px-2.5 py-1 border",
                         isPositive
                             ? "text-emerald-500 bg-emerald-500/8 border-emerald-500/15"
-                            : "text-red-500 bg-red-500/8 border-red-500/15",
+                            : "text-muted-foreground bg-muted border-border",
                     )}
                 >
-                    {isPositive ? (
-                        <TrendingUp className="w-2.5 h-2.5" />
-                    ) : (
-                        <TrendingDown className="w-2.5 h-2.5" />
-                    )}
+                    {isPositive && <TrendingUp className="w-2.5 h-2.5" />}
                     {change}
                 </span>
             </div>
@@ -178,32 +122,58 @@ const StatCard: React.FC<StatCardProps> = ({
 /* ─── Dashboard ──────────────────────────────────────────────── */
 export const Dashboard: React.FC = () => {
     useTitle("Dashboard");
-    const user = mockUser;
 
+    const [userName, setUserName] = React.useState<string>("Operator");
     const [connections, setConnections] = React.useState<Account[]>([]);
+    const [posts, setPosts] = React.useState<Post[]>([]);
+    const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
-        accountsApi
-            .list()
-            .then(setConnections)
-            .catch(() => setConnections([]));
+        identityApi
+            .me()
+            .then((user) => {
+                if (user && user.first_name) {
+                    setUserName(user.first_name);
+                } else if (user && user.name) {
+                    setUserName(user.name);
+                }
+            })
+            .catch(() => {
+                setUserName("Publisher");
+            });
+
+        Promise.all([
+            accountsApi.list().catch(() => [] as Account[]),
+            postsApi.list().catch(() => [] as Post[]),
+        ]).then(([accs, postList]) => {
+            setConnections(accs);
+            setPosts(postList);
+            setLoading(false);
+        });
     }, []);
 
-    const queued = [
+    const publishedCount = posts.filter((p) => p.status === "completed" || p.status === "published").length;
+    const pendingCount = posts.filter((p) => p.status === "pending" || p.status === "processing").length;
+    const totalPosts = posts.length;
+
+    const stats = [
         {
-            title: "New Product Launch Visual",
-            platform: "instagram",
-            date: "Today, 10:00 AM",
+            label: "Connected Channels",
+            value: connections.length,
+            change: connections.length > 0 ? "Active" : "None",
+            isPositive: connections.length > 0,
         },
         {
-            title: "Community Feedback Loop",
-            platform: "twitter",
-            date: "Today, 2:30 PM",
+            label: "Published Posts",
+            value: publishedCount,
+            change: publishedCount > 0 ? "Live" : "0 Today",
+            isPositive: publishedCount > 0,
         },
         {
-            title: "Weekly Recap Newsletter",
-            platform: "linkedin",
-            date: "Tomorrow, 9:00 AM",
+            label: "Pending / Processing",
+            value: pendingCount,
+            change: pendingCount > 0 ? "In Stream" : "Clear",
+            isPositive: pendingCount > 0,
         },
     ];
 
@@ -216,10 +186,8 @@ export const Dashboard: React.FC = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="space-y-1.5 text-left">
                         <h1 className="text-2xl font-black tracking-tight text-foreground">
-                            Good morning,{" "}
-                            <span className="text-primary">
-                                {user.name.split(" ")[0]}
-                            </span>
+                            Welcome back,{" "}
+                            <span className="text-primary">{userName}</span>
                         </h1>
                         <div className="flex items-center gap-2.5">
                             <div className="flex -space-x-1.5">
@@ -250,29 +218,14 @@ export const Dashboard: React.FC = () => {
                         </div>
                     </div>
 
-                    {connections.length > 0 ? (
+                    <div className="flex items-center gap-3">
                         <Link to="/posts/create">
-                            <Button
-                                className="rounded-2xl px-6 h-11 gap-2 font-bold transition-transform active:scale-95"
-                            >
+                            <Button className="rounded-2xl px-6 h-11 gap-2 font-bold transition-transform active:scale-95">
                                 <Plus className="w-3.5 h-3.5 stroke-[2.5px]" />
                                 New post
                             </Button>
                         </Link>
-                    ) : (
-                        <span
-                            title="Connect at least one account before creating a post"
-                            className="cursor-not-allowed"
-                        >
-                            <Button
-                                disabled
-                                className="rounded-2xl px-6 h-11 gap-2 font-bold pointer-events-none"
-                            >
-                                <Plus className="w-3.5 h-3.5 stroke-[2.5px]" />
-                                New post
-                            </Button>
-                        </span>
-                    )}
+                    </div>
                 </div>
 
                 {/* ── Main grid ─────────────────────────────────── */}
@@ -281,41 +234,16 @@ export const Dashboard: React.FC = () => {
                     <div className="lg:col-span-8 space-y-6">
                         {/* Stat cards */}
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            {mockDashboardStats.map((stat) => (
+                            {stats.map((stat) => (
                                 <StatCard key={stat.label} {...stat} />
                             ))}
                         </div>
 
-                        {/* Engagement chart */}
-                        <div className="rounded-2xl border border-border bg-card p-6 text-left space-y-6">
-                            <div className="flex items-center justify-between">
-                                <div className="space-y-0.5">
-                                    <h2 className="text-sm font-bold text-foreground">
-                                        Engagement Velocity
-                                    </h2>
-                                    <p className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">
-                                        Last 14 days · Reach
-                                    </p>
-                                </div>
-                                <div className="flex items-center gap-1.5 text-[10px] font-black text-emerald-500 bg-emerald-500/8 border border-emerald-500/15 rounded-full px-2.5 py-1">
-                                    <ArrowUpRight className="w-3 h-3" />
-                                    +18.2% vs prev
-                                </div>
-                            </div>
-
-                            <Sparkline />
-
-                            <div className="flex justify-between pt-4 border-t border-border/50 text-[10px] font-black text-muted-foreground/30 uppercase tracking-widest">
-                                <span>Feb 17</span>
-                                <span>Today</span>
-                            </div>
-                        </div>
-
-                        {/* Activity feed */}
+                        {/* Recent Activity */}
                         <div className="space-y-3 text-left">
                             <div className="flex items-center justify-between px-1">
                                 <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">
-                                    Recent Activity
+                                    Recent Operations
                                 </h2>
                                 <Link
                                     to="/posts"
@@ -325,185 +253,128 @@ export const Dashboard: React.FC = () => {
                                 </Link>
                             </div>
 
-                            <div className="space-y-2">
-                                {mockRecentActivities.map((activity) => {
-                                    const brand = getPlatformBrand(
-                                        activity.platform.toLowerCase(),
-                                    );
-                                    const Icon = getPlatformIcon(
-                                        activity.platform.toLowerCase(),
-                                    );
-                                    return (
-                                        <div
-                                            key={activity.id}
-                                            className="flex items-center justify-between px-4 py-3.5 rounded-xl border border-border bg-card hover:border-primary/20 hover:bg-muted/20 transition-all group cursor-default"
-                                        >
-                                            <div className="flex items-center gap-3.5 min-w-0">
-                                                <div
-                                                    className={cn(
-                                                        "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border transition-transform group-hover:scale-105",
-                                                        brand.bg,
-                                                        brand.border,
-                                                    )}
-                                                >
-                                                    <Icon
+                            {posts.length === 0 ? (
+                                <div className="rounded-2xl border border-dashed border-border bg-card/50 p-8 text-center space-y-3">
+                                    <Layers className="w-8 h-8 text-muted-foreground/40 mx-auto" />
+                                    <div className="space-y-1">
+                                        <p className="text-sm font-bold text-foreground">No operations queued</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            Connect social accounts and create your first publish job to see real-time streaming operations.
+                                        </p>
+                                    </div>
+                                    <Link to="/posts/create">
+                                        <Button variant="outline" size="sm" className="rounded-xl mt-2 font-semibold text-xs">
+                                            Compose Post
+                                        </Button>
+                                    </Link>
+                                </div>
+                            ) : (
+                                <div className="space-y-2">
+                                    {posts.slice(0, 5).map((post) => {
+                                        const brand = getPlatformBrand(post.provider || "facebook");
+                                        const Icon = getPlatformIcon(post.provider || "facebook");
+                                        return (
+                                            <div
+                                                key={post.id || post.job_id}
+                                                className="flex items-center justify-between px-4 py-3.5 rounded-xl border border-border bg-card hover:border-primary/20 hover:bg-muted/20 transition-all group cursor-default"
+                                            >
+                                                <div className="flex items-center gap-3.5 min-w-0">
+                                                    <div
                                                         className={cn(
-                                                            "w-4 h-4",
-                                                            brand.color,
+                                                            "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border transition-transform group-hover:scale-105",
+                                                            brand.bg,
+                                                            brand.border,
                                                         )}
-                                                    />
-                                                </div>
-                                                <div className="min-w-0">
-                                                    <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-                                                        {activity.title}
-                                                    </p>
-                                                    <div className="flex items-center gap-2 mt-0.5">
-                                                        <span className="text-[10px] font-medium text-muted-foreground/40 tabular-nums">
-                                                            {activity.time}
-                                                        </span>
-                                                        <span className="w-1 h-1 rounded-full bg-border" />
-                                                        <span className="text-[10px] font-bold text-emerald-500">
-                                                            Published
-                                                        </span>
+                                                    >
+                                                        <Icon
+                                                            className={cn(
+                                                                "w-4 h-4",
+                                                                brand.color,
+                                                            )}
+                                                        />
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                                                            {post.message || "Publish Operation"}
+                                                        </p>
+                                                        <div className="flex items-center gap-2 mt-0.5">
+                                                            <span className="text-[10px] font-bold text-muted-foreground/60">
+                                                                {post.created_at || "Recent"}
+                                                            </span>
+                                                            <span className="text-[10px] text-muted-foreground/30">•</span>
+                                                            <span className="text-[10px] font-mono text-muted-foreground/40">
+                                                                {post.provider} (page: {post.page_id})
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div className="flex items-center gap-3 shrink-0">
-                                                <div className="hidden sm:flex flex-col items-end pr-4 border-r border-border/50">
-                                                    <span className="text-sm font-black text-foreground tabular-nums">
-                                                        421
-                                                    </span>
-                                                    <span className="text-[9px] font-black text-muted-foreground/30 uppercase tracking-widest">
-                                                        Reach
-                                                    </span>
-                                                </div>
-                                                <Link
-                                                    to={`/posts/${activity.id}`}
+                                                <Badge
+                                                    variant={
+                                                        post.status === "completed" || post.status === "published"
+                                                            ? "success"
+                                                            : post.status === "processing"
+                                                            ? "secondary"
+                                                            : "outline"
+                                                    }
+                                                    className="text-[10px] font-black uppercase tracking-wider"
                                                 >
-                                                    <button className="w-8 h-8 rounded-lg flex items-center justify-center border border-transparent hover:border-border hover:bg-muted transition-all text-muted-foreground/40 hover:text-foreground">
-                                                        <ExternalLink className="w-3.5 h-3.5" />
-                                                    </button>
-                                                </Link>
+                                                    {post.status || "enqueued"}
+                                                </Badge>
                                             </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     </div>
 
                     {/* Right column */}
                     <div className="lg:col-span-4 space-y-6">
-                        {/* Monthly milestone card */}
-                        <div className="rounded-2xl border border-border bg-card text-left">
-                            <div className="p-6 space-y-5">
-                                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary">
-                                    <Target className="w-3.5 h-3.5" />
-                                    Monthly milestone
-                                </div>
-
-                                <div className="space-y-3">
-                                    <div className="flex items-baseline justify-between">
-                                        <span className="text-4xl font-black leading-none text-foreground">
-                                            68
-                                            <span className="text-lg text-muted-foreground/40">
-                                                %
-                                            </span>
-                                        </span>
-                                        <span className="text-[11px] font-black text-muted-foreground/40">
-                                            17 / 25 posts
-                                        </span>
-                                    </div>
-                                    {/* Progress bar */}
-                                    <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
-                                        <div
-                                            className="h-full rounded-full bg-primary transition-all duration-1000"
-                                            style={{ width: "68%" }}
-                                        />
-                                    </div>
-                                </div>
-
-                                <p className="text-[11px] font-medium leading-relaxed text-muted-foreground/50">
-                                    8 more posts to hit your monthly target and
-                                    maximize channel reach.
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Scheduled queue */}
-                        <div className="rounded-2xl border border-border bg-card overflow-hidden text-left">
-                            <div className="px-5 py-4 border-b border-border/60 bg-muted/20">
-                                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">
-                                    <Clock className="w-3.5 h-3.5" />
-                                    Next in queue
-                                </div>
-                            </div>
-
-                            <div className="divide-y divide-border/40">
-                                {queued.map((item, i) => {
-                                    const brand = getPlatformBrand(
-                                        item.platform,
-                                    );
-                                    const Icon = getPlatformIcon(item.platform);
-                                    return (
-                                        <div
-                                            key={i}
-                                            className="flex items-center justify-between gap-3 px-5 py-4 hover:bg-muted/20 transition-colors group cursor-pointer"
-                                        >
-                                            <div className="min-w-0 space-y-0.5">
-                                                <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-                                                    {item.title}
-                                                </p>
-                                                <p className="text-[10px] font-black text-muted-foreground/35 uppercase tracking-wider">
-                                                    {item.date}
-                                                </p>
-                                            </div>
-                                            <div
-                                                className={cn(
-                                                    "w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border transition-transform group-hover:scale-110",
-                                                    brand.bg,
-                                                    brand.border,
-                                                )}
-                                            >
-                                                <Icon
-                                                    className={cn(
-                                                        "w-3.5 h-3.5",
-                                                        brand.color,
-                                                    )}
-                                                />
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-
-                            <div className="px-4 py-3 border-t border-border/40 bg-muted/10">
-                                <Link to="/posts">
-                                    <button className="w-full h-9 rounded-lg text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 hover:text-foreground hover:bg-muted/50 transition-all flex items-center justify-center gap-1.5">
-                                        Open calendar queue
-                                        <ChevronRight className="w-3.5 h-3.5" />
-                                    </button>
+                        {/* Connected channels card */}
+                        <div className="rounded-2xl border border-border bg-card p-5 text-left space-y-4">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                                    Connected Accounts
+                                </h3>
+                                <Link to="/settings/connections" className="text-[10px] font-bold text-primary hover:underline">
+                                    Manage
                                 </Link>
                             </div>
-                        </div>
 
-                        {/* System status */}
-                        <div className="rounded-2xl border border-border bg-card px-5 py-4 flex items-center justify-between text-left">
-                            <div className="space-y-0.5">
-                                <p className="text-xs font-bold text-foreground">
-                                    System status
-                                </p>
-                                <p className="text-[10px] font-medium text-muted-foreground/40">
-                                    All pipelines operational
-                                </p>
-                            </div>
-                            <Badge
-                                variant="outline"
-                                className="text-[9px] font-black rounded-full border-emerald-500/20 text-emerald-500 bg-emerald-500/8 px-2.5 py-1 gap-1.5 flex items-center"
-                            >
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                Operational
-                            </Badge>
+                            {connections.length === 0 ? (
+                                <div className="text-center py-6 space-y-2">
+                                    <Share2 className="w-6 h-6 text-muted-foreground/40 mx-auto" />
+                                    <p className="text-xs text-muted-foreground">No social channels linked.</p>
+                                    <Link to="/settings/connections">
+                                        <Button size="sm" variant="outline" className="rounded-xl text-xs font-bold mt-1">
+                                            Connect Channel
+                                        </Button>
+                                    </Link>
+                                </div>
+                            ) : (
+                                <div className="space-y-2">
+                                    {connections.map((c) => {
+                                        const brand = getPlatformBrand(c.provider);
+                                        const Icon = getPlatformIcon(c.provider);
+                                        return (
+                                            <div key={c.id} className="flex items-center justify-between p-2.5 rounded-xl border border-border/50 bg-background/50">
+                                                <div className="flex items-center gap-2.5 min-w-0">
+                                                    <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center", brand.bg)}>
+                                                        <Icon className={cn("w-3.5 h-3.5", brand.color)} />
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <p className="text-xs font-bold truncate">{c.name}</p>
+                                                        <p className="text-[10px] text-muted-foreground/60 truncate">{c.provider}</p>
+                                                    </div>
+                                                </div>
+                                                <Badge variant="success" className="text-[9px] font-bold">
+                                                    {c.status}
+                                                </Badge>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -511,5 +382,3 @@ export const Dashboard: React.FC = () => {
         </AppLayout>
     );
 };
-
-export default Dashboard;

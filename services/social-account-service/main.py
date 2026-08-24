@@ -11,10 +11,10 @@ from shared.telemetry import init_telemetry, setup_logging
 
 SERVICE_NAME = "social-account-service"
 setup_logging(SERVICE_NAME)
-init_telemetry(SERVICE_NAME)
-logger = structlog.get_logger(__name__)
 
 app = FastAPI(title="Social Account Service")
+init_telemetry(SERVICE_NAME, app=app)
+logger = structlog.get_logger(__name__)
 
 redis_client = Redis(host="redis", port=6379, db=0)
 queue = RedisQueue(redis_client, stream_name="jobs:social-account")

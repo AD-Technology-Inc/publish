@@ -1,5 +1,8 @@
 import json
+import time
 import uuid
+from datetime import UTC, datetime
+from typing import List, Optional
 
 import structlog
 from fastapi import FastAPI, Header, HTTPException
@@ -10,10 +13,10 @@ from shared.telemetry import init_telemetry, setup_logging
 
 SERVICE_NAME = "social-post-service"
 setup_logging(SERVICE_NAME)
-init_telemetry(SERVICE_NAME)
-logger = structlog.get_logger(__name__)
 
 app = FastAPI(title="Social Post Service")
+init_telemetry(SERVICE_NAME, app=app)
+logger = structlog.get_logger(__name__)
 
 redis_client = Redis(host="redis", port=6379, db=0)
 queue = RedisQueue(redis_client, stream_name="jobs:social-post")
@@ -23,15 +26,57 @@ class PostRequest(BaseModel):
     page_id: str
     provider: str = "facebook"
     message: str
-    media_url: str | None = None
-    platforms: list[str] | None = None
+    media_url: Optional[str] = None
+    platforms: Optional[list[str]] = None
+
+
+class PostResponse(BaseModel):
+    id: str
+    job_id: str
+    page_id: str
+    provider: str
+    message: str
+    media_url: Optional[str] = None
+    status: str
+    created_at: str
+
+
+@app.get("/posts", response_model=List[PostResponse])
+def list_posts():
+    """Retrieve all posts recorded in the system."""
+    post_ids_raw = redis_client.get("posts:all")
+    if not post_ids_raw:
+        return []
+
+    try:
+        post_ids = json.loads(post_ids_raw)
+    except Exception:
+        return []
+
+    results = []
+    for pid in post_ids:
+        raw = redis_client.get(f"posts:{pid}")
+        if raw:
+            try:
+                pdata = json.loads(raw)
+                # Fetch live status from job_state if available
+                job_id = pdata.get("job_id")
+                if job_id:
+                    live_status = redis_client.get(f"job_state:{job_id}")
+                    if live_status:
+                        pdata["status"] = live_status.decode("utf-8")
+                results.append(pdata)
+            except Exception:
+                continue
+
+    return results
 
 
 @app.post("/posts")
 def create_post(
-    request: PostRequest, x_idempotency_key: str | None = Header(None)
+    request: PostRequest, x_idempotency_key: Optional[str] = Header(None)
 ):
-    # Backpressure: Prevent queue overload
+    # Backpressure check
     try:
         q_len = redis_client.xlen("jobs:social-post")
         if q_len > 10000:
@@ -41,25 +86,47 @@ def create_post(
     except Exception as e:
         if isinstance(e, HTTPException):
             raise
-        logger.warning(f"Failed to check queue length: {e}")
+        logger.warning("Failed to check queue length", error=str(e))
 
     idem_key = x_idempotency_key if x_idempotency_key else str(uuid.uuid4())
-    job_id = queue.enqueue(
+    job_id = idem_key
+    post_id = str(uuid.uuid4())
+
+    # Record post entry
+    now_str = datetime.now(UTC).strftime("%b %d, %Y")
+    post_record = {
+        "id": post_id,
+        "job_id": job_id,
+        "page_id": request.page_id,
+        "provider": request.provider,
+        "message": request.message,
+        "media_url": request.media_url,
+        "status": "pending",
+        "created_at": now_str,
+    }
+    redis_client.set(f"posts:{post_id}", json.dumps(post_record), ex=86400 * 7)
+    all_ids_raw = redis_client.get("posts:all")
+    all_ids = json.loads(all_ids_raw) if all_ids_raw else []
+    if post_id not in all_ids:
+        all_ids.insert(0, post_id)
+        redis_client.set("posts:all", json.dumps(all_ids[:100]))
+
+    # Enqueue to stream
+    queue.enqueue(
         {
             "type": "create_post",
+            "post_id": post_id,
             "page_id": request.page_id,
             "provider": request.provider,
             "message": request.message,
             "media_url": request.media_url,
             "idempotency_key": idem_key,
-            "job_id": idem_key,
+            "job_id": job_id,
         }
     )
 
-    # Initialise state so the frontend's very first poll returns "pending" not "unknown"
     redis_client.set(f"job_state:{job_id}", "pending", ex=86400)
-
-    return {"status": "enqueued", "job_id": job_id}
+    return {"status": "enqueued", "job_id": job_id, "post_id": post_id}
 
 
 @app.get("/health")
@@ -102,7 +169,6 @@ def replay_dlq_message(stream_name: str, message_id: str):
         raise HTTPException(status_code=404, detail="Message not found in DLQ")
 
     _, data = messages[0]
-
     payload_str = data.get(b"payload")
     if not payload_str:
         raise HTTPException(
@@ -117,7 +183,6 @@ def replay_dlq_message(stream_name: str, message_id: str):
 
     q = RedisQueue(redis_client, stream_name=main_stream)
     new_id = q.enqueue(payload)
-
     redis_client.xdel(dlq_stream, message_id)
 
     return {

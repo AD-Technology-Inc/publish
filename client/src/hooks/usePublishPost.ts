@@ -24,8 +24,7 @@ export const usePublishPost = () => {
   };
 
   const isPending = !!jobId && isPolling;
-  const isSuccess =
-    jobStatus?.status === 'completed' || jobStatus?.status === 'unknown';
+  const isSuccess = jobStatus?.status === 'completed';
   const isFailed = jobStatus?.status === 'failed' || !!error;
 
   return {
