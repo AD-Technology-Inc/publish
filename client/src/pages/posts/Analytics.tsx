@@ -118,3 +118,5 @@ export const Analytics: React.FC = () => {
         </AppLayout>
     );
 };
+
+export default Analytics;

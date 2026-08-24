@@ -123,7 +123,7 @@ const StatCard: React.FC<StatCardProps> = ({
 export const Dashboard: React.FC = () => {
     useTitle("Dashboard");
 
-    const [userName, setUserName] = React.useState<string>("Operator");
+    const [userName, setUserName] = React.useState<string>("");
     const [connections, setConnections] = React.useState<Account[]>([]);
     const [posts, setPosts] = React.useState<Post[]>([]);
     const [loading, setLoading] = React.useState(true);
@@ -132,14 +132,12 @@ export const Dashboard: React.FC = () => {
         identityApi
             .me()
             .then((user) => {
-                if (user && user.first_name) {
-                    setUserName(user.first_name);
-                } else if (user && user.name) {
+                if (user && user.name) {
                     setUserName(user.name);
                 }
             })
             .catch(() => {
-                setUserName("Publisher");
+                setUserName("");
             });
 
         Promise.all([
@@ -382,3 +380,5 @@ export const Dashboard: React.FC = () => {
         </AppLayout>
     );
 };
+
+export default Dashboard

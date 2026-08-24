@@ -1,5 +1,5 @@
 import * as React from "react";
-import { LayoutGrid, Send, BarChart2, Folder, BookOpen } from "lucide-react";
+import { LayoutGrid, Send, BarChart2, Settings, Folder, BookOpen } from "lucide-react";
 
 import {
     Sidebar,
@@ -29,6 +29,11 @@ const mainNavItems: NavItem[] = [
         title: "Analytics",
         href: "/posts/analytics",
         icon: BarChart2,
+    },
+    {
+        title: "Settings",
+        href: "/settings/profile",
+        icon: Settings,
     },
 ];
 

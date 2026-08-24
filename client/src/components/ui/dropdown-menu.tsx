@@ -87,7 +87,7 @@ const DropdownMenuContent = ({ className, children, align = "end", side = "botto
 
   const style: React.CSSProperties = {
     position: 'fixed',
-    zIndex: 50,
+    zIndex: 9999,
     top: side === "bottom" ? triggerRect.bottom + sideOffset : triggerRect.top - sideOffset,
     left: align === "end" ? (triggerRect.right - 224) : triggerRect.left,
     transform: side === "top" ? 'translateY(-100%)' : 'none',
@@ -97,7 +97,7 @@ const DropdownMenuContent = ({ className, children, align = "end", side = "botto
     <div 
       ref={setContentEl}
       className={cn(
-        "min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95",
+        "min-w-[12rem] overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-2xl p-1.5 animate-in fade-in-0 zoom-in-95",
         className
       )}
       style={style}
@@ -119,7 +119,7 @@ const DropdownMenuItem = ({ className, children, onClick, ...props }: any) => {
   return (
     <div
       className={cn(
-        "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-primary hover:text-primary-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        "relative flex cursor-pointer select-none items-center rounded-xl px-3 py-2 text-xs font-semibold outline-none transition-colors hover:bg-muted text-foreground hover:text-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         className
       )}
       onClick={handleClick}
@@ -131,7 +131,7 @@ const DropdownMenuItem = ({ className, children, onClick, ...props }: any) => {
 }
 
 const DropdownMenuSeparator = ({ className }: any) => {
-  return <div className={cn("-mx-1 my-1 h-px bg-muted", className)} />
+  return <div className={cn("-mx-1 my-1.5 h-px bg-border/60", className)} />
 }
 
 export {

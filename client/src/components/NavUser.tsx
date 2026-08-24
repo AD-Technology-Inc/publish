@@ -8,7 +8,7 @@ import {
     DropdownMenuSeparator, 
     DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { ChevronsUpDown, Settings, CreditCard, LogOut, Bell } from 'lucide-react';
+import { ChevronsUpDown, Settings, CreditCard, LogOut, Bell, Share2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { identityApi } from '@/api/client';
 import type { User } from '@/api/types';
@@ -21,23 +21,17 @@ export const NavUser: React.FC = () => {
     }, []);
 
     if (!user) {
-        return (
-            <SidebarMenu>
-                <SidebarMenuItem>
-                    <div className="h-12 rounded-2xl bg-muted/40 animate-pulse mx-2" />
-                </SidebarMenuItem>
-            </SidebarMenu>
-        );
+        return null;
     }
 
     return (
         <SidebarMenu>
             <SidebarMenuItem>
                 <DropdownMenu>
-                    <DropdownMenuTrigger>
+                    <DropdownMenuTrigger asChild>
                         <SidebarMenuButton
                             size="lg"
-                            className="h-12 rounded-2xl transition-all hover:bg-muted data-[state=open]:bg-muted w-full"
+                            className="h-12 rounded-2xl transition-all hover:bg-muted data-[state=open]:bg-muted w-full cursor-pointer"
                         >
                             <UserInfo user={user} />
                             <ChevronsUpDown className="ml-auto size-3.5 opacity-50 group-data-[collapsible=icon]:hidden" />
@@ -49,21 +43,26 @@ export const NavUser: React.FC = () => {
                         </div>
                         <DropdownMenuSeparator />
                         <Link to="/settings/profile">
-                            <DropdownMenuItem className="gap-2 py-3 rounded-xl cursor-pointer">
+                            <DropdownMenuItem className="gap-2 py-2.5 rounded-xl cursor-pointer">
                                 <Settings className="size-4 opacity-60" /> Account Settings
                             </DropdownMenuItem>
                         </Link>
+                        <Link to="/settings/connections">
+                            <DropdownMenuItem className="gap-2 py-2.5 rounded-xl cursor-pointer">
+                                <Share2 className="size-4 opacity-60" /> Social Connections
+                            </DropdownMenuItem>
+                        </Link>
                         <Link to="/settings/billing">
-                            <DropdownMenuItem className="gap-2 py-3 rounded-xl cursor-pointer">
+                            <DropdownMenuItem className="gap-2 py-2.5 rounded-xl cursor-pointer">
                                 <CreditCard className="size-4 opacity-60" /> Billing & Plan
                             </DropdownMenuItem>
                         </Link>
-                        <DropdownMenuItem className="gap-2 py-3 rounded-xl cursor-pointer">
+                        <DropdownMenuItem className="gap-2 py-2.5 rounded-xl cursor-pointer">
                             <Bell className="size-4 opacity-60" /> Notifications
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <Link to="/login">
-                            <DropdownMenuItem className="gap-2 py-3 rounded-xl cursor-pointer text-rose-500 hover:text-rose-500">
+                            <DropdownMenuItem className="gap-2 py-2.5 rounded-xl cursor-pointer text-rose-500 hover:text-rose-500">
                                 <LogOut className="size-4" /> Log out
                             </DropdownMenuItem>
                         </Link>

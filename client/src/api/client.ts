@@ -59,22 +59,27 @@ export const postsApi = {
 // ---------------------------------------------------------------------------
 export const socialApi = {
   publishPost: async (payload: PublishPostRequest): Promise<EnqueueResponse> => {
-    const { data } = await apiClient.post<EnqueueResponse>('/social/posts', payload);
+    const headers: Record<string, string> = {};
+    if (payload.idempotency_key) {
+      headers['x-idempotency-key'] = payload.idempotency_key;
+    }
+    const { data } = await apiClient.post<EnqueueResponse>(
+      '/social/publish',
+      payload,
+      { headers }
+    );
     return data;
   },
 
   getJobStatus: async (jobId: string): Promise<JobStatusResponse> => {
-    const { data } = await apiClient.get<JobStatusResponse>(`/jobs/${jobId}`);
+    const { data } = await apiClient.get<JobStatusResponse>(
+      `/social/publish/status/${jobId}`
+    );
     return data;
   },
 
-  getDlqJobs: async (serviceName = 'social-post'): Promise<DlqResponse> => {
-    const { data } = await apiClient.get<DlqResponse>(`/dlq/${serviceName}`);
-    return data;
-  },
-
-  replayDlqJob: async (serviceName: string, messageId: string) => {
-    const { data } = await apiClient.post(`/dlq/${serviceName}/${messageId}/replay`);
+  getDlqJobs: async (): Promise<DlqResponse> => {
+    const { data } = await apiClient.get<DlqResponse>('/social/publish/dlq');
     return data;
   },
 };

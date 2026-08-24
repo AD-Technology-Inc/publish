@@ -289,3 +289,5 @@ export const PostsIndex: React.FC = () => {
         </AppLayout>
     );
 };
+
+export default PostsIndex;

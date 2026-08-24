@@ -169,3 +169,5 @@ export const PostShow: React.FC = () => {
         </AppLayout>
     );
 };
+
+export default PostShow;
