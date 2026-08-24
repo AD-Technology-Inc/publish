@@ -1,16 +1,16 @@
-# TODO: validate
-
 import json
 
 from fastapi import APIRouter, HTTPException
 from redis import Redis
 
 dlq_router = APIRouter(prefix="/dlq", tags=["dlq"])
+# decode_responses must remain False: xrange returns byte keys and the replay
+# handler reads b"payload" — mixing decode_responses=True with bytes key
+# lookups silently returns empty strings for every field.
 redis_client = Redis(
     host="redis",
     port=6379,
     db=0,
-    decode_responses=True,
 )
 
 
@@ -24,12 +24,13 @@ def inspect_dlq(service_name: str, count: int = 10):
 
     results = []
     for msg_id, data in messages:
+        msg_id_str = msg_id.decode("utf-8") if isinstance(msg_id, bytes) else msg_id
         results.append(
             {
-                "message_id": msg_id,
-                "payload": data.get("payload", ""),
-                "error": data.get("error", ""),
-                "retry_count": data.get("retry_count", ""),
+                "message_id": msg_id_str,
+                "payload": data.get(b"payload", b"").decode("utf-8"),
+                "error": data.get(b"error", b"").decode("utf-8"),
+                "retry_count": data.get(b"retry_count", b"0").decode("utf-8"),
             }
         )
     return {"dlq_jobs": results}
@@ -47,7 +48,8 @@ def replay_dlq_job(service_name: str, message_id: str):
         raise HTTPException(status_code=404, detail="Job not found in DLQ")
 
     _, data = messages[0]
-    payload_str = data.get(b"payload", b"").decode("utf-8")
+    payload_bytes = data.get(b"payload", b"")
+    payload_str = payload_bytes.decode("utf-8") if isinstance(payload_bytes, bytes) else payload_bytes
 
     try:
         payload = json.loads(payload_str)
@@ -63,4 +65,4 @@ def replay_dlq_job(service_name: str, message_id: str):
             else new_id,
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e

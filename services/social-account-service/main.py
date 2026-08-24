@@ -5,6 +5,7 @@ from datetime import UTC
 import structlog
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from redis import Redis
 from shared.queue import RedisQueue
 from shared.telemetry import init_telemetry, setup_logging
 

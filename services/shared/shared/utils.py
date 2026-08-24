@@ -33,14 +33,23 @@ class IdempotencyMiddleware:
 
     def check_and_set(self, key: str) -> bool:
         """
-        Returns True if the key was successfully set (i.e. not processed yet).
-        Returns False if the key already exists (i.e. already processed).
+        Atomically claim an idempotency key via Redis SET NX.
+
+        Returns True if the key was successfully set (job not yet processed).
+        Returns False if the key already exists (duplicate — skip execution).
+
+        Raises ValueError if *key* is empty or None — workers must always
+        supply an idempotency key; silently skipping the guard would allow
+        duplicate side-effects under at-least-once delivery.
         """
         if not key:
-            return True  # Skip idempotency if no key provided
+            raise ValueError(
+                "idempotency_key is required but was not provided. "
+                "Refusing to execute without a deduplication guard."
+            )
 
         redis_key = f"idempotency:{key}"
-        # Set NX returns True if set, False if exists
+        # SET NX returns True if set, False if key already exists.
         result = self.redis.set(redis_key, "1", nx=True, ex=self.ttl)
         return bool(result)
 
@@ -125,7 +134,7 @@ class StateManager:
             )
             self.db_url = None
 
-    def save_step(self, job_id: str, step_name: str):
+    def save_step(self, job_id: str, step_name: str) -> None:
         if self.db_url:
             try:
                 with psycopg2.connect(self.db_url) as conn:
@@ -144,11 +153,13 @@ class StateManager:
             except Exception as e:
                 logger.error(f"Failed to save step to Postgres: {e}")
 
-        # Fallback to Redis
-        redis_key = f"job_state:{job_id}"
+        # Fallback to Redis — use a dedicated prefix so we never clobber
+        # the job_state:{job_id} key that workers use for status strings
+        # ("pending", "processing", "completed", "failed").
+        redis_key = f"job_checkpoint:{job_id}"
         self.redis.set(redis_key, step_name, ex=self.ttl)
 
-    def get_last_step(self, job_id: str) -> str:
+    def get_last_step(self, job_id: str) -> str | None:
         if self.db_url:
             try:
                 with psycopg2.connect(self.db_url) as conn:
@@ -163,7 +174,7 @@ class StateManager:
             except Exception as e:
                 logger.error(f"Failed to get step from Postgres: {e}")
 
-        # Fallback to Redis
-        redis_key = f"job_state:{job_id}"
+        # Fallback to Redis — read from the dedicated checkpoint prefix.
+        redis_key = f"job_checkpoint:{job_id}"
         val = self.redis.get(redis_key)
         return val.decode("utf-8") if val else None

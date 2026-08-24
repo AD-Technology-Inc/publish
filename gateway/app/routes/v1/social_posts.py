@@ -1,26 +1,19 @@
-# TODO: validate
+from fastapi import APIRouter, Header, Request
 
-
-from fastapi import APIRouter
-from pydantic import BaseModel
-
-from http_client import _forward
+from enums import ServiceName
+from http_client import forward
 
 social_posts_router = APIRouter(prefix="/social/posts", tags=["social-posts"])
 
 
-class PostRequest(BaseModel):
-    page_id: str
-    provider: str
-    message: str
-    media_url: str | None = None
-    platforms: list[str] | None = None
-
-
 @social_posts_router.post("")
-async def create_social_post(request: PostRequest):
-    return await _forward(
-        "POST",
-        "http://social-post-service:3001/posts",
-        json=request.model_dump(),
+async def create_social_post(
+    request: Request,
+    x_idempotency_key: str | None = Header(None),
+):
+    return await forward(
+        service_name=ServiceName.SOCIAL_POST,
+        method="POST",
+        url="http://social-post-service:3001/posts",
+        request=request,
     )

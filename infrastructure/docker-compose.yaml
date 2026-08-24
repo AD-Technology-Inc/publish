@@ -7,6 +7,10 @@ volumes:
   social-account-db-data:
   social-publish-db-data:
   redis-data:
+  prometheus-data:
+  loki-data:
+  tempo-data:
+  grafana-data:
 
 services:
   # =========================
@@ -73,15 +77,15 @@ services:
       - /app/.venv
     networks:
       - app
-    # develop:
-    #   watch:
-    #     - action: rebuild
-    #       path: ../gateway/app/pyproject.toml
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_SERVICE_NAME=gateway
     depends_on:
       - identity-service
-      # - social-account-service
-      # - social-post-service
-      # - social-publish-service
+      - social-account-service
+      - social-post-service
+      - social-publish-service
+      - otel-collector
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.gateway.rule=Host(`gateway.localhost`)"
@@ -103,6 +107,8 @@ services:
     build: ../services/identity-service
     environment:
       - DATABASE_URL=postgresql+asyncpg://identity_user:identity_pass@identity-db:5432/identity_db
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_SERVICE_NAME=identity-service
     volumes:
       - ../services/identity-service:/app
       - /app/.venv
@@ -114,6 +120,7 @@ services:
           path: ../services/identity-service/pyproject.toml
     depends_on:
       - identity-db
+      - otel-collector
     deploy:
       resources:
         limits:
@@ -121,19 +128,6 @@ services:
           memory: 256m
         reservations:
           memory: 128m
-
-  # identity-worker:
-  #   build:
-  #     context: ..
-  #     dockerfile: services/identity-service/Dockerfile
-  #   env_file:
-  #     - ../services/identity-service/.env
-  #   depends_on:
-  #     - identity-db
-  #     - redis
-  #   command: ["uv", "run", "python", "worker.py"]
-  #   networks:
-  #     - app
 
   identity-db:
     image: postgres:18-trixie
@@ -156,103 +150,214 @@ services:
         reservations:
           memory: 128m
 
-  # # =========================
-  # # ⚙️ Social Post Service
-  # # =========================
-  # social-post-service:
-  #   build:
-  #     context: ..
-  #     dockerfile: services/social-post-service/Dockerfile
-  #   environment:
-  #     - DATABASE_URL=postgresql://social_post_user:social_post_pass@social-post-db:5432/social_post_db
-  #   depends_on:
-  #     - social-post-db
-  #   networks:
-  #     - app
+  # =========================
+  # ⚙️ Social Publish Service
+  # =========================
+  social-publish-service:
+    build:
+      context: ..
+      dockerfile: services/social-publish-service/Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://social_publish_user:social_publish_pass@social-publish-db:5432/social_publish_db
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_SERVICE_NAME=social-publish-service
+    volumes:
+      - ../services/social-publish-service:/app/services/social-publish-service
+    networks:
+      - app
+    depends_on:
+      - redis
+      - social-publish-db
+      - otel-collector
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256m
+        reservations:
+          memory: 128m
 
-  # social-post-worker:
-  #   build:
-  #     context: ..
-  #     dockerfile: services/social-post-service/Dockerfile
-  #   environment:
-  #     - DATABASE_URL=postgresql://social_post_user:social_post_pass@social-post-db:5432/social_post_db
-  #   depends_on:
-  #     - social-post-db
-  #     - redis
-  #   command: ["uv", "run", "python", "worker.py"]
-  #   networks:
-  #     - app
+  social-publish-worker:
+    build:
+      context: ..
+      dockerfile: services/social-publish-service/Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://social_publish_user:social_publish_pass@social-publish-db:5432/social_publish_db
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_SERVICE_NAME=social-publish-worker
+      # Set OTEL_SDK_DISABLED=true to disable telemetry (e.g. unit tests)
+      # - OTEL_SDK_DISABLED=true
+    networks:
+      - app
+    depends_on:
+      - redis
+      - social-publish-db
+      - otel-collector
+    command: ["uv", "run", "python", "worker.py"]
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256m
+        reservations:
+          memory: 128m
 
-  # social-post-db:
-  #   image: postgres:18-alpine
-  #   environment:
-  #     POSTGRES_DB: social_post_db
-  #     POSTGRES_USER: social_post_user
-  #     POSTGRES_PASSWORD: social_post_pass
-  #   volumes:
-  #     - social-post-db-data:/var/lib/postgresql/data
-  #   networks:
-  #     - app
+  social-publish-db:
+    image: postgres:18-trixie
+    environment:
+      POSTGRES_DB: social_publish_db
+      POSTGRES_USER: social_publish_user
+      POSTGRES_PASSWORD: social_publish_pass
+    volumes:
+      - social-publish-db-data:/var/lib/postgresql/data
+    networks:
+      - app
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256m
+        reservations:
+          memory: 128m
 
-  # # =========================
-  # # ⚙️ Social Account Service
-  # # =========================
-  # social-account-service:
-  #   build:
-  #     context: ..
-  #     dockerfile: services/social-account-service/Dockerfile
-  #   environment:
-  #     - DATABASE_URL=postgresql://social_account_user:social_account_pass@social-account-db:5432/social_account_db
-  #   depends_on:
-  #     - social-account-db
-  #   networks:
-  #     - app
+  # =========================
+  # ⚙️ Social Post Service
+  # =========================
+  social-post-service:
+    build:
+      context: ..
+      dockerfile: services/social-post-service/Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://social_post_user:social_post_pass@social-post-db:5432/social_post_db
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_SERVICE_NAME=social-post-service
+    volumes:
+      - ../services/social-post-service:/app/services/social-post-service
+    networks:
+      - app
+    depends_on:
+      - redis
+      - social-post-db
+      - otel-collector
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256m
+        reservations:
+          memory: 128m
 
-  # social-account-worker:
-  #   build:
-  #     context: ..
-  #     dockerfile: services/social-account-service/Dockerfile
-  #   environment:
-  #     - DATABASE_URL=postgresql://social_account_user:social_account_pass@social-account-db:5432/social_account_db
-  #   depends_on:
-  #     - social-account-db
-  #     - redis
-  #   command: ["uv", "run", "python", "worker.py"]
-  #   networks:
-  #     - app
+  social-post-worker:
+    build:
+      context: ..
+      dockerfile: services/social-post-service/Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://social_post_user:social_post_pass@social-post-db:5432/social_post_db
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_SERVICE_NAME=social-post-worker
+    networks:
+      - app
+    depends_on:
+      - redis
+      - social-post-db
+      - otel-collector
+    command: ["uv", "run", "python", "worker.py"]
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256m
+        reservations:
+          memory: 128m
 
-  # social-account-db:
-  #   image: postgres:18-alpine
-  #   environment:
-  #     POSTGRES_DB: social_account_db
-  #     POSTGRES_USER: social_account_user
-  #     POSTGRES_PASSWORD: social_account_pass
-  #   volumes:
-  #     - social-account-db-data:/var/lib/postgresql/data
-  #   networks:
-  #     - app
+  social-post-db:
+    image: postgres:18-trixie
+    environment:
+      POSTGRES_DB: social_post_db
+      POSTGRES_USER: social_post_user
+      POSTGRES_PASSWORD: social_post_pass
+    volumes:
+      - social-post-db-data:/var/lib/postgresql/data
+    networks:
+      - app
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256m
+        reservations:
+          memory: 128m
 
-  # # =========================
-  # # ⚙️ Social Publish Service
-  # # =========================
-  # social-publish-service:
-  #   build:
-  #     context: ..
-  #     dockerfile: services/social-publish-service/Dockerfile
-  #   depends_on:
-  #     - redis
-  #   networks:
-  #     - app
+  # =========================
+  # ⚙️ Social Account Service
+  # =========================
+  social-account-service:
+    build:
+      context: ..
+      dockerfile: services/social-account-service/Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://social_account_user:social_account_pass@social-account-db:5432/social_account_db
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_SERVICE_NAME=social-account-service
+    volumes:
+      - ../services/social-account-service:/app/services/social-account-service
+    networks:
+      - app
+    depends_on:
+      - redis
+      - social-account-db
+      - otel-collector
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256m
+        reservations:
+          memory: 128m
 
-  # social-publish-worker:
-  #   build:
-  #     context: ..
-  #     dockerfile: services/social-publish-service/Dockerfile
-  #   depends_on:
-  #     - redis
-  #   command: ["uv", "run", "python", "worker.py"]
-  #   networks:
-  #     - app
+  social-account-worker:
+    build:
+      context: ..
+      dockerfile: services/social-account-service/Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://social_account_user:social_account_pass@social-account-db:5432/social_account_db
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_SERVICE_NAME=social-account-worker
+    networks:
+      - app
+    depends_on:
+      - redis
+      - social-account-db
+      - otel-collector
+    command: ["uv", "run", "python", "worker.py"]
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256m
+        reservations:
+          memory: 128m
+
+  social-account-db:
+    image: postgres:18-trixie
+    environment:
+      POSTGRES_DB: social_account_db
+      POSTGRES_USER: social_account_user
+      POSTGRES_PASSWORD: social_account_pass
+    volumes:
+      - social-account-db-data:/var/lib/postgresql/data
+    networks:
+      - app
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256m
+        reservations:
+          memory: 128m
 
   # =========================
   # 💾 Redis Server
@@ -266,6 +371,146 @@ services:
     networks:
       - app
     restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256m
+        reservations:
+          memory: 128m
+
+  # =========================
+  # 📡 OpenTelemetry Collector
+  # Receives OTLP from all services and fans out to:
+  #   Traces  → Tempo
+  #   Metrics → Prometheus (scrape endpoint :8889)
+  #   Logs    → Loki (OTLP push)
+  # =========================
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.116.0
+    container_name: otel-collector
+    restart: unless-stopped
+    networks:
+      - app
+    command: ["--config=/etc/otelcol/otel-collector-config.yaml"]
+    volumes:
+      - ./observability/otel-collector-config.yaml:/etc/otelcol/otel-collector-config.yaml:ro
+    ports:
+      - "4317:4317"   # OTLP gRPC (services → collector)
+      - "4318:4318"   # OTLP HTTP (services → collector)
+      - "8888:8888"   # Collector internal metrics (Prometheus scrapes this)
+      - "8889:8889"   # Collector Prometheus exporter (app metrics)
+    depends_on:
+      - loki
+      - tempo
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256m
+        reservations:
+          memory: 128m
+
+  # =========================
+  # 📊 Prometheus
+  # Scrapes OTel Collector and service /metrics endpoints.
+  # =========================
+  prometheus:
+    image: prom/prometheus:v3.4.2
+    container_name: prometheus
+    restart: unless-stopped
+    networks:
+      - app
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-remote-write-receiver"
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256m
+        reservations:
+          memory: 128m
+
+  # =========================
+  # 📋 Loki (Log aggregation)
+  # Receives OTLP logs from OTel Collector and provides
+  # a queryable log store for Grafana.
+  # =========================
+  loki:
+    image: grafana/loki:3.5.0
+    container_name: loki
+    restart: unless-stopped
+    networks:
+      - app
+    command: ["-config.file=/etc/loki/loki-config.yaml"]
+    volumes:
+      - ./observability/loki-config.yaml:/etc/loki/loki-config.yaml:ro
+      - loki-data:/loki
+    ports:
+      - "3100:3100"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256m
+        reservations:
+          memory: 128m
+
+  # =========================
+  # 🔭 Tempo (Distributed tracing)
+  # Receives OTLP traces from OTel Collector.
+  # =========================
+  tempo:
+    image: grafana/tempo:2.8.0
+    container_name: tempo
+    restart: unless-stopped
+    networks:
+      - app
+    command: ["-config.file=/etc/tempo/tempo-config.yaml"]
+    volumes:
+      - ./observability/tempo-config.yaml:/etc/tempo/tempo-config.yaml:ro
+      - tempo-data:/var/tempo
+    ports:
+      - "3200:3200"   # Tempo HTTP API (Grafana datasource)
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256m
+        reservations:
+          memory: 128m
+
+  # =========================
+  # 📈 Grafana (Dashboards)
+  # Pre-provisioned with Loki, Tempo, and Prometheus datasources.
+  # Access at http://localhost:3000 (admin / admin)
+  # =========================
+  grafana:
+    image: grafana/grafana:12.3.0
+    container_name: grafana
+    restart: unless-stopped
+    networks:
+      - app
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - loki
+      - tempo
+      - prometheus
     deploy:
       resources:
         limits:

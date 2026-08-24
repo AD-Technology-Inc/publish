@@ -1,9 +1,8 @@
-# TODO: validate
-
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from pydantic import BaseModel
 
-from http_client import _forward
+from enums import ServiceName
+from http_client import forward
 
 social_accounts_router = APIRouter(prefix="/accounts", tags=["social-accounts"])
 
@@ -17,21 +16,27 @@ class ConnectAccountRequest(BaseModel):
 
 @social_accounts_router.get("")
 async def list_accounts():
-    return await _forward("GET", "http://social-account-service:3001/accounts")
+    return await forward(
+        service_name=ServiceName.SOCIAL_ACCOUNT,
+        method="GET",
+        url="http://social-account-service:3001/accounts",
+    )
 
 
 @social_accounts_router.post("", status_code=201)
-async def connect_account(req: ConnectAccountRequest):
-    return await _forward(
-        "POST",
-        "http://social-account-service:3001/accounts",
-        json=req.model_dump(),
+async def connect_account(request: Request):
+    return await forward(
+        service_name=ServiceName.SOCIAL_ACCOUNT,
+        method="POST",
+        url="http://social-account-service:3001/accounts",
+        request=request,
     )
 
 
 @social_accounts_router.delete("/{account_id}", status_code=204)
 async def disconnect_account(account_id: str):
-    await _forward(
-        "DELETE", f"http://social-account-service:3001/accounts/{account_id}"
+    return await forward(
+        service_name=ServiceName.SOCIAL_ACCOUNT,
+        method="DELETE",
+        url=f"http://social-account-service:3001/accounts/{account_id}",
     )
-    return None

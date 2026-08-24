@@ -12,6 +12,12 @@ from .telemetry import (
     record_job_failure,
 )
 
+try:
+    from opentelemetry.trace import SpanKind, StatusCode
+except ImportError:
+    SpanKind = None  # type: ignore[assignment]
+    StatusCode = None  # type: ignore[assignment]
+
 logger = structlog.get_logger(__name__)
 
 
@@ -79,9 +85,10 @@ class Worker:
             # Execute the handler inside an OTel span
             tracer = get_tracer()
             t0 = time.monotonic()
+            _span_kind = SpanKind.INTERNAL if SpanKind is not None else None
             with tracer.start_as_current_span(
                 f"job.{job_type}",
-                kind=None,  # internal span
+                kind=_span_kind,
             ) as span:
                 span.set_attribute("job.type", job_type)
                 span.set_attribute("job.id", message_id)
@@ -101,6 +108,15 @@ class Worker:
             duration = time.monotonic() - t0
             error_msg = str(e)
             logger.error(f"Job {job_type} failed: {error_msg}")
+
+            # Record full exception info on the active span so Tempo surfaces
+            # the stack trace alongside the failed trace.
+            try:
+                span.record_exception(e)
+                if StatusCode is not None:
+                    span.set_status(StatusCode.ERROR, error_msg)
+            except Exception:
+                pass  # span may already be a DummySpan — safe to ignore
 
             is_retryable = getattr(e, "retryable", True)
             record_job_failure(job_type, duration, is_retryable)
@@ -160,6 +176,8 @@ class Worker:
             )
             if response and len(response) >= 2:
                 messages = response[1]
+                if not messages:
+                    return
                 for msg in messages:
                     if len(msg) == 2:
                         message_id, data = msg

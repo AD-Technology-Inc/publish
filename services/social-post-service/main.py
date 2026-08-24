@@ -4,6 +4,7 @@ import uuid
 import structlog
 from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel
+from redis import Redis
 from shared.queue import RedisQueue
 from shared.telemetry import init_telemetry, setup_logging
 

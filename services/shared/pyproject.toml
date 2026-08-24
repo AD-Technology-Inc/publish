@@ -8,4 +8,9 @@ dependencies = [
     "pydantic>=2.10.6",
     "structlog>=24.1.0",
     "psycopg2-binary>=2.9.9",
+    # OpenTelemetry SDK + OTLP exporters
+    "opentelemetry-sdk>=1.28.0",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.28.0",
+    "opentelemetry-instrumentation-fastapi>=0.49b0",
+    "opentelemetry-instrumentation-logging>=0.49b0",
 ]

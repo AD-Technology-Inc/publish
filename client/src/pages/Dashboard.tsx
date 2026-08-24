@@ -23,6 +23,8 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { mockUser, mockRecentActivities, mockDashboardStats } from "@/mocks";
 import { useTitle } from "@/hooks/use-title";
+import { accountsApi } from "@/api/client";
+import type { Account } from "@/api/types";
 
 /* ─── Platform helpers ───────────────────────────────────────── */
 const getPlatformIcon = (provider: string) => {
@@ -178,10 +180,14 @@ export const Dashboard: React.FC = () => {
     useTitle("Dashboard");
     const user = mockUser;
 
-    const connections = [
-        { id: 1, provider: "instagram" as const, name: "@adpublish" },
-        { id: 2, provider: "facebook" as const, name: "AD. Publish Page" },
-    ];
+    const [connections, setConnections] = React.useState<Account[]>([]);
+
+    React.useEffect(() => {
+        accountsApi
+            .list()
+            .then(setConnections)
+            .catch(() => setConnections([]));
+    }, []);
 
     const queued = [
         {
@@ -244,14 +250,29 @@ export const Dashboard: React.FC = () => {
                         </div>
                     </div>
 
-                    <Link to="/posts/create">
-                        <Button
-                            className="rounded-2xl px-6 h-11 gap-2 font-bold transition-transform active:scale-95"
+                    {connections.length > 0 ? (
+                        <Link to="/posts/create">
+                            <Button
+                                className="rounded-2xl px-6 h-11 gap-2 font-bold transition-transform active:scale-95"
+                            >
+                                <Plus className="w-3.5 h-3.5 stroke-[2.5px]" />
+                                New post
+                            </Button>
+                        </Link>
+                    ) : (
+                        <span
+                            title="Connect at least one account before creating a post"
+                            className="cursor-not-allowed"
                         >
-                            <Plus className="w-3.5 h-3.5 stroke-[2.5px]" />
-                            New post
-                        </Button>
-                    </Link>
+                            <Button
+                                disabled
+                                className="rounded-2xl px-6 h-11 gap-2 font-bold pointer-events-none"
+                            >
+                                <Plus className="w-3.5 h-3.5 stroke-[2.5px]" />
+                                New post
+                            </Button>
+                        </span>
+                    )}
                 </div>
 
                 {/* ── Main grid ─────────────────────────────────── */}
