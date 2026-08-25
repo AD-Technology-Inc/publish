@@ -81,16 +81,21 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=gateway
     depends_on:
-      - identity-service
-      - social-account-service
-      - social-post-service
-      - social-publish-service
-      - otel-collector
+      identity-service:
+        condition: service_started
+      social-account-service:
+        condition: service_started
+      social-post-service:
+        condition: service_started
+      social-publish-service:
+        condition: service_started
+      otel-collector:
+        condition: service_healthy
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.gateway.rule=Host(`gateway.localhost`)"
       - "traefik.http.routers.gateway.entrypoints=web"
-      - "traefik.http.services.gateway.loadbalancer.server.port=3001"
+      - "traefik.http.services.gateway.loadbalancer.server.port=8000"
       - "traefik.http.routers.gateway.middlewares=gateway-cors@file"
     deploy:
       resources:
@@ -119,8 +124,10 @@ services:
         - action: rebuild
           path: ../services/identity-service/pyproject.toml
     depends_on:
-      - identity-db
-      - otel-collector
+      identity-db:
+        condition: service_healthy
+      otel-collector:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -142,6 +149,12 @@ services:
     networks:
       - app
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U identity_user -d identity_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
     deploy:
       resources:
         limits:
@@ -166,9 +179,12 @@ services:
     networks:
       - app
     depends_on:
-      - redis
-      - social-publish-db
-      - otel-collector
+      redis:
+        condition: service_healthy
+      social-publish-db:
+        condition: service_healthy
+      otel-collector:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -187,12 +203,17 @@ services:
       - OTEL_SERVICE_NAME=social-publish-worker
       # Set OTEL_SDK_DISABLED=true to disable telemetry (e.g. unit tests)
       # - OTEL_SDK_DISABLED=true
+    volumes:
+      - ../services/social-publish-service:/app/services/social-publish-service
     networks:
       - app
     depends_on:
-      - redis
-      - social-publish-db
-      - otel-collector
+      redis:
+        condition: service_healthy
+      social-publish-db:
+        condition: service_healthy
+      otel-collector:
+        condition: service_healthy
     command: ["uv", "run", "python", "worker.py"]
     deploy:
       resources:
@@ -209,10 +230,16 @@ services:
       POSTGRES_USER: social_publish_user
       POSTGRES_PASSWORD: social_publish_pass
     volumes:
-      - social-publish-db-data:/var/lib/postgresql/data
+      - social-publish-db-data:/var/lib/postgresql
     networks:
       - app
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U social_publish_user -d social_publish_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
     deploy:
       resources:
         limits:
@@ -237,9 +264,12 @@ services:
     networks:
       - app
     depends_on:
-      - redis
-      - social-post-db
-      - otel-collector
+      redis:
+        condition: service_healthy
+      social-post-db:
+        condition: service_healthy
+      otel-collector:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -256,12 +286,17 @@ services:
       - DATABASE_URL=postgresql://social_post_user:social_post_pass@social-post-db:5432/social_post_db
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=social-post-worker
+    volumes:
+      - ../services/social-post-service:/app/services/social-post-service
     networks:
       - app
     depends_on:
-      - redis
-      - social-post-db
-      - otel-collector
+      redis:
+        condition: service_healthy
+      social-post-db:
+        condition: service_healthy
+      otel-collector:
+        condition: service_healthy
     command: ["uv", "run", "python", "worker.py"]
     deploy:
       resources:
@@ -278,10 +313,16 @@ services:
       POSTGRES_USER: social_post_user
       POSTGRES_PASSWORD: social_post_pass
     volumes:
-      - social-post-db-data:/var/lib/postgresql/data
+      - social-post-db-data:/var/lib/postgresql
     networks:
       - app
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U social_post_user -d social_post_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
     deploy:
       resources:
         limits:
@@ -306,9 +347,12 @@ services:
     networks:
       - app
     depends_on:
-      - redis
-      - social-account-db
-      - otel-collector
+      redis:
+        condition: service_healthy
+      social-account-db:
+        condition: service_healthy
+      otel-collector:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -325,12 +369,17 @@ services:
       - DATABASE_URL=postgresql://social_account_user:social_account_pass@social-account-db:5432/social_account_db
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=social-account-worker
+    volumes:
+      - ../services/social-account-service:/app/services/social-account-service
     networks:
       - app
     depends_on:
-      - redis
-      - social-account-db
-      - otel-collector
+      redis:
+        condition: service_healthy
+      social-account-db:
+        condition: service_healthy
+      otel-collector:
+        condition: service_healthy
     command: ["uv", "run", "python", "worker.py"]
     deploy:
       resources:
@@ -347,10 +396,16 @@ services:
       POSTGRES_USER: social_account_user
       POSTGRES_PASSWORD: social_account_pass
     volumes:
-      - social-account-db-data:/var/lib/postgresql/data
+      - social-account-db-data:/var/lib/postgresql
     networks:
       - app
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U social_account_user -d social_account_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
     deploy:
       resources:
         limits:
@@ -371,6 +426,12 @@ services:
     networks:
       - app
     restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
     deploy:
       resources:
         limits:
@@ -400,9 +461,17 @@ services:
       - "4318:4318"   # OTLP HTTP (services → collector)
       - "8888:8888"   # Collector internal metrics (Prometheus scrapes this)
       - "8889:8889"   # Collector Prometheus exporter (app metrics)
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:13133/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
     depends_on:
-      - loki
-      - tempo
+      loki:
+        condition: service_healthy
+      tempo:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -455,6 +524,12 @@ services:
       - loki-data:/loki
     ports:
       - "3100:3100"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:3100/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     deploy:
       resources:
         limits:
@@ -479,6 +554,12 @@ services:
       - tempo-data:/var/tempo
     ports:
       - "3200:3200"   # Tempo HTTP API (Grafana datasource)
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:3200/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
     deploy:
       resources:
         limits:
@@ -508,9 +589,12 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - loki
-      - tempo
-      - prometheus
+      loki:
+        condition: service_healthy
+      tempo:
+        condition: service_healthy
+      prometheus:
+        condition: service_started
     deploy:
       resources:
         limits:

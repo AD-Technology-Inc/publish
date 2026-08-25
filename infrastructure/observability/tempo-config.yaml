@@ -17,16 +17,20 @@ ingester:
   max_block_bytes: 1_000_000
   max_block_duration: 5m
   lifecycler:
+    # Single-node: short heartbeat_timeout ensures stale ring members
+    # from prior container runs are forgotten immediately on restart.
+    heartbeat_timeout: 10s
     ring:
       kvstore:
         store: inmemory
       replication_factor: 1
 
 compactor:
-  compaction_window: 1h
-  max_block_bytes: 100_000_000
-  block_retention: 72h
-  compacted_block_retention: 10m
+  compaction:
+    compaction_window: 1h
+    max_block_bytes: 100_000_000
+    block_retention: 72h
+    compacted_block_retention: 10m
 
 storage:
   trace:
@@ -36,9 +40,11 @@ storage:
     wal:
       path: /var/tempo/wal
 
+# Single-binary mode: querier connects to the embedded query-frontend
+# via the same process; no external frontend_address needed.
 querier:
   frontend_worker:
-    frontend_address: 127.0.0.1:9095
+    frontend_address: ""
 
 query_frontend:
   search:
