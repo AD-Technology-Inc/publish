@@ -3,7 +3,10 @@ from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 
 SERVICES = {
-    "identity": "http://identity-service:3001/openapi.json",
+    "identity": "http://identity-service:8000/openapi.json",
+    "social_account": "http://social-account-service:8000/openapi.json",
+    "social_post": "http://social-post-service:8000/openapi.json",
+    "social_publish": "http://social-publish-service:8000/openapi.json",
 }
 
 

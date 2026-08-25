@@ -75,11 +75,13 @@ services:
     volumes:
       - ../gateway/app:/app
       - /app/.venv
+      - ../services/shared:/app/services/shared
     networks:
       - app
     environment:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=gateway
+      - PYTHONPATH=/app/services/shared
     depends_on:
       identity-service:
         condition: service_started
@@ -114,9 +116,11 @@ services:
       - DATABASE_URL=postgresql+asyncpg://identity_user:identity_pass@identity-db:5432/identity_db
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=identity-service
+      - PYTHONPATH=/app/services/shared
     volumes:
       - ../services/identity-service:/app
       - /app/.venv
+      - ../services/shared:/app/services/shared
     networks:
       - app
     develop:
@@ -174,8 +178,11 @@ services:
       - DATABASE_URL=postgresql://social_publish_user:social_publish_pass@social-publish-db:5432/social_publish_db
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=social-publish-service
+      - PYTHONPATH=/app/services/shared
     volumes:
       - ../services/social-publish-service:/app/services/social-publish-service
+      - /app/services/social-publish-service/.venv
+      - ../services/shared:/app/services/shared
     networks:
       - app
     depends_on:
@@ -201,10 +208,13 @@ services:
       - DATABASE_URL=postgresql://social_publish_user:social_publish_pass@social-publish-db:5432/social_publish_db
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=social-publish-worker
+      - PYTHONPATH=/app/services/shared
       # Set OTEL_SDK_DISABLED=true to disable telemetry (e.g. unit tests)
       # - OTEL_SDK_DISABLED=true
     volumes:
       - ../services/social-publish-service:/app/services/social-publish-service
+      - /app/services/social-publish-service/.venv
+      - ../services/shared:/app/services/shared
     networks:
       - app
     depends_on:
@@ -259,8 +269,11 @@ services:
       - DATABASE_URL=postgresql://social_post_user:social_post_pass@social-post-db:5432/social_post_db
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=social-post-service
+      - PYTHONPATH=/app/services/shared
     volumes:
       - ../services/social-post-service:/app/services/social-post-service
+      - /app/services/social-post-service/.venv
+      - ../services/shared:/app/services/shared
     networks:
       - app
     depends_on:
@@ -286,8 +299,11 @@ services:
       - DATABASE_URL=postgresql://social_post_user:social_post_pass@social-post-db:5432/social_post_db
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=social-post-worker
+      - PYTHONPATH=/app/services/shared
     volumes:
       - ../services/social-post-service:/app/services/social-post-service
+      - /app/services/social-post-service/.venv
+      - ../services/shared:/app/services/shared
     networks:
       - app
     depends_on:
@@ -342,8 +358,11 @@ services:
       - DATABASE_URL=postgresql://social_account_user:social_account_pass@social-account-db:5432/social_account_db
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=social-account-service
+      - PYTHONPATH=/app/services/shared
     volumes:
       - ../services/social-account-service:/app/services/social-account-service
+      - /app/services/social-account-service/.venv
+      - ../services/shared:/app/services/shared
     networks:
       - app
     depends_on:
@@ -369,8 +388,11 @@ services:
       - DATABASE_URL=postgresql://social_account_user:social_account_pass@social-account-db:5432/social_account_db
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=social-account-worker
+      - PYTHONPATH=/app/services/shared
     volumes:
       - ../services/social-account-service:/app/services/social-account-service
+      - /app/services/social-account-service/.venv
+      - ../services/shared:/app/services/shared
     networks:
       - app
     depends_on:
@@ -448,7 +470,7 @@ services:
   #   Logs    → Loki (OTLP push)
   # =========================
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.116.0
+    image: otel/opentelemetry-collector-contrib:0.120.0
     container_name: otel-collector
     restart: unless-stopped
     networks:
@@ -462,7 +484,7 @@ services:
       - "8888:8888"   # Collector internal metrics (Prometheus scrapes this)
       - "8889:8889"   # Collector Prometheus exporter (app metrics)
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:13133/"]
+      test: ["CMD", "/otelcol-contrib", "validate", "--config=/etc/otelcol/otel-collector-config.yaml"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -555,7 +577,7 @@ services:
     ports:
       - "3200:3200"   # Tempo HTTP API (Grafana datasource)
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:3200/ready || exit 1"]
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:3200/ready"]
       interval: 10s
       timeout: 5s
       retries: 5

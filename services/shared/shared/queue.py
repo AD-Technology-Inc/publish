@@ -36,7 +36,7 @@ class RedisQueue:
         )
 
     def read_jobs(
-        self, consumer_name: str, count: int = 1, block: int = 5000
+        self, consumer_name: str, count: int = 1, block: int = 2000
     ) -> List[Tuple[Any, List[Tuple[Any, Dict[bytes, bytes]]]]]:
         """Read pending/new jobs from the stream for a given consumer."""
         messages = self.redis.xreadgroup(

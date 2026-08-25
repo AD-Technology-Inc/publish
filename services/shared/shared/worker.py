@@ -276,8 +276,8 @@ class Worker:
                     self._claim_stalled_jobs()
                     self.last_claim_time = time.time()
 
-                # Read 1 message from stream, block for 5 seconds
-                messages = self.queue.read_jobs(self.consumer_name, count=1, block=5000)
+                # Read 1 message from stream, block for 2 seconds
+                messages = self.queue.read_jobs(self.consumer_name, count=1, block=2000)
                 if not messages:
                     continue
 
@@ -298,5 +298,8 @@ class Worker:
                             self.redis.delete(lease_key)
 
             except Exception as e:
+                if "Timeout reading from socket" in str(e) or isinstance(e, TimeoutError):
+                    logger.debug("Socket read timeout in worker loop (idle stream); continuing", stream=self.queue.stream_name)
+                    continue
                 logger.error("Error in worker loop", error=str(e))
                 time.sleep(2)

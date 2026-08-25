@@ -12,7 +12,15 @@ init_telemetry(SERVICE_NAME)
 logger = structlog.get_logger(__name__)
 tracer = get_tracer()
 
-redis_client = Redis(host="redis", port=6379, db=0)
+redis_client = Redis(
+    host="redis",
+    port=6379,
+    db=0,
+    socket_timeout=15.0,
+    socket_connect_timeout=5.0,
+    socket_keepalive=True,
+    health_check_interval=30,
+)
 state_manager = StateManager(redis_client)
 idempotency = IdempotencyMiddleware(redis_client)
 

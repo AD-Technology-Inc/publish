@@ -11,5 +11,7 @@ RUN if [ -f uv.lock ]; then uv sync --frozen; else uv sync; fi
 
 COPY services/social-publish-service/ /app/services/social-publish-service/
 
-EXPOSE 3001
-CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "3001"]
+ENV PYTHONPATH="/app/services/shared"
+
+EXPOSE 8000
+CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
