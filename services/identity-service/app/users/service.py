@@ -25,7 +25,6 @@ async def get_user_by_id(db: AsyncSession, user_id: int) -> User | None:
 
 # !FIXME: async: send email verification
 async def create_user(db: AsyncSession, user: UserCreate) -> User:
-    # Hash password
     from pwdlib import PasswordHash
 
     password_hash: PasswordHash = PasswordHash.recommended()
@@ -37,15 +36,12 @@ async def create_user(db: AsyncSession, user: UserCreate) -> User:
             last_name=user.last_name,
             email=user.email,
             password=hashed_password,
-            # updated_at=datetime.now(tz=UTC)
         )
         db.add(instance=new_user)
 
         # Flush so the DB assigns new_user.id before it's referenced below
         await db.flush()
 
-        # TODO: validate if can move to separate function
-        # Create email verification record
         email_verification, code = EmailVerification.create_for_user(
             new_user.id, settings.app_key
         )
@@ -60,7 +56,6 @@ async def create_user(db: AsyncSession, user: UserCreate) -> User:
     return new_user
 
 
-# TODO: validate
 async def verify_email(db: AsyncSession, token: str) -> bool:
     import hashlib
     import hmac
@@ -108,14 +103,5 @@ async def verify_email(db: AsyncSession, token: str) -> bool:
     return True
 
 
-# Send verification email simulation
 async def send_verify_email(email: str, code: str):
-    try:
-        logger.info(
-            "Send email verification",
-            to_email=email,
-            code=code,
-            url=f"http://localhost:8000/verify-email?token={code}",
-        )
-    except Exception:
-        pass
+    logger.info("Send email verification", to_email=email, code=code)

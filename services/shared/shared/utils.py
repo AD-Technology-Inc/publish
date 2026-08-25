@@ -1,7 +1,5 @@
 import logging
 import os
-import random
-import time
 from typing import Optional
 
 from redis import Redis
@@ -84,29 +82,6 @@ class RateLimiter:
         return current <= self.max_requests
 
 
-class FailureSimulator:
-    """Utility to inject controlled chaos in development and testing."""
-
-    @staticmethod
-    def simulate_failure(chance: float = 0.3) -> None:
-        """Randomly raise errors or sleep based on probability."""
-        if random.random() > chance:
-            return
-
-        failure_type = random.choice(["latency", "retryable", "non_retryable"])
-
-        if failure_type == "latency":
-            sleep_time = random.uniform(1.0, 3.0)
-            logger.info("[SIMULATOR] Injecting latency: %.2fs", sleep_time)
-            time.sleep(sleep_time)
-        elif failure_type == "retryable":
-            logger.info("[SIMULATOR] Injecting retryable 500 error")
-            raise Exception("Simulated 5xx internal server error")
-        elif failure_type == "non_retryable":
-            logger.info("[SIMULATOR] Injecting non-retryable validation error")
-            raise NonRetryableError("Simulated Validation Error (400)")
-
-
 class StateManager:
     """
     Manages durable state checkpoints for partial failure recovery.
@@ -123,7 +98,6 @@ class StateManager:
     def _get_connection(self):
         if not self.db_url or not psycopg2:
             return None
-        # Convert asyncpg/sqlalchemy urls to standard postgresql if needed
         conn_url = self.db_url.replace("postgresql+asyncpg://", "postgresql://")
         return psycopg2.connect(conn_url, connect_timeout=3)
 
@@ -150,7 +124,6 @@ class StateManager:
         Record a milestone checkpoint for a job.
         Writes to PostgreSQL and mirrors to Redis.
         """
-        # Always write to Redis checkpoint key for fast access
         redis_key = f"job_checkpoint:{job_id}"
         self.redis.set(redis_key, step_name, ex=self.ttl)
 
@@ -165,7 +138,7 @@ class StateManager:
                             """
                             INSERT INTO job_execution_state (job_id, last_step, updated_at)
                             VALUES (%s, %s, CURRENT_TIMESTAMP)
-                            ON CONFLICT (job_id) DO UPDATE 
+                            ON CONFLICT (job_id) DO UPDATE
                             SET last_step = EXCLUDED.last_step, updated_at = EXCLUDED.updated_at;
                             """,
                             (job_id, step_name),
@@ -194,7 +167,6 @@ class StateManager:
             except Exception as e:
                 logger.error("Failed to fetch step from Postgres: %s. Using Redis checkpoint.", e)
 
-        # Fallback to Redis checkpoint
         redis_key = f"job_checkpoint:{job_id}"
         val = self.redis.get(redis_key)
         return val.decode("utf-8") if val else None

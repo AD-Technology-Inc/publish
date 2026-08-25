@@ -266,7 +266,7 @@ def handle_publish_post(payload: dict) -> None:
         # Retrieve token from social-account-service
         try:
             token_resp = httpx.get(
-                f"http://social-account-service:3001/accounts/token/{provider}/{page_id}",
+                f"http://social-account-service:8000/accounts/token/{provider}/{page_id}",
                 timeout=5.0,
             )
             if token_resp.status_code == 200:

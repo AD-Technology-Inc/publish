@@ -59,7 +59,7 @@ def handle_account_link(payload: dict) -> None:
     # Fetch stored token
     try:
         resp = httpx.get(
-            f"http://social-account-service:3001/accounts/token/{provider}/{page_id}",
+            f"http://social-account-service:8000/accounts/token/{provider}/{page_id}",
             timeout=5.0,
         )
         if resp.status_code == 404:

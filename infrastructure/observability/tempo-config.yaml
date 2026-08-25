@@ -1,6 +1,5 @@
 stream_over_http_enabled: true
 server:
-  http_listen_port: 3200
   log_level: warn
 
 distributor:
@@ -17,13 +16,10 @@ ingester:
   max_block_bytes: 1_000_000
   max_block_duration: 5m
   lifecycler:
-    # Single-node: short heartbeat_timeout ensures stale ring members
-    # from prior container runs are forgotten immediately on restart.
     heartbeat_timeout: 10s
     ring:
       kvstore:
         store: inmemory
-      replication_factor: 1
 
 compactor:
   compaction:
@@ -39,17 +35,6 @@ storage:
       path: /var/tempo/traces
     wal:
       path: /var/tempo/wal
-
-# Single-binary mode: querier connects to the embedded query-frontend
-# via the same process; no external frontend_address needed.
-querier:
-  frontend_worker:
-    frontend_address: ""
-
-query_frontend:
-  search:
-    duration_slo: 5s
-    throughput_bytes_slo: 1.073741824e+09
 
 metrics_generator:
   registry:

@@ -6,7 +6,7 @@ class Settings(BaseSettings):
         env_file=".env", env_file_encoding="utf-8", extra="ignore"
     )
 
-    database_url: str = "postgresql+asyncpg://identity_user:identity_pass@localhost:5432/identity_db"
+    database_url: str
     app_key: str = ""
 
 

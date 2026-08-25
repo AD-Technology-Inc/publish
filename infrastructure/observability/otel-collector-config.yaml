@@ -20,29 +20,20 @@ processors:
         action: upsert
 
 exporters:
-  # Traces → Tempo
   otlp/tempo:
     endpoint: tempo:4317
     tls:
       insecure: true
 
-  # Metrics → Prometheus (pull mode - expose scrape endpoint)
   prometheus:
     endpoint: "0.0.0.0:8889"
     namespace: publish
 
-  # Logs → Loki
   loki:
     endpoint: http://loki:3100/loki/api/v1/push
     default_labels_enabled:
       exporter: false
       job: true
-
-  # Debug (optional, low verbosity)
-  debug:
-    verbosity: normal
-    sampling_initial: 5
-    sampling_thereafter: 200
 
 service:
   pipelines:

@@ -2,7 +2,6 @@ auth_enabled: false
 
 server:
   http_listen_port: 3100
-  grpc_listen_port: 9096
   log_level: warn
 
 common:
@@ -33,9 +32,6 @@ schema_config:
       index:
         prefix: index_
         period: 24h
-
-ruler:
-  alertmanager_url: http://localhost:9093
 
 limits_config:
   retention_period: 72h
