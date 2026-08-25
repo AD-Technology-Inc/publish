@@ -19,7 +19,7 @@ async def list_accounts():
     return await forward(
         service_name=ServiceName.SOCIAL_ACCOUNT,
         method="GET",
-        url="http://social-account-service:3001/accounts",
+        url="http://social-account-service:8000/accounts",
     )
 
 
@@ -28,7 +28,7 @@ async def connect_account(request: Request):
     return await forward(
         service_name=ServiceName.SOCIAL_ACCOUNT,
         method="POST",
-        url="http://social-account-service:3001/accounts",
+        url="http://social-account-service:8000/accounts",
         request=request,
     )
 
@@ -38,5 +38,5 @@ async def disconnect_account(account_id: str):
     return await forward(
         service_name=ServiceName.SOCIAL_ACCOUNT,
         method="DELETE",
-        url=f"http://social-account-service:3001/accounts/{account_id}",
+        url=f"http://social-account-service:8000/accounts/{account_id}",
     )

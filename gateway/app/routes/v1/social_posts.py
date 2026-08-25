@@ -11,7 +11,7 @@ async def list_social_posts():
     return await forward(
         service_name=ServiceName.SOCIAL_POST,
         method="GET",
-        url="http://social-post-service:3001/posts",
+        url="http://social-post-service:8000/posts",
     )
 
 
@@ -23,6 +23,6 @@ async def create_social_post(
     return await forward(
         service_name=ServiceName.SOCIAL_POST,
         method="POST",
-        url="http://social-post-service:3001/posts",
+        url="http://social-post-service:8000/posts",
         request=request,
     )

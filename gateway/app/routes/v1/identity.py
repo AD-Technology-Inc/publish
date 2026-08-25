@@ -14,7 +14,7 @@ async def get_me():
     return await forward(
         service_name=ServiceName.IDENTITY,
         method="GET",
-        url="http://identity-service:3001/users/me",
+        url="http://identity-service:8000/users/me",
     )
 
 
@@ -23,7 +23,7 @@ async def create_user(request: Request):
     return await forward(
         service_name=ServiceName.IDENTITY,
         method="POST",
-        url="http://identity-service:3001/users",
+        url="http://identity-service:8000/users",
         request=request,
     )
 
@@ -33,7 +33,7 @@ async def verify_email(token: str):
     return await forward(
         service_name=ServiceName.IDENTITY,
         method="GET",
-        url=f"http://identity-service:3001/auth/verify-email?token={token}",
+        url=f"http://identity-service:8000/auth/verify-email?token={token}",
     )
 
 
@@ -45,7 +45,7 @@ async def get_users():
     return await forward(
         service_name=ServiceName.IDENTITY,
         method="GET",
-        url="http://identity-service:3001/users",
+        url="http://identity-service:8000/users",
     )
 
 
@@ -54,5 +54,5 @@ async def get_user(user_id: str):
     return await forward(
         service_name=ServiceName.IDENTITY,
         method="GET",
-        url=f"http://identity-service:3001/users/{user_id}",
+        url=f"http://identity-service:8000/users/{user_id}",
     )

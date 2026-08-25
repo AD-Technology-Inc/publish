@@ -1,6 +1,6 @@
 import json
 import uuid
-from datetime import UTC
+from datetime import UTC, datetime
 
 import structlog
 from fastapi import FastAPI, HTTPException
@@ -119,7 +119,6 @@ def connect_account(req: ConnectAccountRequest):
         )
 
     account_id = str(uuid.uuid4())
-    from datetime import datetime
 
     account = {
         "id": account_id,

@@ -1,8 +1,6 @@
 import json
-import time
 import uuid
 from datetime import UTC, datetime
-from typing import List, Optional
 
 import structlog
 from fastapi import FastAPI, Header, HTTPException
@@ -26,8 +24,8 @@ class PostRequest(BaseModel):
     page_id: str
     provider: str = "facebook"
     message: str
-    media_url: Optional[str] = None
-    platforms: Optional[list[str]] = None
+    media_url: str | None = None
+    platforms: list[str] | None = None
 
 
 class PostResponse(BaseModel):
@@ -36,12 +34,12 @@ class PostResponse(BaseModel):
     page_id: str
     provider: str
     message: str
-    media_url: Optional[str] = None
+    media_url: str | None = None
     status: str
     created_at: str
 
 
-@app.get("/posts", response_model=List[PostResponse])
+@app.get("/posts", response_model=list[PostResponse])
 def list_posts():
     """Retrieve all posts recorded in the system."""
     post_ids_raw = redis_client.get("posts:all")
@@ -74,7 +72,7 @@ def list_posts():
 
 @app.post("/posts")
 def create_post(
-    request: PostRequest, x_idempotency_key: Optional[str] = Header(None)
+    request: PostRequest, x_idempotency_key: str | None = Header(None)
 ):
     # Backpressure check
     try:
