@@ -7,6 +7,7 @@ from routes.v1.identity import identity_router
 from routes.v1.jobs import jobs_router
 from routes.v1.social_accounts import social_accounts_router
 from routes.v1.social_posts import social_posts_router
+from routes.v1.social_publish import social_publish_router
 
 SERVICE_NAME = os.getenv("OTEL_SERVICE_NAME", "gateway")
 
@@ -30,6 +31,7 @@ if _TELEMETRY_AVAILABLE:
 app.include_router(identity_router)
 app.include_router(social_accounts_router)
 app.include_router(social_posts_router)
+app.include_router(social_publish_router)
 app.include_router(jobs_router)
 app.include_router(dlq_router)
 

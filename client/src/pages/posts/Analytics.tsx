@@ -3,12 +3,9 @@ import {
     BarChart2, 
     TrendingUp, 
     Users, 
-    Layers,
     Share2, 
     MousePointer2,
-    Calendar as CalendarIcon
 } from 'lucide-react';
-import { Instagram, Facebook, Twitter, Linkedin } from '@/components/SocialIcons';
 import { AppLayout } from '@/layouts/AppLayout';
 import { 
     Card, 
@@ -17,7 +14,6 @@ import {
     CardTitle, 
     CardDescription
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useTitle } from '@/hooks/use-title';
 import { accountsApi, postsApi } from '@/api/client';

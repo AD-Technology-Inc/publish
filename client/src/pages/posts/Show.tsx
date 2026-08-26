@@ -3,9 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { 
     ChevronLeft, 
     Globe, 
-    Calendar, 
     Layers,
-    Share2
 } from 'lucide-react';
 import { Instagram, Twitter, Linkedin, Facebook } from '@/components/SocialIcons';
 import { AppLayout } from '@/layouts/AppLayout';
@@ -22,15 +20,7 @@ import { useTitle } from '@/hooks/use-title';
 import { postsApi } from '@/api/client';
 import type { Post } from '@/api/types';
 
-const getPlatformIcon = (id: string) => {
-    switch (id?.toLowerCase()) {
-        case 'instagram': return Instagram;
-        case 'twitter': return Twitter;
-        case 'facebook': return Facebook;
-        case 'linkedin': return Linkedin;
-        default: return Globe;
-    }
-};
+
 
 const getBrandColor = (id: string) => {
     switch (id?.toLowerCase()) {
@@ -47,7 +37,6 @@ export const PostShow: React.FC = () => {
     useTitle('Post Details');
 
     const [post, setPost] = React.useState<Post | null>(null);
-    const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
         postsApi.list()
@@ -59,8 +48,7 @@ export const PostShow: React.FC = () => {
                     setPost(list[0]);
                 }
             })
-            .catch(() => setPost(null))
-            .finally(() => setLoading(false));
+            .catch(() => setPost(null));
     }, [id]);
 
     const breadcrumbs = [
@@ -69,7 +57,6 @@ export const PostShow: React.FC = () => {
     ];
 
     const provider = post?.provider || 'facebook';
-    const PlatformIcon = getPlatformIcon(provider);
     const brandColor = getBrandColor(provider);
 
     return (
@@ -89,7 +76,9 @@ export const PostShow: React.FC = () => {
                                 <Badge variant={post?.status === 'completed' || post?.status === 'published' ? 'success' : 'secondary'} className="rounded-full px-3 py-0.5 font-bold text-[10px] uppercase">
                                     {post?.status || 'Processing'}
                                 </Badge>
-                                <span className="text-[10px] text-muted-foreground font-mono">Job ID: {post?.job_id || id}</span>
+                                <span className="text-xs text-muted-foreground font-mono">
+                                    Job ID: {post?.job_id || post?.id}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -112,7 +101,7 @@ export const PostShow: React.FC = () => {
                                 <CardHeader className="border-b border-border/50 pb-4">
                                     <div className="flex items-center gap-3">
                                         <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center", brandColor)}>
-                                            <PlatformIcon className="w-4 h-4" />
+                                            {provider === 'instagram' ? <Instagram className="w-4 h-4" /> : provider === 'twitter' ? <Twitter className="w-4 h-4" /> : provider === 'facebook' ? <Facebook className="w-4 h-4" /> : provider === 'linkedin' ? <Linkedin className="w-4 h-4" /> : <Globe className="w-4 h-4" />}
                                         </div>
                                         <div>
                                             <CardTitle className="text-base font-bold capitalize">{post.provider} Publish</CardTitle>

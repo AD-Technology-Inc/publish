@@ -3,13 +3,7 @@ import { Link } from "react-router-dom";
 import {
     Plus,
     TrendingUp,
-    TrendingDown,
-    Clock,
-    Target,
-    ChevronRight,
-    ExternalLink,
     Zap,
-    ArrowUpRight,
     Layers,
     Share2,
 } from "lucide-react";
@@ -126,7 +120,6 @@ export const Dashboard: React.FC = () => {
     const [userName, setUserName] = React.useState<string>("");
     const [connections, setConnections] = React.useState<Account[]>([]);
     const [posts, setPosts] = React.useState<Post[]>([]);
-    const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
         identityApi
@@ -146,13 +139,11 @@ export const Dashboard: React.FC = () => {
         ]).then(([accs, postList]) => {
             setConnections(accs);
             setPosts(postList);
-            setLoading(false);
         });
     }, []);
 
     const publishedCount = posts.filter((p) => p.status === "completed" || p.status === "published").length;
     const pendingCount = posts.filter((p) => p.status === "pending" || p.status === "processing").length;
-    const totalPosts = posts.length;
 
     const stats = [
         {

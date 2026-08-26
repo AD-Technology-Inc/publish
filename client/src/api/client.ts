@@ -73,13 +73,20 @@ export const socialApi = {
 
   getJobStatus: async (jobId: string): Promise<JobStatusResponse> => {
     const { data } = await apiClient.get<JobStatusResponse>(
-      `/social/publish/status/${jobId}`
+      `/jobs/${jobId}`
     );
     return data;
   },
 
-  getDlqJobs: async (): Promise<DlqResponse> => {
-    const { data } = await apiClient.get<DlqResponse>('/social/publish/dlq');
+  getDlqJobs: async (serviceName: string = 'social-publish'): Promise<DlqResponse> => {
+    const { data } = await apiClient.get<DlqResponse>(`/dlq/${serviceName}`);
+    return data;
+  },
+
+  replayDlqJob: async (serviceName: string = 'social-publish', messageId?: string): Promise<{ status: string; new_job_id?: string }> => {
+    const msgId = messageId || serviceName;
+    const sName = messageId ? serviceName : 'social-publish';
+    const { data } = await apiClient.post<{ status: string; new_job_id?: string }>(`/dlq/${sName}/${msgId}/replay`);
     return data;
   },
 };

@@ -22,7 +22,6 @@ import {
 import { AppLayout } from "@/layouts/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useTitle } from "@/hooks/use-title";
 import { postsApi } from "@/api/client";
@@ -159,7 +158,6 @@ export const PostsIndex: React.FC = () => {
     useTitle("Posts");
 
     const [posts, setPosts] = React.useState<Post[]>([]);
-    const [loading, setLoading] = React.useState(true);
     const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid");
     const [searchQuery, setSearchQuery] = React.useState("");
     const [statusFilter, setStatusFilter] = React.useState<string | null>(null);
@@ -169,8 +167,7 @@ export const PostsIndex: React.FC = () => {
     React.useEffect(() => {
         postsApi.list()
             .then(setPosts)
-            .catch(() => setPosts([]))
-            .finally(() => setLoading(false));
+            .catch(() => setPosts([]));
     }, []);
 
     const filteredPosts = posts.filter((post) => {
@@ -211,18 +208,26 @@ export const PostsIndex: React.FC = () => {
                 {/* ── Stat strip ──────────────────────────────────────────── */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {[
-                        { label: "Total", value: counts.all, dot: "bg-foreground" },
-                        { label: "Completed", value: counts.completed, dot: "bg-emerald-500" },
-                        { label: "In Flight", value: counts.pending, dot: "bg-primary" },
-                        { label: "Failed", value: counts.failed, dot: "bg-rose-500" },
-                    ].map(({ label, value, dot }) => (
-                        <div key={label} className="p-4 rounded-xl border border-border bg-card space-y-1 text-left">
+                        { key: null, label: "Total", value: counts.all, dot: "bg-foreground" },
+                        { key: "completed", label: "Completed", value: counts.completed, dot: "bg-emerald-500" },
+                        { key: "pending", label: "In Flight", value: counts.pending, dot: "bg-primary" },
+                        { key: "failed", label: "Failed", value: counts.failed, dot: "bg-rose-500" },
+                    ].map(({ key, label, value, dot }) => (
+                        <button
+                            key={label}
+                            type="button"
+                            onClick={() => setStatusFilter(statusFilter === key ? null : key)}
+                            className={cn(
+                                "p-4 rounded-xl border bg-card space-y-1 text-left transition-all cursor-pointer hover:border-primary/50",
+                                statusFilter === key ? "border-primary ring-2 ring-primary/20" : "border-border"
+                            )}
+                        >
                             <div className="flex items-center gap-1.5">
                                 <span className={cn("w-2 h-2 rounded-full", dot)} />
                                 <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{label}</span>
                             </div>
                             <p className="text-xl font-black">{value}</p>
-                        </div>
+                        </button>
                     ))}
                 </div>
 

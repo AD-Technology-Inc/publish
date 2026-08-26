@@ -8,7 +8,7 @@ export interface EnqueueResponse {
 
 export interface JobStatusResponse {
   job_id: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed' | 'unknown';
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'unknown' | 'published' | 'scheduled' | 'draft';
   result?: string | null;
 }
 
@@ -17,7 +17,7 @@ export interface JobStatusResponse {
 // ---------------------------------------------------------------------------
 export interface Account {
   id: string;
-  provider: 'facebook' | 'instagram' | 'twitter' | 'linkedin';
+  provider: 'facebook' | 'instagram' | 'twitter' | 'linkedin' | 'threads' | string;
   name: string;
   page_id: string;
   status: 'connected' | 'expired' | 'processing';
@@ -34,20 +34,33 @@ export interface ConnectAccountRequest {
 // ---------------------------------------------------------------------------
 // Post types
 // ---------------------------------------------------------------------------
-export type PostStatus = 'published' | 'scheduled' | 'draft' | 'failed';
-export type PostType   = 'text' | 'image' | 'video';
+export type PostStatus =
+  | 'published'
+  | 'scheduled'
+  | 'draft'
+  | 'failed'
+  | 'pending'
+  | 'processing'
+  | 'completed';
+
+export type PostType = 'text' | 'image' | 'video';
 
 export interface Post {
   id: string;
-  title: string;
-  content: string;
-  platforms: string[];
+  job_id?: string;
+  page_id?: string;
+  provider?: string;
+  message?: string;
+  media_url?: string;
+  title?: string;
+  content?: string;
+  platforms?: string[];
   status: PostStatus;
-  type: PostType;
-  date: string;
+  type?: PostType;
+  date?: string;
   reach?: string;
   engagement?: string;
-  created_at: string;
+  created_at?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -66,7 +79,7 @@ export interface PublishPostRequest {
 // Identity / User types
 // ---------------------------------------------------------------------------
 export interface User {
-  id: string;
+  id: string | number;
   name: string;
   email: string;
   avatar?: string;
