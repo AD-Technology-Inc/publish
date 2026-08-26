@@ -1,15 +1,13 @@
 import os
-from abc import ABC, abstractmethod
-from typing import Any
 
 import httpx
 import structlog
 from redis import Redis
+from shared.providers import get_provider
 from shared.telemetry import get_tracer, init_telemetry, setup_logging
 from shared.utils import (
     IdempotencyMiddleware,
     NonRetryableError,
-    RateLimitExceeded,
     StateManager,
 )
 from shared.worker import Worker
@@ -66,236 +64,11 @@ def _update_publish_status(
         )
 
 
-# ---------------------------------------------------------------------------
-# Platform Adapters (Strategy Pattern)
-# ---------------------------------------------------------------------------
-class SocialPlatformAdapter(ABC):
-    @abstractmethod
-    def publish(
-        self,
-        page_id: str,
-        message: str,
-        token: str,
-        job_id: str,
-        media_url: str | None = None,
-    ) -> str:
-        pass
-
-
-class FacebookAdapter(SocialPlatformAdapter):
-    def publish(
-        self,
-        page_id: str,
-        message: str,
-        token: str,
-        job_id: str,
-        media_url: str | None = None,
-    ) -> str:
-        base_url = os.getenv(
-            "GRAPH_API_BASE_URL", "https://graph.facebook.com/v19.0"
-        )
-        url = f"{base_url}/{page_id}/feed"
-
-        data = {"message": message, "access_token": token}
-        if media_url:
-            data["link"] = media_url
-
-        try:
-            resp = httpx.post(url, data=data, timeout=10.0)
-            if resp.status_code == 429:
-                raise RateLimitExceeded(f"Facebook API 429 rate limit: {resp.text}")
-            resp.raise_for_status()
-            return resp.json().get("id", f"{page_id}_{job_id[:8]}")
-        except httpx.HTTPStatusError as e:
-            if e.response.status_code in (400, 401, 403, 404):
-                redis_client.set(f"job_state:{job_id}", "failed", ex=86400)
-                raise NonRetryableError(
-                    f"Facebook API error ({e.response.status_code}): {e.response.text}"
-                ) from e
-            raise Exception(
-                f"Facebook transient error ({e.response.status_code}): {e.response.text}"
-            ) from e
-        except httpx.RequestError as e:
-            raise Exception(f"Network error posting to Facebook: {e}") from e
-
-
-class LinkedInAdapter(SocialPlatformAdapter):
-    def publish(
-        self,
-        page_id: str,
-        message: str,
-        token: str,
-        job_id: str,
-        media_url: str | None = None,
-    ) -> str:
-        base_url = os.getenv("LINKEDIN_API_BASE_URL", "https://api.linkedin.com/v2")
-        url = f"{base_url}/ugcPosts"
-        headers = {
-            "Authorization": f"Bearer {token}",
-            "X-Restli-Protocol-Version": "2.0.0",
-            "Content-Type": "application/json",
-        }
-        share_content: dict[str, Any] = {
-            "shareCommentary": {"text": message},
-            "shareMediaCategory": "NONE",
-        }
-        if media_url:
-            share_content["shareMediaCategory"] = "ARTICLE"
-            share_content["media"] = [{"status": "READY", "originalUrl": media_url}]
-
-        payload: dict[str, Any] = {
-            "author": f"urn:li:organization:{page_id}",
-            "lifecycleState": "PUBLISHED",
-            "specificContent": {
-                "com.linkedin.ugc.ShareContent": share_content
-            },
-            "visibility": {
-                "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"
-            },
-        }
-
-        try:
-            resp = httpx.post(url, headers=headers, json=payload, timeout=10.0)
-            if resp.status_code == 429:
-                raise RateLimitExceeded(f"LinkedIn API 429 rate limit: {resp.text}")
-            resp.raise_for_status()
-            return resp.json().get("id", f"urn:li:share:{page_id[:8]}")
-        except httpx.HTTPStatusError as e:
-            if e.response.status_code in (400, 401, 403, 404):
-                redis_client.set(f"job_state:{job_id}", "failed", ex=86400)
-                raise NonRetryableError(
-                    f"LinkedIn API error ({e.response.status_code}): {e.response.text}"
-                ) from e
-            raise Exception(
-                f"LinkedIn transient error ({e.response.status_code}): {e.response.text}"
-            ) from e
-        except httpx.RequestError as e:
-            raise Exception(f"Network error posting to LinkedIn: {e}") from e
-
-
-class InstagramAdapter(SocialPlatformAdapter):
-    def publish(
-        self,
-        page_id: str,
-        message: str,
-        token: str,
-        job_id: str,
-        media_url: str | None = None,
-    ) -> str:
-        if not media_url:
-            redis_client.set(f"job_state:{job_id}", "failed", ex=86400)
-            raise NonRetryableError("Instagram requires a media_url to publish.")
-
-        base_url = os.getenv(
-            "GRAPH_API_BASE_URL", "https://graph.facebook.com/v19.0"
-        )
-
-        try:
-            # Step 1: Create Container
-            container_resp = httpx.post(
-                f"{base_url}/{page_id}/media",
-                data={
-                    "image_url": media_url,
-                    "caption": message,
-                    "access_token": token,
-                },
-                timeout=10.0,
-            )
-            if container_resp.status_code == 429:
-                raise RateLimitExceeded(f"Instagram API 429: {container_resp.text}")
-            container_resp.raise_for_status()
-            creation_id = container_resp.json().get("id")
-
-            # Step 2: Publish Container
-            publish_resp = httpx.post(
-                f"{base_url}/{page_id}/media_publish",
-                data={"creation_id": creation_id, "access_token": token},
-                timeout=10.0,
-            )
-            if publish_resp.status_code == 429:
-                raise RateLimitExceeded(f"Instagram API 429: {publish_resp.text}")
-            publish_resp.raise_for_status()
-            return publish_resp.json().get("id", f"ig_{page_id[:8]}")
-        except httpx.HTTPStatusError as e:
-            if e.response.status_code in (400, 401, 403, 404):
-                redis_client.set(f"job_state:{job_id}", "failed", ex=86400)
-                raise NonRetryableError(
-                    f"Instagram API error ({e.response.status_code}): {e.response.text}"
-                ) from e
-            raise Exception(
-                f"Instagram transient error ({e.response.status_code}): {e.response.text}"
-            ) from e
-        except httpx.RequestError as e:
-            raise Exception(f"Network error posting to Instagram: {e}") from e
-
-
-class ThreadsAdapter(SocialPlatformAdapter):
-    def publish(
-        self,
-        page_id: str,
-        message: str,
-        token: str,
-        job_id: str,
-        media_url: str | None = None,
-    ) -> str:
-        base_url = os.getenv(
-            "THREADS_API_BASE_URL", "https://graph.threads.net/v1.0"
-        )
-
-        try:
-            data = {
-                "media_type": "TEXT",
-                "text": message,
-                "access_token": token,
-            }
-            if media_url:
-                data["media_type"] = "IMAGE"
-                data["image_url"] = media_url
-
-            container_resp = httpx.post(
-                f"{base_url}/{page_id}/threads", data=data, timeout=10.0
-            )
-            if container_resp.status_code == 429:
-                raise RateLimitExceeded(f"Threads API 429: {container_resp.text}")
-            container_resp.raise_for_status()
-            creation_id = container_resp.json().get("id")
-
-            # Publish Container
-            publish_resp = httpx.post(
-                f"{base_url}/{page_id}/threads_publish",
-                data={"creation_id": creation_id, "access_token": token},
-                timeout=10.0,
-            )
-            if publish_resp.status_code == 429:
-                raise RateLimitExceeded(f"Threads API 429: {publish_resp.text}")
-            publish_resp.raise_for_status()
-            return publish_resp.json().get("id", f"threads_{page_id[:8]}")
-        except httpx.HTTPStatusError as e:
-            if e.response.status_code in (400, 401, 403, 404):
-                redis_client.set(f"job_state:{job_id}", "failed", ex=86400)
-                raise NonRetryableError(
-                    f"Threads API error ({e.response.status_code}): {e.response.text}"
-                ) from e
-            raise Exception(
-                f"Threads transient error ({e.response.status_code}): {e.response.text}"
-            ) from e
-        except httpx.RequestError as e:
-            raise Exception(f"Network error posting to Threads: {e}") from e
-
-
-ADAPTERS: dict[str, SocialPlatformAdapter] = {
-    "facebook": FacebookAdapter(),
-    "linkedin": LinkedInAdapter(),
-    "instagram": InstagramAdapter(),
-    "threads": ThreadsAdapter(),
-}
-
-
 def handle_publish_post(payload: dict) -> None:
     job_id = str(payload.get("job_id") or payload.get("idempotency_key") or "")
     idem_key = str(payload.get("idempotency_key") or job_id)
     page_id = str(payload.get("page_id") or "")
-    provider = str(payload.get("provider") or "facebook").lower()
+    provider_name = str(payload.get("provider") or "facebook").lower()
     message = str(payload.get("message") or "")
     media_url = payload.get("media_url")
     if media_url is not None:
@@ -306,7 +79,11 @@ def handle_publish_post(payload: dict) -> None:
     # Enforce atomic idempotency guard on initial run
     if not last_step:
         if not idempotency.check_and_set(idem_key):
-            logger.info("Duplicate publish execution detected by idempotency guard; skipping", idempotency_key=idem_key, job_id=job_id)
+            logger.info(
+                "Duplicate publish execution detected by idempotency guard; skipping",
+                idempotency_key=idem_key,
+                job_id=job_id,
+            )
             return
         state_manager.save_step(job_id, "started")
         last_step = "started"
@@ -318,53 +95,65 @@ def handle_publish_post(payload: dict) -> None:
         if not page_id or not message:
             redis_client.set(f"job_state:{job_id}", "failed", ex=86400)
             _update_publish_status(
-                job_id, "failed", error_message="Invalid payload: page_id and message are required"
+                job_id,
+                "failed",
+                error_message="Invalid payload: page_id and message are required",
             )
-            raise NonRetryableError("Invalid payload: page_id and message are required")
+            raise NonRetryableError(
+                "Invalid payload: page_id and message are required"
+            )
 
         token: str | None = None
         # Retrieve token from social-account-service
         try:
             token_resp = httpx.get(
-                f"http://social-account-service:8000/accounts/token/{provider}/{page_id}",
+                f"http://social-account-service:8000/accounts/token/{provider_name}/{page_id}",
                 timeout=5.0,
             )
             if token_resp.status_code == 200:
                 token = token_resp.json().get("access_token")
         except Exception as e:
-            logger.warning("Could not query social-account-service for token", error=str(e))
+            logger.warning(
+                "Could not query social-account-service for token", error=str(e)
+            )
 
         # Fallback to environment variable if configured
         if not token:
-            env_var_name = f"{provider.upper()}_PAGE_ACCESS_TOKEN"
+            env_var_name = f"{provider_name.upper()}_PAGE_ACCESS_TOKEN"
             token = os.getenv(env_var_name) or os.getenv("SOCIAL_ACCESS_TOKEN")
 
         if not token:
             redis_client.set(f"job_state:{job_id}", "failed", ex=86400)
             _update_publish_status(
-                job_id, "failed", error_message=f"No valid access token available for {provider} page {page_id}"
+                job_id,
+                "failed",
+                error_message=f"No valid access token available for {provider_name} page {page_id}",
             )
-            raise NonRetryableError(f"No valid access token available for {provider} page {page_id}")
+            raise NonRetryableError(
+                f"No valid access token available for {provider_name} page {page_id}"
+            )
 
         # Durable checkpoint
         redis_client.set(f"job_token:{job_id}", token, ex=3600)
         state_manager.save_step(job_id, "token_retrieved")
         last_step = "token_retrieved"
 
-    # Step 2: Publish via platform adapter
+    # Step 2: Publish via platform provider service
     if last_step == "token_retrieved":
         token_raw = redis_client.get(f"job_token:{job_id}")
         token = token_raw.decode("utf-8") if token_raw else ""
 
-        adapter = ADAPTERS.get(provider)
-        if not adapter:
+        provider = get_provider(provider_name)
+        if not provider:
             redis_client.set(f"job_state:{job_id}", "failed", ex=86400)
             _update_publish_status(
-                job_id, "failed", error_message=f"Unsupported provider: {provider}"
+                job_id,
+                "failed",
+                error_message=f"Unsupported provider: {provider_name}",
             )
-            raise NonRetryableError(f"Unsupported provider: {provider}")
+            raise NonRetryableError(f"Unsupported provider: {provider_name}")
 
-        post_id = adapter.publish(
+        result = provider.publish(
             page_id=page_id,
             message=message,
             token=token,
@@ -375,11 +164,18 @@ def handle_publish_post(payload: dict) -> None:
         # Checkpoint completion & state
         state_manager.save_step(job_id, "completed")
         redis_client.set(f"job_state:{job_id}", "completed", ex=86400)
-        redis_client.set(f"job_result:{job_id}", str(post_id), ex=86400)
-        _update_publish_status(
-            job_id, "completed", platform_post_id=str(post_id)
+        redis_client.set(
+            f"job_result:{job_id}", str(result.platform_post_id), ex=86400
         )
-        logger.info("Published successfully to platform", provider=provider, post_id=post_id, job_id=job_id)
+        _update_publish_status(
+            job_id, "completed", platform_post_id=str(result.platform_post_id)
+        )
+        logger.info(
+            "Published successfully to platform",
+            provider=provider_name,
+            post_id=result.platform_post_id,
+            job_id=job_id,
+        )
 
 
 if __name__ == "__main__":

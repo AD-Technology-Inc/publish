@@ -1,9 +1,7 @@
-import json
-
 import httpx
 import structlog
 from redis import Redis
-from sqlalchemy import create_engine, text
+from shared.providers import get_provider
 from shared.telemetry import get_tracer, init_telemetry, setup_logging
 from shared.utils import (
     IdempotencyMiddleware,
@@ -12,6 +10,7 @@ from shared.utils import (
     RateLimitExceeded,
 )
 from shared.worker import Worker
+from sqlalchemy import create_engine, text
 
 from app.config import settings
 
@@ -42,19 +41,25 @@ def _update_account_status(account_id: str, status: str) -> None:
     try:
         with db_engine.begin() as conn:
             conn.execute(
-                text("UPDATE social_accounts SET status = :status, updated_at = now() WHERE id = :id"),
+                text(
+                    "UPDATE social_accounts SET status = :status, updated_at = now() WHERE id = :id"
+                ),
                 {"status": status, "id": account_id},
             )
     except Exception as e:
-        logger.error("Failed to update account status in PostgreSQL", error=str(e), account_id=account_id)
+        logger.error(
+            "Failed to update account status in PostgreSQL",
+            error=str(e),
+            account_id=account_id,
+        )
 
 
 def handle_account_link(payload: dict) -> None:
     """Validate that the stored access token is usable for the given provider/page."""
-    account_id = payload.get("account_id")
-    provider = (payload.get("provider") or "").lower()
-    page_id = payload.get("page_id")
-    idem_key = payload.get("idempotency_key") or f"link:{account_id}"
+    account_id = str(payload.get("account_id") or "")
+    provider = str(payload.get("provider") or "").lower()
+    page_id = str(payload.get("page_id") or "")
+    idem_key = str(payload.get("idempotency_key") or f"link:{account_id}")
 
     if not idempotency.check_and_set(idem_key):
         logger.info("Skipping duplicate account link", idempotency_key=idem_key)
@@ -81,26 +86,22 @@ def handle_account_link(payload: dict) -> None:
         resp.raise_for_status()
         token = resp.json().get("access_token", "")
     except httpx.RequestError as e:
-        raise Exception(f"Could not reach social-account-service: {e}")
+        raise Exception(f"Could not reach social-account-service: {e}") from e
 
-    # Validate with Graph API for Facebook
-    if provider == "facebook" and token:
-        try:
-            graph_resp = httpx.get(
-                f"https://graph.facebook.com/v19.0/me?access_token={token}",
-                timeout=5.0,
+    # Validate token with dedicated provider service
+    provider_service = get_provider(provider)
+    if provider_service and token:
+        result = provider_service.validate_token(token, page_id)
+        if not result.valid:
+            _update_account_status(account_id, "expired")
+            raise NonRetryableError(
+                result.error_message or f"Invalid {provider} token"
             )
-            if graph_resp.status_code in (400, 401, 403):
-                _update_account_status(account_id, "expired")
-                raise NonRetryableError(
-                    f"Invalid Facebook token: {graph_resp.text}"
-                )
-            if graph_resp.status_code == 429:
-                raise RateLimitExceeded(f"Facebook Graph API 429: {graph_resp.text}")
-            graph_resp.raise_for_status()
-            logger.info("Facebook token validated successfully", page_id=page_id)
-        except httpx.RequestError as e:
-            raise Exception(f"Network error validating Facebook token: {e}")
+        logger.info(
+            f"{provider.capitalize()} token validated successfully",
+            page_id=page_id,
+            account_name=result.account_name,
+        )
 
     # Mark account as validated/connected in PostgreSQL
     _update_account_status(account_id, "connected")
