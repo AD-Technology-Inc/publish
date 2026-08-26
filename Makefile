@@ -33,8 +33,10 @@ exec:
 run:
 	$(COMPOSE) run --rm $(service) $(cmd)
 
-test:
-	docker exec infrastructure-identity-service-1 uv run pytest -v
+test: test-identity test-social-account
 
 test-identity:
 	docker exec infrastructure-identity-service-1 uv run pytest -v
+
+test-social-account:
+	docker exec infrastructure-social-account-service-1 uv run pytest -v
