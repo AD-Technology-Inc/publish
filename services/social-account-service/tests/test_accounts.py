@@ -1,6 +1,9 @@
 import pytest
 from httpx import AsyncClient
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models import SocialAccount
 from main import redis_client
 
 
@@ -12,7 +15,9 @@ async def test_list_accounts_empty(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_connect_account_success(client: AsyncClient):
+async def test_connect_account_success(
+    client: AsyncClient, db_session: AsyncSession
+):
     payload = {
         "provider": "twitter",
         "name": "Twitter Page",
@@ -26,10 +31,24 @@ async def test_connect_account_success(client: AsyncClient):
     assert data["name"] == "Twitter Page"
     assert data["page_id"] == "tw_page_100"
     assert data["status"] == "connected"
+    assert "connected_at" in data
     assert "id" in data
     assert "access_token" not in data  # Token not leaked in public AccountOut schema
 
-    # Verify token is persisted internally in Redis
+    # Verify record is persisted in PostgreSQL
+    account_id = data["id"]
+    db_record = (
+        await db_session.execute(
+            select(SocialAccount).where(SocialAccount.id == account_id)
+        )
+    ).scalar_one_or_none()
+    assert db_record is not None
+    assert db_record.name == "Twitter Page"
+    assert db_record.page_id == "tw_page_100"
+    assert db_record.access_token == "tw_tok_secret"
+    assert db_record.status == "connected"
+
+    # Verify token is also cached in Redis
     stored_token = redis_client.get("token:twitter:tw_page_100")
     assert stored_token is not None
     assert stored_token.decode("utf-8") == "tw_tok_secret"
@@ -106,7 +125,7 @@ async def test_get_token_endpoint(client: AsyncClient):
         },
     )
 
-    # Valid token retrieval
+    # Valid token retrieval (from cache or DB)
     res = await client.get("/accounts/token/instagram/ig_999")
     assert res.status_code == 200
     assert res.json()["access_token"] == "ig_secret_token"
@@ -118,7 +137,9 @@ async def test_get_token_endpoint(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_disconnect_account(client: AsyncClient):
+async def test_disconnect_account(
+    client: AsyncClient, db_session: AsyncSession
+):
     create_res = await client.post(
         "/accounts",
         json={
@@ -134,8 +155,15 @@ async def test_disconnect_account(client: AsyncClient):
     del_res = await client.delete(f"/accounts/{account_id}")
     assert del_res.status_code == 204
 
-    # Verify account and token removed from redis
-    assert redis_client.get(f"accounts:{account_id}") is None
+    # Verify account removed from PostgreSQL
+    db_record = (
+        await db_session.execute(
+            select(SocialAccount).where(SocialAccount.id == account_id)
+        )
+    ).scalar_one_or_none()
+    assert db_record is None
+
+    # Verify token removed from Redis
     assert redis_client.get("token:twitter:tw_disconnect_1") is None
 
     # Delete second time -> 404

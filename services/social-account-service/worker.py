@@ -3,6 +3,7 @@ import json
 import httpx
 import structlog
 from redis import Redis
+from sqlalchemy import create_engine, text
 from shared.telemetry import get_tracer, init_telemetry, setup_logging
 from shared.utils import (
     IdempotencyMiddleware,
@@ -12,6 +13,8 @@ from shared.utils import (
 )
 from shared.worker import Worker
 
+from app.config import settings
+
 SERVICE_NAME = "social-account-worker"
 setup_logging(SERVICE_NAME)
 init_telemetry(SERVICE_NAME)
@@ -19,8 +22,8 @@ logger = structlog.get_logger(__name__)
 tracer = get_tracer()
 
 redis_client = Redis(
-    host="redis",
-    port=6379,
+    host=settings.redis_host,
+    port=settings.redis_port,
     db=0,
     socket_timeout=15.0,
     socket_connect_timeout=5.0,
@@ -30,16 +33,20 @@ redis_client = Redis(
 idempotency = IdempotencyMiddleware(redis_client)
 rate_limiter = RateLimiter(redis_client, max_requests=100, window_seconds=60)
 
+# Sync database engine for worker execution
+sync_db_url = settings.database_url.replace("postgresql+asyncpg://", "postgresql://", 1)
+db_engine = create_engine(sync_db_url, pool_pre_ping=True)
+
 
 def _update_account_status(account_id: str, status: str) -> None:
-    raw = redis_client.get(f"accounts:{account_id}")
-    if raw:
-        try:
-            account = json.loads(raw)
-            account["status"] = status
-            redis_client.set(f"accounts:{account_id}", json.dumps(account))
-        except Exception as e:
-            logger.error("Failed to update account status in Redis", error=str(e), account_id=account_id)
+    try:
+        with db_engine.begin() as conn:
+            conn.execute(
+                text("UPDATE social_accounts SET status = :status, updated_at = now() WHERE id = :id"),
+                {"status": status, "id": account_id},
+            )
+    except Exception as e:
+        logger.error("Failed to update account status in PostgreSQL", error=str(e), account_id=account_id)
 
 
 def handle_account_link(payload: dict) -> None:
@@ -95,9 +102,9 @@ def handle_account_link(payload: dict) -> None:
         except httpx.RequestError as e:
             raise Exception(f"Network error validating Facebook token: {e}")
 
-    # Mark account as validated/connected
+    # Mark account as validated/connected in PostgreSQL
     _update_account_status(account_id, "connected")
-    logger.info("Account validated successfully", account_id=account_id)
+    logger.info("Account validated successfully in PostgreSQL", account_id=account_id)
 
 
 if __name__ == "__main__":

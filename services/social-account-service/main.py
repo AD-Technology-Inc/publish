@@ -1,13 +1,16 @@
-import json
-import uuid
-from datetime import UTC, datetime
+from typing import Annotated
 
 import structlog
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from fastapi import Depends, FastAPI, HTTPException, status
 from redis import Redis
+from sqlalchemy.ext.asyncio import AsyncSession
 from shared.queue import RedisQueue
 from shared.telemetry import init_telemetry, setup_logging
+
+from app.config import settings
+from app.database import get_db
+from app.schemas import AccountOut, ConnectAccountRequest
+from app import service
 
 SERVICE_NAME = "social-account-service"
 setup_logging(SERVICE_NAME)
@@ -16,77 +19,10 @@ app = FastAPI(title="Social Account Service")
 init_telemetry(SERVICE_NAME, app=app)
 logger = structlog.get_logger(__name__)
 
-redis_client = Redis(host="redis", port=6379, db=0)
+redis_client = Redis(
+    host=settings.redis_host, port=settings.redis_port, db=0
+)
 queue = RedisQueue(redis_client, stream_name="jobs:social-account")
-
-# ---------------------------------------------------------------------------
-# In-memory store (replace with real DB in production)
-# Key schema: accounts:<account_id> -> JSON blob
-# Set of all accounts: accounts:all -> list of IDs
-# ---------------------------------------------------------------------------
-
-PROVIDER_LABELS = {
-    "facebook": "Facebook",
-    "instagram": "Instagram",
-    "twitter": "Twitter / X",
-    "linkedin": "LinkedIn",
-}
-
-
-class ConnectAccountRequest(BaseModel):
-    provider: str  # "facebook" | "instagram" | "twitter" | "linkedin"
-    name: str  # display name / page name
-    page_id: str  # platform-specific page/profile id
-    access_token: str  # Page Access Token or OAuth token
-
-
-class AccountOut(BaseModel):
-    id: str
-    provider: str
-    name: str
-    page_id: str
-    status: str  # "connected" | "expired"
-    connected_at: str
-
-
-def _all_accounts() -> list[dict]:
-    ids_raw = redis_client.get("accounts:all")
-    if not ids_raw:
-        return []
-    ids: list[str] = json.loads(ids_raw)
-    accounts = []
-    for aid in ids:
-        raw = redis_client.get(f"accounts:{aid}")
-        if raw:
-            accounts.append(json.loads(raw))
-    return accounts
-
-
-def _save_account(account: dict):
-    aid = account["id"]
-    redis_client.set(f"accounts:{aid}", json.dumps(account))
-    ids_raw = redis_client.get("accounts:all")
-    ids: list[str] = json.loads(ids_raw) if ids_raw else []
-    if aid not in ids:
-        ids.append(aid)
-    redis_client.set("accounts:all", json.dumps(ids))
-    # Also persist the access token separately (lookup by provider:page_id)
-    redis_client.set(
-        f"token:{account['provider']}:{account['page_id']}",
-        account["access_token"],
-    )
-
-
-def _delete_account(account_id: str):
-    raw = redis_client.get(f"accounts:{account_id}")
-    if raw:
-        account = json.loads(raw)
-        redis_client.delete(f"token:{account['provider']}:{account['page_id']}")
-    redis_client.delete(f"accounts:{account_id}")
-    ids_raw = redis_client.get("accounts:all")
-    if ids_raw:
-        ids = [i for i in json.loads(ids_raw) if i != account_id]
-        redis_client.set("accounts:all", json.dumps(ids))
 
 
 # ---------------------------------------------------------------------------
@@ -95,74 +31,60 @@ def _delete_account(account_id: str):
 
 
 @app.get("/accounts", response_model=list[AccountOut])
-def list_accounts():
-    return _all_accounts()
+async def list_accounts(db: Annotated[AsyncSession, Depends(get_db)]):
+    """Retrieve all connected social accounts from PostgreSQL."""
+    return await service.get_all_accounts(db)
 
 
-@app.post("/accounts", response_model=AccountOut, status_code=201)
-def connect_account(req: ConnectAccountRequest):
-    if req.provider not in PROVIDER_LABELS:
-        raise HTTPException(
-            status_code=400, detail=f"Unsupported provider: {req.provider}"
-        )
-
-    # Check for duplicate (same provider + page_id)
-    existing = [
-        a
-        for a in _all_accounts()
-        if a["provider"] == req.provider and a["page_id"] == req.page_id
-    ]
-    if existing:
-        raise HTTPException(
-            status_code=409,
-            detail=f"Account already connected for {req.provider} / {req.page_id}",
-        )
-
-    account_id = str(uuid.uuid4())
-
-    account = {
-        "id": account_id,
-        "provider": req.provider,
-        "name": req.name,
-        "page_id": req.page_id,
-        "access_token": req.access_token,
-        "status": "connected",
-        "connected_at": datetime.now(UTC).strftime("%b %d, %Y"),
-    }
-    _save_account(account)
-
-    # Enqueue an async job to validate the token with the platform
-    idem_key = f"link:{account_id}"
-    job_id = queue.enqueue(
-        {
-            "type": "account_link",
-            "account_id": account_id,
-            "provider": req.provider,
-            "page_id": req.page_id,
-            "idempotency_key": idem_key,
-        }
+@app.post("/accounts", response_model=AccountOut, status_code=status.HTTP_201_CREATED)
+async def connect_account(
+    req: ConnectAccountRequest,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    """Connect a new social account, save to PostgreSQL, and enqueue validation."""
+    return await service.create_account(
+        db=db, req=req, queue=queue, redis_client=redis_client
     )
-    logger.info(f"Account {account_id} queued for validation. job_id={job_id}")
-
-    return account
 
 
-@app.delete("/accounts/{account_id}", status_code=204)
-def disconnect_account(account_id: str):
-    raw = redis_client.get(f"accounts:{account_id}")
-    if not raw:
-        raise HTTPException(status_code=404, detail="Account not found")
-    _delete_account(account_id)
+@app.delete("/accounts/{account_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def disconnect_account(
+    account_id: str,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    """Disconnect an account and purge records from PostgreSQL and Redis."""
+    await service.delete_account(
+        db=db, account_id=account_id, redis_client=redis_client
+    )
     return None
 
 
 @app.get("/accounts/token/{provider}/{page_id}")
-def get_token(provider: str, page_id: str):
-    """Internal endpoint to retrieve the stored access token."""
-    token = redis_client.get(f"token:{provider}:{page_id}")
-    if not token:
-        raise HTTPException(status_code=404, detail="Token not found")
-    return {"access_token": token.decode("utf-8")}
+async def get_token(
+    provider: str,
+    page_id: str,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    """Internal endpoint to retrieve the stored access token from PostgreSQL/Redis."""
+    # Try Redis fast-path first
+    cached_token = redis_client.get(f"token:{provider.lower()}:{page_id}")
+    if cached_token:
+        return {"access_token": cached_token.decode("utf-8")}
+
+    # Fallback to PostgreSQL
+    account = await service.get_account_by_provider_page(
+        db=db, provider=provider.lower(), page_id=page_id
+    )
+    if not account:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Token not found"
+        )
+
+    # Re-cache in Redis
+    redis_client.set(
+        f"token:{provider.lower()}:{page_id}", account.access_token
+    )
+    return {"access_token": account.access_token}
 
 
 @app.get("/health")
