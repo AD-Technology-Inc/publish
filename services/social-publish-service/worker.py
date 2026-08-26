@@ -1,6 +1,6 @@
 import os
 from abc import ABC, abstractmethod
-from typing import Dict, Optional
+from typing import Any
 
 import httpx
 import structlog
@@ -13,7 +13,6 @@ from shared.utils import (
     StateManager,
 )
 from shared.worker import Worker
-
 from sqlalchemy import create_engine, text
 
 from app.config import settings
@@ -43,8 +42,8 @@ db_engine = create_engine(sync_db_url, pool_pre_ping=True)
 def _update_publish_status(
     job_id: str,
     status: str,
-    platform_post_id: Optional[str] = None,
-    error_message: Optional[str] = None,
+    platform_post_id: str | None = None,
+    error_message: str | None = None,
 ) -> None:
     try:
         with db_engine.begin() as conn:
@@ -78,7 +77,7 @@ class SocialPlatformAdapter(ABC):
         message: str,
         token: str,
         job_id: str,
-        media_url: Optional[str] = None,
+        media_url: str | None = None,
     ) -> str:
         pass
 
@@ -90,7 +89,7 @@ class FacebookAdapter(SocialPlatformAdapter):
         message: str,
         token: str,
         job_id: str,
-        media_url: Optional[str] = None,
+        media_url: str | None = None,
     ) -> str:
         base_url = os.getenv(
             "GRAPH_API_BASE_URL", "https://graph.facebook.com/v19.0"
@@ -110,10 +109,14 @@ class FacebookAdapter(SocialPlatformAdapter):
         except httpx.HTTPStatusError as e:
             if e.response.status_code in (400, 401, 403, 404):
                 redis_client.set(f"job_state:{job_id}", "failed", ex=86400)
-                raise NonRetryableError(f"Facebook API error ({e.response.status_code}): {e.response.text}")
-            raise Exception(f"Facebook transient error ({e.response.status_code}): {e.response.text}")
+                raise NonRetryableError(
+                    f"Facebook API error ({e.response.status_code}): {e.response.text}"
+                ) from e
+            raise Exception(
+                f"Facebook transient error ({e.response.status_code}): {e.response.text}"
+            ) from e
         except httpx.RequestError as e:
-            raise Exception(f"Network error posting to Facebook: {e}")
+            raise Exception(f"Network error posting to Facebook: {e}") from e
 
 
 class LinkedInAdapter(SocialPlatformAdapter):
@@ -123,7 +126,7 @@ class LinkedInAdapter(SocialPlatformAdapter):
         message: str,
         token: str,
         job_id: str,
-        media_url: Optional[str] = None,
+        media_url: str | None = None,
     ) -> str:
         base_url = os.getenv("LINKEDIN_API_BASE_URL", "https://api.linkedin.com/v2")
         url = f"{base_url}/ugcPosts"
@@ -132,27 +135,24 @@ class LinkedInAdapter(SocialPlatformAdapter):
             "X-Restli-Protocol-Version": "2.0.0",
             "Content-Type": "application/json",
         }
-        payload = {
+        share_content: dict[str, Any] = {
+            "shareCommentary": {"text": message},
+            "shareMediaCategory": "NONE",
+        }
+        if media_url:
+            share_content["shareMediaCategory"] = "ARTICLE"
+            share_content["media"] = [{"status": "READY", "originalUrl": media_url}]
+
+        payload: dict[str, Any] = {
             "author": f"urn:li:organization:{page_id}",
             "lifecycleState": "PUBLISHED",
             "specificContent": {
-                "com.linkedin.ugc.ShareContent": {
-                    "shareCommentary": {"text": message},
-                    "shareMediaCategory": "NONE",
-                }
+                "com.linkedin.ugc.ShareContent": share_content
             },
             "visibility": {
                 "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"
             },
         }
-
-        if media_url:
-            payload["specificContent"]["com.linkedin.ugc.ShareContent"][
-                "shareMediaCategory"
-            ] = "ARTICLE"
-            payload["specificContent"]["com.linkedin.ugc.ShareContent"][
-                "media"
-            ] = [{"status": "READY", "originalUrl": media_url}]
 
         try:
             resp = httpx.post(url, headers=headers, json=payload, timeout=10.0)
@@ -163,10 +163,14 @@ class LinkedInAdapter(SocialPlatformAdapter):
         except httpx.HTTPStatusError as e:
             if e.response.status_code in (400, 401, 403, 404):
                 redis_client.set(f"job_state:{job_id}", "failed", ex=86400)
-                raise NonRetryableError(f"LinkedIn API error ({e.response.status_code}): {e.response.text}")
-            raise Exception(f"LinkedIn transient error ({e.response.status_code}): {e.response.text}")
+                raise NonRetryableError(
+                    f"LinkedIn API error ({e.response.status_code}): {e.response.text}"
+                ) from e
+            raise Exception(
+                f"LinkedIn transient error ({e.response.status_code}): {e.response.text}"
+            ) from e
         except httpx.RequestError as e:
-            raise Exception(f"Network error posting to LinkedIn: {e}")
+            raise Exception(f"Network error posting to LinkedIn: {e}") from e
 
 
 class InstagramAdapter(SocialPlatformAdapter):
@@ -176,7 +180,7 @@ class InstagramAdapter(SocialPlatformAdapter):
         message: str,
         token: str,
         job_id: str,
-        media_url: Optional[str] = None,
+        media_url: str | None = None,
     ) -> str:
         if not media_url:
             redis_client.set(f"job_state:{job_id}", "failed", ex=86400)
@@ -215,10 +219,14 @@ class InstagramAdapter(SocialPlatformAdapter):
         except httpx.HTTPStatusError as e:
             if e.response.status_code in (400, 401, 403, 404):
                 redis_client.set(f"job_state:{job_id}", "failed", ex=86400)
-                raise NonRetryableError(f"Instagram API error ({e.response.status_code}): {e.response.text}")
-            raise Exception(f"Instagram transient error ({e.response.status_code}): {e.response.text}")
+                raise NonRetryableError(
+                    f"Instagram API error ({e.response.status_code}): {e.response.text}"
+                ) from e
+            raise Exception(
+                f"Instagram transient error ({e.response.status_code}): {e.response.text}"
+            ) from e
         except httpx.RequestError as e:
-            raise Exception(f"Network error posting to Instagram: {e}")
+            raise Exception(f"Network error posting to Instagram: {e}") from e
 
 
 class ThreadsAdapter(SocialPlatformAdapter):
@@ -228,7 +236,7 @@ class ThreadsAdapter(SocialPlatformAdapter):
         message: str,
         token: str,
         job_id: str,
-        media_url: Optional[str] = None,
+        media_url: str | None = None,
     ) -> str:
         base_url = os.getenv(
             "THREADS_API_BASE_URL", "https://graph.threads.net/v1.0"
@@ -265,13 +273,17 @@ class ThreadsAdapter(SocialPlatformAdapter):
         except httpx.HTTPStatusError as e:
             if e.response.status_code in (400, 401, 403, 404):
                 redis_client.set(f"job_state:{job_id}", "failed", ex=86400)
-                raise NonRetryableError(f"Threads API error ({e.response.status_code}): {e.response.text}")
-            raise Exception(f"Threads transient error ({e.response.status_code}): {e.response.text}")
+                raise NonRetryableError(
+                    f"Threads API error ({e.response.status_code}): {e.response.text}"
+                ) from e
+            raise Exception(
+                f"Threads transient error ({e.response.status_code}): {e.response.text}"
+            ) from e
         except httpx.RequestError as e:
-            raise Exception(f"Network error posting to Threads: {e}")
+            raise Exception(f"Network error posting to Threads: {e}") from e
 
 
-ADAPTERS: Dict[str, SocialPlatformAdapter] = {
+ADAPTERS: dict[str, SocialPlatformAdapter] = {
     "facebook": FacebookAdapter(),
     "linkedin": LinkedInAdapter(),
     "instagram": InstagramAdapter(),
@@ -280,12 +292,14 @@ ADAPTERS: Dict[str, SocialPlatformAdapter] = {
 
 
 def handle_publish_post(payload: dict) -> None:
-    job_id = payload.get("job_id")
-    idem_key = payload.get("idempotency_key") or job_id
-    page_id = payload.get("page_id")
-    provider = (payload.get("provider") or "facebook").lower()
-    message = payload.get("message")
+    job_id = str(payload.get("job_id") or payload.get("idempotency_key") or "")
+    idem_key = str(payload.get("idempotency_key") or job_id)
+    page_id = str(payload.get("page_id") or "")
+    provider = str(payload.get("provider") or "facebook").lower()
+    message = str(payload.get("message") or "")
     media_url = payload.get("media_url")
+    if media_url is not None:
+        media_url = str(media_url)
 
     last_step = state_manager.get_last_step(job_id)
 
@@ -308,7 +322,7 @@ def handle_publish_post(payload: dict) -> None:
             )
             raise NonRetryableError("Invalid payload: page_id and message are required")
 
-        token: Optional[str] = None
+        token: str | None = None
         # Retrieve token from social-account-service
         try:
             token_resp = httpx.get(

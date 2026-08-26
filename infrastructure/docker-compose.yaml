@@ -84,15 +84,21 @@ services:
       - PYTHONPATH=/app/services/shared
     depends_on:
       identity-service:
-        condition: service_started
+        condition: service_healthy
       social-account-service:
-        condition: service_started
+        condition: service_healthy
       social-post-service:
-        condition: service_started
+        condition: service_healthy
       social-publish-service:
-        condition: service_started
+        condition: service_healthy
       otel-collector:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.gateway.rule=Host(`gateway.localhost`)"
@@ -132,6 +138,12 @@ services:
         condition: service_healthy
       otel-collector:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
     deploy:
       resources:
         limits:
@@ -175,7 +187,7 @@ services:
       context: ..
       dockerfile: services/social-publish-service/Dockerfile
     environment:
-      - DATABASE_URL=postgresql://social_publish_user:social_publish_pass@social-publish-db:5432/social_publish_db
+      - DATABASE_URL=postgresql+asyncpg://social_publish_user:social_publish_pass@social-publish-db:5432/social_publish_db
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=social-publish-service
       - PYTHONPATH=/app/services/shared
@@ -185,6 +197,10 @@ services:
       - ../services/shared:/app/services/shared
     networks:
       - app
+    develop:
+      watch:
+        - action: rebuild
+          path: ../services/social-publish-service/pyproject.toml
     depends_on:
       redis:
         condition: service_healthy
@@ -192,6 +208,12 @@ services:
         condition: service_healthy
       otel-collector:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
     deploy:
       resources:
         limits:
@@ -205,7 +227,7 @@ services:
       context: ..
       dockerfile: services/social-publish-service/Dockerfile
     environment:
-      - DATABASE_URL=postgresql://social_publish_user:social_publish_pass@social-publish-db:5432/social_publish_db
+      - DATABASE_URL=postgresql+asyncpg://social_publish_user:social_publish_pass@social-publish-db:5432/social_publish_db
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=social-publish-worker
       - PYTHONPATH=/app/services/shared
@@ -266,7 +288,7 @@ services:
       context: ..
       dockerfile: services/social-post-service/Dockerfile
     environment:
-      - DATABASE_URL=postgresql://social_post_user:social_post_pass@social-post-db:5432/social_post_db
+      - DATABASE_URL=postgresql+asyncpg://social_post_user:social_post_pass@social-post-db:5432/social_post_db
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=social-post-service
       - PYTHONPATH=/app/services/shared
@@ -276,6 +298,10 @@ services:
       - ../services/shared:/app/services/shared
     networks:
       - app
+    develop:
+      watch:
+        - action: rebuild
+          path: ../services/social-post-service/pyproject.toml
     depends_on:
       redis:
         condition: service_healthy
@@ -283,6 +309,12 @@ services:
         condition: service_healthy
       otel-collector:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
     deploy:
       resources:
         limits:
@@ -296,7 +328,7 @@ services:
       context: ..
       dockerfile: services/social-post-service/Dockerfile
     environment:
-      - DATABASE_URL=postgresql://social_post_user:social_post_pass@social-post-db:5432/social_post_db
+      - DATABASE_URL=postgresql+asyncpg://social_post_user:social_post_pass@social-post-db:5432/social_post_db
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=social-post-worker
       - PYTHONPATH=/app/services/shared
@@ -355,7 +387,7 @@ services:
       context: ..
       dockerfile: services/social-account-service/Dockerfile
     environment:
-      - DATABASE_URL=postgresql://social_account_user:social_account_pass@social-account-db:5432/social_account_db
+      - DATABASE_URL=postgresql+asyncpg://social_account_user:social_account_pass@social-account-db:5432/social_account_db
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=social-account-service
       - PYTHONPATH=/app/services/shared
@@ -365,6 +397,10 @@ services:
       - ../services/shared:/app/services/shared
     networks:
       - app
+    develop:
+      watch:
+        - action: rebuild
+          path: ../services/social-account-service/pyproject.toml
     depends_on:
       redis:
         condition: service_healthy
@@ -372,6 +408,12 @@ services:
         condition: service_healthy
       otel-collector:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
     deploy:
       resources:
         limits:
@@ -385,7 +427,7 @@ services:
       context: ..
       dockerfile: services/social-account-service/Dockerfile
     environment:
-      - DATABASE_URL=postgresql://social_account_user:social_account_pass@social-account-db:5432/social_account_db
+      - DATABASE_URL=postgresql+asyncpg://social_account_user:social_account_pass@social-account-db:5432/social_account_db
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=social-account-worker
       - PYTHONPATH=/app/services/shared

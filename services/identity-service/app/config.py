@@ -1,3 +1,4 @@
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -10,6 +11,13 @@ class Settings(BaseSettings):
         "postgresql+asyncpg://identity_user:identity_pass@identity-db:5432/identity_db"
     )
     app_key: str = ""
+
+    @field_validator("database_url")
+    @classmethod
+    def ensure_asyncpg_url(cls, v: str) -> str:
+        if v.startswith("postgresql://"):
+            return v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return v
 
 
 settings = Settings()

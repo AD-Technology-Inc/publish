@@ -3,14 +3,14 @@ from typing import Annotated
 import structlog
 from fastapi import Depends, FastAPI
 from redis import Redis
-from sqlalchemy.ext.asyncio import AsyncSession
 from shared.queue import RedisQueue
 from shared.telemetry import init_telemetry, setup_logging
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app import service
 from app.config import settings
 from app.database import get_db
 from app.schemas import PublishRequest, PublishResponse
-from app import service
 
 SERVICE_NAME = "social-publish-service"
 setup_logging(SERVICE_NAME)
