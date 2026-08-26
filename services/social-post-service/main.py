@@ -1,13 +1,17 @@
 import json
-import uuid
-from datetime import UTC, datetime
+from typing import Annotated
 
 import structlog
-from fastapi import FastAPI, Header, HTTPException
-from pydantic import BaseModel
+from fastapi import Depends, FastAPI, Header, HTTPException
 from redis import Redis
+from sqlalchemy.ext.asyncio import AsyncSession
 from shared.queue import RedisQueue
 from shared.telemetry import init_telemetry, setup_logging
+
+from app.config import settings
+from app.database import get_db
+from app.schemas import CreatePostResponse, PostRequest, PostResponse
+from app import service
 
 SERVICE_NAME = "social-post-service"
 setup_logging(SERVICE_NAME)
@@ -16,115 +20,32 @@ app = FastAPI(title="Social Post Service")
 init_telemetry(SERVICE_NAME, app=app)
 logger = structlog.get_logger(__name__)
 
-redis_client = Redis(host="redis", port=6379, db=0)
+redis_client = Redis(
+    host=settings.redis_host, port=settings.redis_port, db=0
+)
 queue = RedisQueue(redis_client, stream_name="jobs:social-post")
 
 
-class PostRequest(BaseModel):
-    page_id: str
-    provider: str = "facebook"
-    message: str
-    media_url: str | None = None
-    platforms: list[str] | None = None
-
-
-class PostResponse(BaseModel):
-    id: str
-    job_id: str
-    page_id: str
-    provider: str
-    message: str
-    media_url: str | None = None
-    status: str
-    created_at: str
-
-
 @app.get("/posts", response_model=list[PostResponse])
-def list_posts():
-    """Retrieve all posts recorded in the system."""
-    post_ids_raw = redis_client.get("posts:all")
-    if not post_ids_raw:
-        return []
-
-    try:
-        post_ids = json.loads(post_ids_raw)
-    except Exception:
-        return []
-
-    results = []
-    for pid in post_ids:
-        raw = redis_client.get(f"posts:{pid}")
-        if raw:
-            try:
-                pdata = json.loads(raw)
-                # Fetch live status from job_state if available
-                job_id = pdata.get("job_id")
-                if job_id:
-                    live_status = redis_client.get(f"job_state:{job_id}")
-                    if live_status:
-                        pdata["status"] = live_status.decode("utf-8")
-                results.append(pdata)
-            except Exception:
-                continue
-
-    return results
+async def list_posts(db: Annotated[AsyncSession, Depends(get_db)]):
+    """Retrieve all posts from PostgreSQL with live job state."""
+    return await service.get_all_posts(db=db, redis_client=redis_client)
 
 
-@app.post("/posts")
-def create_post(
-    request: PostRequest, x_idempotency_key: str | None = Header(None)
+@app.post("/posts", response_model=CreatePostResponse)
+async def create_post(
+    request: PostRequest,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    x_idempotency_key: str | None = Header(None),
 ):
-    # Backpressure check
-    try:
-        q_len = redis_client.xlen("jobs:social-post")
-        if q_len > 10000:
-            raise HTTPException(
-                status_code=429, detail="Queue overload, please try again later"
-            )
-    except Exception as e:
-        if isinstance(e, HTTPException):
-            raise
-        logger.warning("Failed to check queue length", error=str(e))
-
-    idem_key = x_idempotency_key if x_idempotency_key else str(uuid.uuid4())
-    job_id = idem_key
-    post_id = str(uuid.uuid4())
-
-    # Record post entry
-    now_str = datetime.now(UTC).strftime("%b %d, %Y")
-    post_record = {
-        "id": post_id,
-        "job_id": job_id,
-        "page_id": request.page_id,
-        "provider": request.provider,
-        "message": request.message,
-        "media_url": request.media_url,
-        "status": "pending",
-        "created_at": now_str,
-    }
-    redis_client.set(f"posts:{post_id}", json.dumps(post_record), ex=86400 * 7)
-    all_ids_raw = redis_client.get("posts:all")
-    all_ids = json.loads(all_ids_raw) if all_ids_raw else []
-    if post_id not in all_ids:
-        all_ids.insert(0, post_id)
-        redis_client.set("posts:all", json.dumps(all_ids[:100]))
-
-    # Enqueue to stream
-    queue.enqueue(
-        {
-            "type": "create_post",
-            "post_id": post_id,
-            "page_id": request.page_id,
-            "provider": request.provider,
-            "message": request.message,
-            "media_url": request.media_url,
-            "idempotency_key": idem_key,
-            "job_id": job_id,
-        }
+    """Save post to PostgreSQL and enqueue for publishing."""
+    return await service.create_post(
+        db=db,
+        req=request,
+        idempotency_key=x_idempotency_key,
+        queue=queue,
+        redis_client=redis_client,
     )
-
-    redis_client.set(f"job_state:{job_id}", "pending", ex=86400)
-    return {"status": "enqueued", "job_id": job_id, "post_id": post_id}
 
 
 @app.get("/health")
@@ -152,7 +73,7 @@ def get_dlq(stream_name: str, limit: int = 50):
             )
         return {"stream": dlq_stream, "messages": results}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @app.post("/dlq/{stream_name}/replay/{message_id}")

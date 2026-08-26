@@ -17,11 +17,10 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
-# for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-target_metadata = None
+from app.database import Base
+from app.models import SocialPost  # noqa: F401
+
+target_metadata = Base.metadata
 
 # Add current working directory to sys.path so we can import config.py
 sys.path.append(os.getcwd())

@@ -1,8 +1,9 @@
-import json
-
 import pytest
 from httpx import AsyncClient
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models import SocialPost
 from main import redis_client
 
 
@@ -14,7 +15,9 @@ async def test_list_posts_empty(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_create_post_success(client: AsyncClient):
+async def test_create_post_success(
+    client: AsyncClient, db_session: AsyncSession
+):
     payload = {
         "page_id": "page_fb_123",
         "provider": "facebook",
@@ -31,15 +34,19 @@ async def test_create_post_success(client: AsyncClient):
     post_id = data["post_id"]
     job_id = data["job_id"]
 
-    # Verify post entry persisted in Redis
-    raw = redis_client.get(f"posts:{post_id}")
-    assert raw is not None
-    post_record = json.loads(raw)
-    assert post_record["message"] == "Exciting product launch!"
-    assert post_record["page_id"] == "page_fb_123"
-    assert post_record["provider"] == "facebook"
+    # Verify post entry persisted in PostgreSQL
+    db_post = (
+        await db_session.execute(
+            select(SocialPost).where(SocialPost.id == post_id)
+        )
+    ).scalar_one_or_none()
+    assert db_post is not None
+    assert db_post.message == "Exciting product launch!"
+    assert db_post.page_id == "page_fb_123"
+    assert db_post.provider == "facebook"
+    assert db_post.status == "pending"
 
-    # Verify job state set to pending
+    # Verify job state set to pending in Redis
     state = redis_client.get(f"job_state:{job_id}")
     assert state is not None
     assert state.decode("utf-8") == "pending"
@@ -53,7 +60,9 @@ async def test_create_post_validation_error(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_create_post_with_idempotency_header(client: AsyncClient):
+async def test_create_post_with_idempotency_header(
+    client: AsyncClient, db_session: AsyncSession
+):
     payload = {
         "page_id": "page_tw_456",
         "provider": "twitter",
@@ -64,6 +73,15 @@ async def test_create_post_with_idempotency_header(client: AsyncClient):
     assert response.status_code == 200
     data = response.json()
     assert data["job_id"] == "unique-client-key-12345"
+
+    # Verify job_id matches in PostgreSQL
+    db_post = (
+        await db_session.execute(
+            select(SocialPost).where(SocialPost.id == data["post_id"])
+        )
+    ).scalar_one_or_none()
+    assert db_post is not None
+    assert db_post.job_id == "unique-client-key-12345"
 
 
 @pytest.mark.asyncio
@@ -87,6 +105,7 @@ async def test_list_posts_with_live_status(client: AsyncClient):
     assert len(posts) == 1
     assert posts[0]["status"] == "completed"
     assert posts[0]["message"] == "Company Milestone reached!"
+    assert "created_at" in posts[0]
 
 
 @pytest.mark.asyncio
