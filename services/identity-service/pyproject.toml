@@ -13,6 +13,7 @@ dependencies = [
     "pwdlib[argon2]>=0.3.0",
     "structlog>=26.1.0",
     "pyjwt>=2.13.0",
+    "pydantic-settings>=2.8.0",
 ]
 
 [dependency-groups]
@@ -20,7 +21,7 @@ dev = ["pytest>=9.1.1", "pytest-asyncio>=1.4.0", "ruff>=0.15.21", "ty>=0.0.59"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["."]
+pythonpath = [".", "../shared"]
 asyncio_mode = "auto"
 
 [tool.ruff]
