@@ -14,6 +14,10 @@ from shared.utils import (
 )
 from shared.worker import Worker
 
+from sqlalchemy import create_engine, text
+
+from app.config import settings
+
 SERVICE_NAME = "social-publish-worker"
 setup_logging(SERVICE_NAME)
 init_telemetry(SERVICE_NAME)
@@ -21,8 +25,8 @@ logger = structlog.get_logger(__name__)
 tracer = get_tracer()
 
 redis_client = Redis(
-    host="redis",
-    port=6379,
+    host=settings.redis_host,
+    port=settings.redis_port,
     db=0,
     socket_timeout=15.0,
     socket_connect_timeout=5.0,
@@ -31,6 +35,36 @@ redis_client = Redis(
 )
 idempotency = IdempotencyMiddleware(redis_client)
 state_manager = StateManager(redis_client)
+
+sync_db_url = settings.database_url.replace("postgresql+asyncpg://", "postgresql://", 1)
+db_engine = create_engine(sync_db_url, pool_pre_ping=True)
+
+
+def _update_publish_status(
+    job_id: str,
+    status: str,
+    platform_post_id: Optional[str] = None,
+    error_message: Optional[str] = None,
+) -> None:
+    try:
+        with db_engine.begin() as conn:
+            conn.execute(
+                text(
+                    "UPDATE social_publishes SET status = :status, platform_post_id = COALESCE(:pid, platform_post_id), error_message = COALESCE(:err, error_message), updated_at = now() WHERE job_id = :job_id"
+                ),
+                {
+                    "status": status,
+                    "pid": platform_post_id,
+                    "err": error_message,
+                    "job_id": job_id,
+                },
+            )
+    except Exception as e:
+        logger.error(
+            "Failed to update publish status in PostgreSQL",
+            error=str(e),
+            job_id=job_id,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -263,11 +297,15 @@ def handle_publish_post(payload: dict) -> None:
         state_manager.save_step(job_id, "started")
         last_step = "started"
         redis_client.set(f"job_state:{job_id}", "processing", ex=86400)
+        _update_publish_status(job_id, "processing")
 
     # Step 1: Validate payload & retrieve access token
     if last_step == "started":
         if not page_id or not message:
             redis_client.set(f"job_state:{job_id}", "failed", ex=86400)
+            _update_publish_status(
+                job_id, "failed", error_message="Invalid payload: page_id and message are required"
+            )
             raise NonRetryableError("Invalid payload: page_id and message are required")
 
         token: Optional[str] = None
@@ -289,6 +327,9 @@ def handle_publish_post(payload: dict) -> None:
 
         if not token:
             redis_client.set(f"job_state:{job_id}", "failed", ex=86400)
+            _update_publish_status(
+                job_id, "failed", error_message=f"No valid access token available for {provider} page {page_id}"
+            )
             raise NonRetryableError(f"No valid access token available for {provider} page {page_id}")
 
         # Durable checkpoint
@@ -304,6 +345,9 @@ def handle_publish_post(payload: dict) -> None:
         adapter = ADAPTERS.get(provider)
         if not adapter:
             redis_client.set(f"job_state:{job_id}", "failed", ex=86400)
+            _update_publish_status(
+                job_id, "failed", error_message=f"Unsupported provider: {provider}"
+            )
             raise NonRetryableError(f"Unsupported provider: {provider}")
 
         post_id = adapter.publish(
@@ -318,6 +362,9 @@ def handle_publish_post(payload: dict) -> None:
         state_manager.save_step(job_id, "completed")
         redis_client.set(f"job_state:{job_id}", "completed", ex=86400)
         redis_client.set(f"job_result:{job_id}", str(post_id), ex=86400)
+        _update_publish_status(
+            job_id, "completed", platform_post_id=str(post_id)
+        )
         logger.info("Published successfully to platform", provider=provider, post_id=post_id, job_id=job_id)
 
 
