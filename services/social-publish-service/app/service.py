@@ -1,9 +1,10 @@
 import uuid
+
 import structlog
 from redis import Redis
+from shared.queue import RedisQueue
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from shared.queue import RedisQueue
 
 from app.models import SocialPublish
 from app.schemas import PublishRequest

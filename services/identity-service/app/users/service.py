@@ -23,6 +23,9 @@ async def get_user_by_id(db: AsyncSession, user_id: int) -> User | None:
     return result.scalar_one_or_none()
 
 
+_background_tasks: set[asyncio.Task] = set()
+
+
 # !FIXME: async: send email verification
 async def create_user(db: AsyncSession, user: UserCreate) -> User:
     from pwdlib import PasswordHash
@@ -51,7 +54,9 @@ async def create_user(db: AsyncSession, user: UserCreate) -> User:
         await db.refresh(new_user)
 
     # Dispatch email sending in the background
-    asyncio.create_task(send_verify_email(new_user.email, code))
+    task = asyncio.create_task(send_verify_email(new_user.email, code))
+    _background_tasks.add(task)
+    task.add_done_callback(_background_tasks.discard)
 
     return new_user
 

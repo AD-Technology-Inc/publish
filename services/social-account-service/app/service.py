@@ -1,11 +1,12 @@
 import uuid
+
 import structlog
 from fastapi import HTTPException, status
 from redis import Redis
+from shared.queue import RedisQueue
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from shared.queue import RedisQueue
 
 from app.models import SocialAccount
 from app.schemas import PROVIDER_LABELS, ConnectAccountRequest
@@ -79,7 +80,7 @@ async def create_account(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Account already connected for {provider} / {req.page_id}",
-        )
+        ) from None
 
     # Cache token in Redis for high-speed lookup by worker/publishing services
     redis_client.set(

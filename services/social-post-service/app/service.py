@@ -1,10 +1,11 @@
 import uuid
+
 import structlog
 from fastapi import HTTPException, status
 from redis import Redis
+from shared.queue import RedisQueue
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from shared.queue import RedisQueue
 
 from app.models import SocialPost
 from app.schemas import PostRequest
