@@ -5,9 +5,11 @@ import { postsRoutes } from "@/routes/posts";
 import { settingsRoutes } from "@/routes/settings";
 
 import Welcome from "@/pages/Welcome";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export const router = createBrowserRouter([
     {
+        errorElement: <ErrorBoundary />,
         hydrateFallbackElement: (
             <div className="min-h-screen flex items-center justify-center bg-black text-white">
                 Loading...
