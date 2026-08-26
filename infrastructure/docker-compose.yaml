@@ -486,9 +486,9 @@ services:
     healthcheck:
       test: ["CMD", "/otelcol-contrib", "validate", "--config=/etc/otelcol/otel-collector-config.yaml"]
       interval: 10s
-      timeout: 5s
+      timeout: 10s
       retries: 5
-      start_period: 15s
+      start_period: 30s
     depends_on:
       loki:
         condition: service_healthy

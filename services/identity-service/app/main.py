@@ -3,6 +3,7 @@ from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
 
+from app.auth.router import router as auth_router
 from app.users.router import router as users_router
 
 SERVICE_NAME = "identity-service"
@@ -23,6 +24,7 @@ logger = structlog.get_logger(__name__)
 
 # Register routers
 app.include_router(users_router)
+app.include_router(auth_router)
 
 
 @app.exception_handler(IntegrityError)
