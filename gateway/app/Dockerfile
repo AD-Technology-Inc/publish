@@ -1,5 +1,7 @@
-# Set base image
 FROM ghcr.io/astral-sh/uv:python3.12-trixie-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory
 WORKDIR /app
