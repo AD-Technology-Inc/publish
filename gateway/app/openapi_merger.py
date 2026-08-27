@@ -16,7 +16,7 @@ def setup_openapi_merger(app: FastAPI):
         if app.openapi_schema:
             return app.openapi_schema
 
-        # 1. Start with the gateway's own local routes schema (like /health)
+        # 1. Start with the gateway's own local routes schema (like /healthz)
         openapi_schema = get_openapi(
             title="AD. Publish API Gateway",
             version="1.0.0",

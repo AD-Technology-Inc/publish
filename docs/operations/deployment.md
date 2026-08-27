@@ -42,7 +42,7 @@ Expected output should show running containers for `traefik`, `client`, `gateway
 | **API Gateway Proxy** | `http://gateway.localhost` | Public FastAPI Gateway ingestion entrypoint. |
 | **Traefik Dashboard** | `http://localhost:8080` | Proxy routing status & entrypoint metrics. |
 | **Grafana Telemetry** | `http://localhost:3000` | Pre-provisioned metrics, logs, and traces. |
-| **Gateway Health API** | `http://gateway.localhost/health` | Health check endpoint. |
+| **Gateway Health API** | `http://gateway.localhost/healthz` | Health check endpoint. |
 
 ---
 

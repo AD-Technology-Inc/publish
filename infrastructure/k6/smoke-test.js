@@ -38,7 +38,7 @@ const BASE_URL = __ENV.BASE_URL || 'http://gateway.localhost';
 
 export default function () {
   // 1. Health check
-  const healthRes = http.get(`${BASE_URL}/health`, {
+  const healthRes = http.get(`${BASE_URL}/healthz`, {
     tags: { endpoint: 'health' },
   });
   check(healthRes, {

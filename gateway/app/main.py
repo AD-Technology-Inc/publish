@@ -39,6 +39,6 @@ app.include_router(dlq_router)
 setup_openapi_merger(app)
 
 
-@app.get("/health")
+@app.get("/healthz")
 def read_health():
     return {"status": "ok"}

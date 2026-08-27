@@ -36,6 +36,6 @@ async def publish_post(
     )
 
 
-@app.get("/health")
+@app.get("/healthz")
 def health():
     return {"status": "ok"}

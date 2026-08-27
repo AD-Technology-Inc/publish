@@ -179,7 +179,7 @@ Ensure Docker and Compose are installed:
 
 | Endpoint | Method | Payload | Description |
 | :--- | :--- | :--- | :--- |
-| `/health` | `GET` | None | Verify API Gateway status |
+| `/healthz` | `GET` | None | Verify API Gateway status |
 | `/users` | `POST` | `{ "username": "...", "email": "..." }` | Register user account |
 | `/accounts` | `GET` | None | List connected social channel profiles |
 | `/accounts` | `POST` | `{ "provider": "...", "name": "...", "page_id": "...", "access_token": "..." }` | Link a platform profile page |

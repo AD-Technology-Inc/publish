@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 
 function App() {
     useEffect(() => {
-        fetch('http://gateway.localhost/health').then(response => {
+        fetch('http://gateway.localhost/healthz').then(response => {
             if (response.ok) {
                 console.log('Gateway is healthy');
             } else {

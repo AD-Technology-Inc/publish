@@ -9,7 +9,7 @@ from main import redis_client
 
 @pytest.mark.asyncio
 async def test_health_endpoint(client: AsyncClient):
-    response = await client.get("/health")
+    response = await client.get("/healthz")
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
 

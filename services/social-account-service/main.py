@@ -87,6 +87,6 @@ async def get_token(
     return {"access_token": account.access_token}
 
 
-@app.get("/health")
+@app.get("/healthz")
 def health():
     return {"status": "ok"}
